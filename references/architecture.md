@@ -42,12 +42,13 @@ app-financeiro-2.0/
 │   └── design-system.md         # cores, tipografia, potes, componentes base
 ├── specs/                       # Etapa 1 (specs), Etapa 2 (tarefas)
 │   └── plans/                   # Etapa 3 (planos), um por tarefa
-├── public/                      # assets estáticos
+├── public/                      # assets estáticos (vazio: os SVGs do
+│                                #   scaffold foram removidos na A2)
 └── src/
     ├── app/                     # rotas (App Router) — só composição de tela
-    │   ├── layout.tsx           # layout raiz (lang pt-br)
-    │   ├── page.tsx             # placeholder; vira redirecionamento na D6
-    │   ├── globals.css          # @import "tailwindcss"; tokens entram na A2
+    │   ├── layout.tsx           # layout raiz: lang pt-br, Syne + DM Mono
+    │   ├── page.tsx             # verificação de tokens; vira redirecionamento na D6
+    │   ├── globals.css          # design tokens (@theme do Tailwind 4)
     │   ├── (auth)/              # (a criar, B1/B2) rotas públicas
     │   ├── (app)/               # (a criar, B4/B5) rotas autenticadas
     │   └── api/                 # (a criar, D4) route handlers
@@ -133,7 +134,16 @@ Aplicações específicas deste projeto:
 > Lista viva — atualizar sempre que criar algo reutilizável, pra evitar
 > duplicação em tarefas futuras.
 
-- _(nenhum ainda — projeto não inicializado)_
+- **Design tokens** — `src/app/globals.css` — cores, fontes e raios do produto
+  como `@theme` do Tailwind 4. Gera as classes `bg-card`, `text-dim`,
+  `bg-pote-lib`, `rounded-card`, `font-mono`, etc. Cores dos 8 potes usam o
+  prefixo `pote-` para não se misturarem às semânticas. **Nenhuma cor literal
+  (`#hex`, `text-[#...]`) deve aparecer em componente** — se falta um token,
+  acrescente aqui e em `references/design-system.md`.
+- **Fontes** — `src/app/layout.tsx` — Syne (variável) e DM Mono (300/400/500)
+  auto-hospedadas via `next/font/google`, expostas como `--font-syne` e
+  `--font-dm-mono`. Regra visual: rótulo uppercase é `font-mono`, conteúdo é a
+  fonte padrão.
 
 ## Padrões e decisões
 
