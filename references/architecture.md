@@ -274,8 +274,28 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   não editar um `<nav>` à mão.
 
 > **A moldura interna não protege nada.** Quem bloqueia requisição sem sessão
-> é o middleware, no servidor (D1). Renderizar o shell nunca é evidência de
-> que o usuário está autenticado.
+> é o `src/middleware.ts` (D1), no servidor. Renderizar o shell nunca é
+> evidência de que o usuário está autenticado.
+
+## Autenticação e proteção de rotas
+
+`src/middleware.ts` roda o `clerkMiddleware` antes de qualquer renderização.
+A decisão de acesso é do servidor; nenhuma tela decide se pode ser vista.
+
+⚠ **Rota interna nova NÃO é protegida automaticamente.** A lista de rotas
+protegidas é escrita à mão no middleware, e isso é deliberado: derivá-la de
+`src/features/shell/rotas.ts` faria com que remover um item do menu — decisão
+puramente visual — tirasse a rota da proteção junto, em silêncio. Ao criar
+rota interna, acrescente ao matcher.
+
+Protegidas hoje: `/dashboard`, `/upload`, `/revisao` e `/bem-vindo`.
+`/bem-vindo` está lá mesmo não aparecendo no menu.
+
+**O `<ClerkProvider>` está no layout raiz**, então o app **não roda sem as
+chaves do Clerk** — nem as telas públicas. `.env.local` precisa de
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` e `CLERK_SECRET_KEY`; a secreta nunca
+leva o prefixo público. Isso vale para a Vercel também: sem as chaves lá, o
+deploy sobe e responde erro.
 
 > Os componentes de `ui/` são apresentacionais e **não** levam `"use client"` —
 > quem precisar de `onClick` marca a si próprio como client. Nenhum deles sabe
