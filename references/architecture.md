@@ -49,7 +49,9 @@ app-financeiro-2.0/
     │   ├── layout.tsx           # layout raiz: lang pt-br, Syne + DM Mono
     │   ├── page.tsx             # verificação de tokens; vira redirecionamento na D6
     │   ├── globals.css          # design tokens (@theme do Tailwind 4)
-    │   ├── (auth)/              # (a criar, B1/B2) rotas públicas
+    │   ├── (auth)/              # rotas públicas (grupo, não vira URL)
+    │   │   ├── layout.tsx       # moldura + marca
+    │   │   └── entrar/page.tsx  # só compõe FazerLogin
     │   ├── (app)/               # (a criar, B4/B5) rotas autenticadas
     │   └── api/                 # (a criar, D4) route handlers
     ├── features/                # comportamentos isolados (ver seção abaixo)
@@ -156,6 +158,10 @@ Aplicações específicas deste projeto:
   altura mínima de 44px (alvo de toque), `type="button"` por padrão e
   `loading` que desabilita o elemento (duplo toque não dispara duas vezes).
   Hover usa o variante `enabled:`, senão o botão desabilitado reagiria ao mouse.
+
+- **Moldura pública** — `src/app/(auth)/layout.tsx` — coluna centrada com a
+  marca ("Painel Financeiro / 6 Potes"). Compartilhada por `/entrar` e
+  `/cadastrar`; a marca vive aqui para as duas telas não divergirem.
 
 > Os quatro componentes são apresentacionais e **não** levam `"use client"` —
 > quem precisar de `onClick` marca a si próprio como client. Nenhum deles sabe
