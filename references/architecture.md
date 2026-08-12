@@ -165,6 +165,12 @@ Aplicações específicas deste projeto:
   `/cadastrar`; a marca vive aqui para as duas telas não divergirem.
 - **`LogoGoogle`** — `src/features/autenticacao/LogoGoogle.tsx` — SVG inline.
 - **`EMAIL_CONTATO` / `linkSolicitarAcesso()`** — `src/features/autenticacao/contato.ts`.
+- **`POTES_PADRAO` / `rotuloMeta()`** — `src/features/onboarding/potes-padrao.ts`
+  — os 8 potes do onboarding. Carrega `hex` (para o seed no banco) **e**
+  `classeCor` (para renderizar), porque tem dois consumidores: a tela
+  `/bem-vindo` e o seed das tarefas C3/D7. Dinheiro em centavos.
+  `rotuloMeta()` existe para nunca renderizar "0%" nos dois potes sem
+  percentual — "0%" leria como meta zerada, e não como "fora do rateio".
 
 > **Compartilhado entre comportamentos, o lugar é o pai.** `LogoGoogle` e
 > `contato.ts` ficam em `autenticacao/`, não dentro de `fazer-login/` ou

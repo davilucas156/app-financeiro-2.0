@@ -8,17 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-
-const potes = [
-  { nome: "Custos Fixos", emoji: "🏠", classe: "bg-pote-fix", hex: "#FF5000", meta: "30%" },
-  { nome: "Liberdade Financeira", emoji: "📈", classe: "bg-pote-lib", hex: "#00e5a0", meta: "25%" },
-  { nome: "Conforto & Lazer", emoji: "🎮", classe: "bg-pote-laz", hex: "#3d8eff", meta: "15%" },
-  { nome: "Metas / Sonhos", emoji: "★", classe: "bg-pote-met", hex: "#ffc94d", meta: "15%" },
-  { nome: "Transporte", emoji: "🚗", classe: "bg-pote-tra", hex: "#00c8d4", meta: "10%" },
-  { nome: "Conhecimento", emoji: "📚", classe: "bg-pote-con", hex: "#e040a0", meta: "5%" },
-  { nome: "Manutenção", emoji: "🔧", classe: "bg-pote-mec", hex: "#26c9a0", meta: "eventual" },
-  { nome: "Outros / Repasses", emoji: "·", classe: "bg-pote-out", hex: "#5a5a70", meta: "sem meta" },
-];
+import { POTES_PADRAO, rotuloMeta } from "@/features/onboarding/potes-padrao";
 
 const base = [
   { nome: "bg", classe: "bg-bg", hex: "#060608" },
@@ -111,18 +101,20 @@ export default function Home() {
 
       <SectionTitle>Potes</SectionTitle>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {potes.map((p) => (
+        {POTES_PADRAO.map((p) => (
           <div
-            key={p.nome}
+            key={p.slug}
             className="rounded-pote border border-border bg-card overflow-hidden"
           >
-            <div className={`${p.classe} h-1.5`} />
+            <div className={`${p.classeCor} h-1.5`} />
             <div className="p-3">
               <p className="text-[11px] font-bold leading-tight">
                 {p.emoji} {p.nome}
               </p>
               <p className="font-mono text-[10px] text-dim mt-1.5">{p.hex}</p>
-              <p className="font-mono text-[10px] text-dim">meta {p.meta}</p>
+              <p className="font-mono text-[10px] text-dim">
+                meta {rotuloMeta(p)}
+              </p>
             </div>
           </div>
         ))}

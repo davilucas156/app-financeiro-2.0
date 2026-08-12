@@ -101,11 +101,20 @@ remoção lógica. Migration aplicada e reversível.
 tag_visual) criadas, com FK e índice por `user_id`. Restrição impedindo dois
 potes de mesmo nome pro mesmo usuário (garante a idempotência do onboarding).
 
-### C4 · Definição dos potes e categorias padrão
+### C4 · Categorias padrão de cada pote
 **Camada:** BACK
-**Pronto quando:** existe um módulo server-only com os 8 potes de
-`references/design-system.md` (nome, emoji, cor, %, meta, ordem) e as
-categorias padrão de cada um. É só dado — a gravação é a tarefa D7.
+**Pronto quando:** as categorias padrão de cada pote estão definidas ao lado
+dos potes, em `src/features/onboarding/potes-padrao.ts`.
+
+> **Reescrita durante a B3.** O escopo original era "criar um módulo
+> server-only com os 8 potes". Os potes já foram criados na B3, porque a tela
+> `/bem-vindo` precisa **exibir** a lista antes de gravar qualquer coisa — um
+> módulo server-only obrigaria o visual a duplicar os dados, e passaríamos a
+> ter três cópias divergindo (página de tokens, onboarding e seed). O módulo
+> não é server-only e não precisa ser: nome, emoji, cor e percentual não são
+> segredo. O que segue exclusivo do servidor é a **gravação** (D7) e o
+> `user_id` da sessão. Sobra para a C4 só a parte que nenhuma tela exibe: as
+> categorias.
 
 ### C5 · Tabela `classification_rules` + seed do Davi
 **Camada:** BANCO + BACK
