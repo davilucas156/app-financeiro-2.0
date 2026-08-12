@@ -1,9 +1,13 @@
 /**
- * Página temporária de verificação dos design tokens (tarefa A2).
- * Existe para conferir a olho que as cores e fontes batem com
- * `references/design-system.md`. É substituída pelo redirecionamento
- * da raiz na tarefa D6.
+ * Página temporária de verificação dos design tokens (A2) e dos componentes
+ * base (A3). Existe para conferir a olho que tudo bate com
+ * `references/design-system.md`. É substituída pelo redirecionamento da raiz
+ * na tarefa D6.
  */
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 
 const potes = [
   { nome: "Custos Fixos", emoji: "🏠", classe: "bg-pote-fix", hex: "#FF5000", meta: "30%" },
@@ -40,17 +44,6 @@ const semanticas = [
   { nome: "orange", classe: "bg-orange", hex: "#ff9a3c" },
 ];
 
-function Titulo({ children }: { children: string }) {
-  return (
-    <div className="flex items-center gap-3 mt-10 mb-4">
-      <h2 className="font-mono text-[9px] font-bold uppercase tracking-[2.5px] text-dim whitespace-nowrap">
-        {children}
-      </h2>
-      <span className="flex-1 h-px bg-border2" />
-    </div>
-  );
-}
-
 function Amostra({ classe, nome, hex }: { classe: string; nome: string; hex: string }) {
   return (
     <div className="rounded-pote border border-border overflow-hidden">
@@ -67,14 +60,14 @@ export default function Home() {
   return (
     <main className="flex-1 w-full max-w-5xl mx-auto px-5 py-10">
       <p className="font-mono text-[9px] uppercase tracking-[2px] text-dim">
-        Verificação de tokens · tarefa A2
+        Verificação de tokens e componentes · tarefas A2 e A3
       </p>
       <h1 className="text-3xl font-extrabold tracking-tight mt-2">
         Painel Financeiro 6 Potes
       </h1>
 
-      <Titulo>Tipografia</Titulo>
-      <div className="rounded-card border border-border bg-card p-5 space-y-3">
+      <SectionTitle>Tipografia</SectionTitle>
+      <Card className="space-y-3">
         <p className="text-2xl font-extrabold tracking-tight">
           Syne 800 — Ação, órfão, coração, gestão
         </p>
@@ -85,9 +78,38 @@ export default function Home() {
           DM Mono 400 — rótulo em caixa alta
         </p>
         <p className="font-mono text-xl font-medium text-green">R$ 1.234,56</p>
-      </div>
+      </Card>
 
-      <Titulo>Potes</Titulo>
+      <SectionTitle>Badge</SectionTitle>
+      <Card className="flex flex-wrap items-center gap-3">
+        <Badge variant="green">Dentro da meta</Badge>
+        <Badge variant="gold">Metas</Badge>
+        <Badge variant="blue">Informação</Badge>
+        <Badge variant="dim">Sem meta</Badge>
+      </Card>
+
+      <SectionTitle>Button</SectionTitle>
+      <Card className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button>Começar</Button>
+          <Button variant="secondary">Cancelar</Button>
+          <Button disabled>Desabilitado</Button>
+          <Button loading>Enviando</Button>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="secondary" disabled>
+            Desabilitado
+          </Button>
+          <Button variant="secondary" loading>
+            Enviando
+          </Button>
+        </div>
+        <p className="font-mono text-[10px] text-dim">
+          Dívida conhecida: o spinner ignora prefers-reduced-motion.
+        </p>
+      </Card>
+
+      <SectionTitle>Potes</SectionTitle>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {potes.map((p) => (
           <div
@@ -106,21 +128,21 @@ export default function Home() {
         ))}
       </div>
 
-      <Titulo>Cores base</Titulo>
+      <SectionTitle>Cores base</SectionTitle>
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
         {base.map((c) => (
           <Amostra key={c.nome} {...c} />
         ))}
       </div>
 
-      <Titulo>Cores semânticas</Titulo>
+      <SectionTitle>Cores semânticas</SectionTitle>
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
         {semanticas.map((c) => (
           <Amostra key={c.nome} {...c} />
         ))}
       </div>
 
-      <Titulo>Raios</Titulo>
+      <SectionTitle>Raios</SectionTitle>
       <div className="flex gap-3">
         <div className="rounded-pote border border-border2 bg-card px-5 py-4 font-mono text-[10px] text-dim">
           rounded-pote · 12px

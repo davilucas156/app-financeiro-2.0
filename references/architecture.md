@@ -144,6 +144,22 @@ Aplicações específicas deste projeto:
   auto-hospedadas via `next/font/google`, expostas como `--font-syne` e
   `--font-dm-mono`. Regra visual: rótulo uppercase é `font-mono`, conteúdo é a
   fonte padrão.
+- **`cn()`** — `src/lib/cn.ts` — junta classes ignorando valores falsos.
+  Existe para não trazer `clsx`/`cva` neste tamanho de projeto.
+- **`Card`** — `src/components/ui/Card.tsx` — superfície padrão (`.panel`/`.sc`
+  do painel). Aceita `className` para espaçamento/largura, não para repintar.
+- **`Badge`** — `src/components/ui/Badge.tsx` — pill uppercase DM Mono;
+  variantes `green` | `gold` | `blue` | `dim`. As coloridas levam o ponto `●`
+  (decorativo, `aria-hidden`); `dim` não leva.
+- **`SectionTitle`** — `src/components/ui/SectionTitle.tsx` — rótulo + régua.
+- **`Button`** — `src/components/ui/Button.tsx` — `primary` | `secondary`,
+  altura mínima de 44px (alvo de toque), `type="button"` por padrão e
+  `loading` que desabilita o elemento (duplo toque não dispara duas vezes).
+  Hover usa o variante `enabled:`, senão o botão desabilitado reagiria ao mouse.
+
+> Os quatro componentes são apresentacionais e **não** levam `"use client"` —
+> quem precisar de `onClick` marca a si próprio como client. Nenhum deles sabe
+> o que é pote, transação ou usuário.
 
 ## Padrões e decisões
 
