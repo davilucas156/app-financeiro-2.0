@@ -53,7 +53,12 @@ app-financeiro-2.0/
     │   │   ├── layout.tsx       # moldura + marca
     │   │   ├── entrar/page.tsx
     │   │   └── cadastrar/page.tsx
-    │   ├── (app)/               # (a criar, B4/B5) rotas autenticadas
+    │   ├── (app)/               # rotas internas (grupo, não vira URL)
+    │   │   ├── layout.tsx       # cabeçalho + navegação; force-dynamic
+    │   │   ├── dashboard/page.tsx
+    │   │   ├── upload/page.tsx
+    │   │   └── revisao/page.tsx
+    │   ├── bem-vindo/page.tsx   # onboarding: fora das duas molduras
     │   └── api/                 # (a criar, D4) route handlers
     ├── features/                # comportamentos isolados (ver seção abaixo)
     ├── components/
@@ -178,9 +183,25 @@ Aplicações específicas deste projeto:
 > outro** — dependem do pai comum. Duplicar seria pior: o dia em que o e-mail
 > mudasse, uma das telas ficaria com o valor velho.
 
-> Os quatro componentes são apresentacionais e **não** levam `"use client"` —
+- **`EstadoVazio`** — `src/components/ui/EstadoVazio.tsx` — emoji, título,
+  explicação e ação opcional. Tela sem dados diz o que falta e qual o próximo
+  passo, em vez de um vazio mudo.
+- **Moldura interna** — `src/app/(app)/layout.tsx` + `src/features/shell/` —
+  cabeçalho fixo (app, mês, avatar) e navegação. `rotas.ts` é a definição
+  única das três rotas internas: acrescentar rota é acrescentar entrada lá,
+  não editar um `<nav>` à mão.
+
+> **A moldura interna não protege nada.** Quem bloqueia requisição sem sessão
+> é o middleware, no servidor (D1). Renderizar o shell nunca é evidência de
+> que o usuário está autenticado.
+
+> Os componentes de `ui/` são apresentacionais e **não** levam `"use client"` —
 > quem precisar de `onClick` marca a si próprio como client. Nenhum deles sabe
 > o que é pote, transação ou usuário.
+>
+> **Único `"use client"` do projeto:** `NavegacaoPrincipal`, porque destacar o
+> item ativo exige `usePathname()`. Não é precedente para componente novo
+> nascer client — a justificativa tem que ser um hook de verdade.
 
 ## Padrões e decisões
 
