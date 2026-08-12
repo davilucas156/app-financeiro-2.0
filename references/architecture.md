@@ -195,7 +195,9 @@ que desfaz. Por isso o `.sql` gerado precisa ser lido antes de aplicar.
   Outros/Repasses), e `observacao` guarda o que a tela mostra no lugar —
   "0%" leria como meta zerada. Percentual é inteiro: o produto usa
   percentuais cheios, e aceitar 12,5% na fase 2 exigirá migration de tipo.
-- **`categories`** — subcategorias dentro de um pote.
+- **`categories`** — subcategorias dentro de um pote. `emoji` é coluna própria
+  porque no painel a categoria aparece como "⛽ Gasolina" — o emoji é parte do
+  rótulo, e embuti-lo no `nome` sujaria o dado que o usuário vai editar.
 
 **Duas restrições de unicidade por tabela, com propósitos diferentes.**
 `(user_id, nome)` impede dois potes com o mesmo rótulo na tela.
@@ -252,6 +254,10 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   `/bem-vindo` e o seed das tarefas C3/D7. Dinheiro em centavos.
   `rotuloMeta()` existe para nunca renderizar "0%" nos dois potes sem
   percentual — "0%" leria como meta zerada, e não como "fora do rateio".
+  Traz também as **22 categorias padrão**, extraídas das tags
+  `<span class="tag t-*">` dos meses já fechados no painel HTML e da seção 7
+  do `readme.md`. Nenhuma categoria foi inventada — "Metas / Sonhos" tem uma
+  só (Giulia) porque é o que existe.
 
 > **Compartilhado entre comportamentos, o lugar é o pai.** `LogoGoogle` e
 > `contato.ts` ficam em `autenticacao/`, não dentro de `fazer-login/` ou

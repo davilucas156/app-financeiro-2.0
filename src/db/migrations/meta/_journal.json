@@ -15,6 +15,13 @@
       "when": 1786503528545,
       "tag": "0001_large_boomer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786527235747,
+      "tag": "0002_secret_nemesis",
+      "breakpoints": true
     }
   ]
 }

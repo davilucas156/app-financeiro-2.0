@@ -152,6 +152,13 @@ export const categories = pgTable(
     slug: text("slug").notNull(),
     nome: text("nome").notNull(),
 
+    /**
+     * No painel a categoria aparece como "⛽ Gasolina", "🚌 Ônibus" — o emoji
+     * é parte do rótulo, não enfeite do pote. Coluna própria para não sujar
+     * o `nome`, que o usuário vai poder editar.
+     */
+    emoji: text("emoji").notNull(),
+
     /** Tags visuais do painel original (`t-gas`, `t-fix`…). */
     tagVisual: text("tag_visual"),
 
