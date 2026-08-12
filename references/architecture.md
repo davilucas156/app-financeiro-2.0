@@ -18,7 +18,9 @@ TypeScript **5**, sobre Node **20.17**.
   4, mobile-first. Gráficos com Recharts.
 - **Back-end:** Server Actions e Route Handlers do próprio Next.js (não há
   serviço separado). Parsing de CSV com `papaparse`, rodando no servidor.
-- **Banco de dados:** Postgres (Vercel Postgres / Neon).
+- **Banco de dados:** Postgres na Neon, **região São Paulo**. Acesso via
+  `drizzle-orm` 0.45 + driver `@neondatabase/serverless` 1.1; migrations com
+  `drizzle-kit` 0.31.
 - **Auth:** Clerk.
 - **Storage de arquivos:** Vercel Blob (CSVs originais, privados, por usuário).
 - **LLM (fallback de classificação):** API Anthropic, chamada exclusivamente do
@@ -136,6 +138,34 @@ Aplicações específicas deste projeto:
    totais de pote nem decide categoria.
 5. Validação no front-end é aceitável só como UX (feedback rápido), sempre
    duplicada no servidor.
+
+## Banco de dados — como mexer
+
+```
+npm run db:generate   # schema.ts mudou → gera o .sql em src/db/migrations
+npm run db:migrate    # aplica os .sql pendentes no banco
+npm run db:studio     # inspeção visual das tabelas
+```
+
+`src/db/schema.ts` é a fonte de verdade. **Nunca alterar o banco à mão:** toda
+mudança nasce no schema, vira `.sql` versionado e é aplicada pelo comando. O
+`.sql` é legível de propósito — dá para ler o que vai rodar antes de rodar,
+que é o mínimo num banco com dados financeiros.
+
+O client fica em `src/lib/db.ts`, exportando `getDb()`:
+
+- **`import "server-only"`** no topo faz o **build falhar** se um componente de
+  cliente importar o banco. Verificado na C1 com uma rota descartável: o build
+  saiu com erro, nomeando `db.ts` e o componente. É a regra Thin Client / Fat
+  Server virando erro de compilação, não recomendação escrita.
+- **Driver `neon-serverless` (Pool/WebSocket), não `neon-http`.** O HTTP não
+  suporta transação interativa, e gravar os potes do onboarding exige uma
+  transação de verdade — falha não pode deixar a conta pela metade.
+- **Inicialização preguiçosa e cacheada no `globalThis`**: sem `DATABASE_URL`
+  o build continua passando, o erro só aparece na primeira consulta e diz o
+  que fazer; e o hot reload não abre um pool novo a cada salvamento.
+
+A credencial vem da Vercel: `npx vercel env pull .env.local`.
 
 ## Componentes/módulos reutilizáveis já existentes
 
