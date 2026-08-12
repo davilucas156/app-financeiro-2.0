@@ -190,6 +190,27 @@ que desfaz. Por isso o `.sql` gerado precisa ser lido antes de aplicar.
   sem fuso, um registro às 23h em São Paulo cai no dia seguinte, e "mês de
   referência" é o eixo do produto.
 
+- **`buckets`** — os potes, um conjunto por usuário. `percentual_meta` e
+  `valor_meta_centavos` são nulos nos dois potes fora do rateio (Manutenção e
+  Outros/Repasses), e `observacao` guarda o que a tela mostra no lugar —
+  "0%" leria como meta zerada. Percentual é inteiro: o produto usa
+  percentuais cheios, e aceitar 12,5% na fase 2 exigirá migration de tipo.
+- **`categories`** — subcategorias dentro de um pote.
+
+**Duas restrições de unicidade por tabela, com propósitos diferentes.**
+`(user_id, nome)` impede dois potes com o mesmo rótulo na tela.
+`(user_id, slug)` é o que garante a **idempotência do onboarding**: a
+idempotência não pode depender do nome, porque na fase 2 o usuário poderá
+renomear os potes e o seed deixaria de se reconhecer.
+
+**`categories` carrega `user_id` mesmo sendo derivável do pote.** É
+desnormalização deliberada, por segurança e não por conveniência: sem RLS, a
+regra "toda query filtra por `user_id` da sessão" precisa ser aplicável em
+**toda** tabela. Sem a coluna, cada consulta precisaria de um `join` só para
+provar posse, e qualquer esquecimento vira vazamento entre contas a partir de
+um `bucket_id` vindo do cliente. O custo é manter os dois campos coerentes na
+escrita, que acontece num lugar só (D7).
+
 A credencial vem da Vercel: `npx vercel env pull .env.local`.
 
 ## Componentes/módulos reutilizáveis já existentes

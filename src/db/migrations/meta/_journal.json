@@ -8,6 +8,13 @@
       "when": 1786503234306,
       "tag": "0000_sad_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786503528545,
+      "tag": "0001_large_boomer",
+      "breakpoints": true
     }
   ]
 }
