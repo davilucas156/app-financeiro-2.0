@@ -165,6 +165,31 @@ O client fica em `src/lib/db.ts`, exportando `getDb()`:
   o build continua passando, o erro só aparece na primeira consulta e diz o
   que fazer; e o hot reload não abre um pool novo a cada salvamento.
 
+**Duas URLs, dois usos.** `DATABASE_URL` passa pelo pooler e é a da
+aplicação; `DATABASE_URL_UNPOOLED` é conexão direta e é a das **migrations**
+(o `drizzle.config.ts` usa ela). Pooler e DDL não se dão bem.
+
+**`neonConfig.webSocketConstructor = ws` é obrigatório.** O driver do Neon
+conversa por WebSocket e o Node 20 não tem `WebSocket` global — só o Node 22
+tem. Sem essa linha em `db.ts`, toda consulta morre com "All attempts to open
+a WebSocket... failed". Descoberto na C2 testando contra o banco real; o
+`db:migrate` não denuncia o problema porque o drizzle-kit embute o próprio
+WebSocket.
+
+**Migrations são só para frente.** O drizzle-kit não gera arquivo de *down* —
+nem ele nem o Prisma, é o padrão atual. Reverter é escrever uma migration nova
+que desfaz. Por isso o `.sql` gerado precisa ser lido antes de aplicar.
+
+### Tabelas
+
+- **`users`** — PK é o `user.id` do **Clerk**, não um serial nosso: duas
+  identidades para a mesma pessoa seria fonte garantida de bug. `email` único,
+  `nome` nulo (perfil do Google pode não ter), `onboarding_concluido_em` nulo
+  = pendente (é o que a D6 lê), `removido_em` para remoção lógica — apagar a
+  linha levaria junto meses de histórico financeiro. Datas em `timestamptz`:
+  sem fuso, um registro às 23h em São Paulo cai no dia seguinte, e "mês de
+  referência" é o eixo do produto.
+
 A credencial vem da Vercel: `npx vercel env pull .env.local`.
 
 ## Componentes/módulos reutilizáveis já existentes

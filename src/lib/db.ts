@@ -1,7 +1,14 @@
 import "server-only";
-import { Pool } from "@neondatabase/serverless";
+import ws from "ws";
+import { neonConfig, Pool } from "@neondatabase/serverless";
 import { drizzle, type NeonDatabase } from "drizzle-orm/neon-serverless";
 import * as schema from "@/db/schema";
+
+// O driver do Neon conversa por WebSocket, e o Node 20 não tem `WebSocket`
+// global — isso só chegou no Node 22. Sem esta linha, toda consulta falha com
+// "All attempts to open a WebSocket... failed", tanto em `next dev` quanto em
+// runtime Node mais antigo na Vercel. Verificado na C2, contra o banco real.
+neonConfig.webSocketConstructor = ws;
 
 /**
  * Client único do banco.

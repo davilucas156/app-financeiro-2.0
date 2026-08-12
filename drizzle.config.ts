@@ -13,7 +13,11 @@ export default defineConfig({
   out: "./src/db/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "",
+    // Conexão **direta**, não a do pooler. O pgbouncer do Neon multiplexa
+    // conexões e não sustenta bem DDL longo nem prepared statements — é o
+    // caminho certo para a aplicação, e o errado para migration.
+    // A aplicação (`src/lib/db.ts`) usa a pooled; aqui é a unpooled.
+    url: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? "",
   },
   // Migrations em SQL legível e versionado, para dar para ler o que vai rodar
   // antes de rodar.
