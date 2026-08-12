@@ -51,7 +51,8 @@ app-financeiro-2.0/
     │   ├── globals.css          # design tokens (@theme do Tailwind 4)
     │   ├── (auth)/              # rotas públicas (grupo, não vira URL)
     │   │   ├── layout.tsx       # moldura + marca
-    │   │   └── entrar/page.tsx  # só compõe FazerLogin
+    │   │   ├── entrar/page.tsx
+    │   │   └── cadastrar/page.tsx
     │   ├── (app)/               # (a criar, B4/B5) rotas autenticadas
     │   └── api/                 # (a criar, D4) route handlers
     ├── features/                # comportamentos isolados (ver seção abaixo)
@@ -162,6 +163,14 @@ Aplicações específicas deste projeto:
 - **Moldura pública** — `src/app/(auth)/layout.tsx` — coluna centrada com a
   marca ("Painel Financeiro / 6 Potes"). Compartilhada por `/entrar` e
   `/cadastrar`; a marca vive aqui para as duas telas não divergirem.
+- **`LogoGoogle`** — `src/features/autenticacao/LogoGoogle.tsx` — SVG inline.
+- **`EMAIL_CONTATO` / `linkSolicitarAcesso()`** — `src/features/autenticacao/contato.ts`.
+
+> **Compartilhado entre comportamentos, o lugar é o pai.** `LogoGoogle` e
+> `contato.ts` ficam em `autenticacao/`, não dentro de `fazer-login/` ou
+> `cadastrar-usuario/`. Os dois comportamentos continuam sem depender **um do
+> outro** — dependem do pai comum. Duplicar seria pior: o dia em que o e-mail
+> mudasse, uma das telas ficaria com o valor velho.
 
 > Os quatro componentes são apresentacionais e **não** levam `"use client"` —
 > quem precisar de `onClick` marca a si próprio como client. Nenhum deles sabe
