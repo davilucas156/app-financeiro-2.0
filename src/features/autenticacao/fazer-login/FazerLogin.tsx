@@ -1,35 +1,24 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { SignIn } from "@clerk/nextjs";
 import { Card } from "@/components/ui/Card";
-import { LogoGoogle } from "@/features/autenticacao/LogoGoogle";
+import { APARENCIA_CLERK } from "@/features/autenticacao/aparencia-clerk";
 import { linkSolicitarAcesso } from "@/features/autenticacao/contato";
 
 /**
- * Tela de entrar — **protótipo visual** (tarefa B1).
+ * Tela de entrar (tarefa D2 — widget real do Clerk).
  *
- * Não autentica nada: o botão é estático e os estados são maquete. O widget
- * real do Clerk assume o lugar do botão na tarefa D2, e a recusa por allowlist
- * passa a ser decidida no servidor na D3.
+ * Os estados de carregando e erro deixaram de ser nossos: o widget cuida dos
+ * dois. O que continua nosso é a recusa por convite, decidida **no servidor**
+ * na tarefa D3 — por isso `naoConvidado` ainda não tem quem o alimente.
  */
-export type EstadoFazerLogin = "pronto" | "carregando" | "erro" | "bloqueado";
-
 export function FazerLogin({
-  estado = "pronto",
+  naoConvidado = false,
 }: {
-  estado?: EstadoFazerLogin;
+  naoConvidado?: boolean;
 }) {
   return (
     <Card className="p-6">
-      {estado === "erro" && (
-        <p
-          role="alert"
-          className="mb-4 rounded-pote border border-red/20 bg-red/8 px-3.5 py-3 text-xs text-red"
-        >
-          Não foi possível conectar. Tente de novo.
-        </p>
-      )}
-
-      {estado === "bloqueado" && (
+      {naoConvidado && (
         <div
           role="alert"
           className="mb-4 rounded-pote border border-gold/20 bg-gold/8 px-3.5 py-3"
@@ -43,43 +32,35 @@ export function FazerLogin({
         </div>
       )}
 
-      {/* Área reservada ao widget do Clerk (D2). A altura mínima existe para
-          o cartão não mudar de tamanho quando o widget real entrar. */}
-      <div className="flex min-h-[84px] flex-col justify-center">
-        <Button
-          variant="secondary"
-          loading={estado === "carregando"}
-          className="w-full"
-        >
-          {estado !== "carregando" && <LogoGoogle />}
-          {estado === "carregando" ? "Entrando…" : "Continuar com Google"}
-        </Button>
+      <SignIn
+        appearance={APARENCIA_CLERK}
+        // `fallback` e não `force`: assim o `redirect_url` da query string
+        // vence, e quem tentou /upload sem sessão volta para /upload em vez
+        // de cair no painel. É o que faz o returnBackUrl da D1 valer.
+        fallbackRedirectUrl="/dashboard"
+        signUpUrl="/cadastrar"
+      />
 
-        <p className="mt-3 text-center font-mono text-[10px] text-dim2">
-          Protótipo visual · o login entra na tarefa D2
-        </p>
-      </div>
-
-      {estado === "bloqueado" ? (
-        <p className="mt-5 text-center text-xs text-dim">
+      <p className="mt-5 text-center text-xs text-dim">
+        {naoConvidado ? (
           <a
             href={linkSolicitarAcesso()}
             className="font-bold text-text underline underline-offset-4"
           >
             Solicitar acesso
           </a>
-        </p>
-      ) : (
-        <p className="mt-5 text-center text-xs text-dim">
-          Não tem conta?{" "}
-          <Link
-            href="/cadastrar"
-            className="font-bold text-text underline underline-offset-4"
-          >
-            Solicitar acesso
-          </Link>
-        </p>
-      )}
+        ) : (
+          <>
+            Não tem conta?{" "}
+            <Link
+              href="/cadastrar"
+              className="font-bold text-text underline underline-offset-4"
+            >
+              Solicitar acesso
+            </Link>
+          </>
+        )}
+      </p>
     </Card>
   );
 }

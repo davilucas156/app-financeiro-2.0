@@ -279,8 +279,22 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
 
 ## Autenticação e proteção de rotas
 
-`src/middleware.ts` roda o `clerkMiddleware` antes de qualquer renderização.
+`src/proxy.ts` roda o `clerkMiddleware` antes de qualquer renderização.
 A decisão de acesso é do servidor; nenhuma tela decide se pode ser vista.
+
+> O arquivo chama-se `proxy.ts`, e não `middleware.ts`: o Next 16 depreciou a
+> convenção `middleware` em favor de `proxy`. O conteúdo é o mesmo.
+
+**As telas de auth são rotas catch-all** (`entrar/[[...rest]]`,
+`cadastrar/[[...rest]]`) porque os fluxos do Clerk navegam para sub-rotas
+próprias (`/entrar/sso-callback`, …). Numa rota simples isso dá 404 no meio do
+login. A URL que o usuário vê continua `/entrar`.
+
+**Aparência do Clerk:** `src/features/autenticacao/aparencia-clerk.ts`, com as
+cores vindo de `var(--color-*)` em vez de hex. Atenção aos nomes: o **Core 3
+renomeou** as variáveis — não existem mais `colorText`, `colorTextSecondary`,
+`colorInputBackground` nem `colorInputText`; o par é `color*` /
+`color*Foreground`.
 
 ⚠ **Rota interna nova NÃO é protegida automaticamente.** A lista de rotas
 protegidas é escrita à mão no middleware, e isso é deliberado: derivá-la de
