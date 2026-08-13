@@ -25,8 +25,19 @@ const ehRotaProtegida = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (ehRotaProtegida(req)) {
-    await auth.protect();
+  if (!ehRotaProtegida(req)) return;
+
+  // `auth.protect()` sozinho responde **404** para quem não tem sessão —
+  // verificado. Esconder a rota não é o que a spec pede: quem chega sem
+  // sessão deve ser convidado a entrar, não levar a impressão de que a
+  // página não existe.
+  //
+  // `returnBackUrl` guarda a rota tentada, para a D8 poder devolver o
+  // usuário a ela depois do login.
+  const { userId, redirectToSignIn } = await auth();
+
+  if (!userId) {
+    return redirectToSignIn({ returnBackUrl: req.url });
   }
 });
 

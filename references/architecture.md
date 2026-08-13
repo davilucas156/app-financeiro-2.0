@@ -291,6 +291,12 @@ rota interna, acrescente ao matcher.
 Protegidas hoje: `/dashboard`, `/upload`, `/revisao` e `/bem-vindo`.
 `/bem-vindo` está lá mesmo não aparecendo no menu.
 
+**Não usar `auth.protect()` sozinho.** Ele responde **404** para quem não tem
+sessão — verificado na D1. Esconder a rota não é o comportamento da spec: quem
+chega sem sessão deve ser convidado a entrar, não levar a impressão de que a
+página não existe. O middleware usa `redirectToSignIn({ returnBackUrl })`, que
+devolve 307 para `/entrar` **e preserva a rota tentada** na query string.
+
 **O `<ClerkProvider>` está no layout raiz**, então o app **não roda sem as
 chaves do Clerk** — nem as telas públicas. `.env.local` precisa de
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` e `CLERK_SECRET_KEY`; a secreta nunca
