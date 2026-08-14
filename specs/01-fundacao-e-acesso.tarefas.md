@@ -146,9 +146,16 @@ pra área interna.
 ### D3 · Estado "e-mail não convidado"
 **Spec:** `/cadastrar`, linha da allowlist
 **Camada:** FRONT-INTEGRADO
-**Pronto quando:** um Google válido fora da allowlist **não** cria sessão nem
-linha em `users`, e cai no bloco "não convidado" com o contato do Davi.
-Verificado com uma segunda conta Google.
+**Pronto quando:** um Google válido fora da allowlist **não acessa nenhuma
+tela interna** nem ganha linha em `users`, e cai no bloco "não convidado" com
+o contato do Davi e um botão de sair. Verificado com uma segunda conta Google.
+
+> **Corrigido durante a D3.** O texto original dizia "não cria sessão". Isso
+> não é alcançável por código nosso: quem cria a conta e a sessão é o Clerk,
+> antes de qualquer linha nossa rodar, e não há gancho síncrono para vetar no
+> meio do fluxo do Google. O que se garante é que a sessão não dá acesso a
+> nada. Para barrar na origem, o caminho é ligar Restrictions → Allowlist no
+> painel do Clerk — os dois se somam.
 
 ### D4 · Webhook Clerk → `users`
 **Spec:** "Sincronizar usuário Clerk → Postgres"

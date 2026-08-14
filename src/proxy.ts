@@ -1,4 +1,10 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import {
+  clerkClient,
+  clerkMiddleware,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
+import { estaConvidado } from "@/features/autenticacao/allowlist";
 
 /**
  * Proteção das rotas internas (tarefa D1).
@@ -38,6 +44,35 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (!userId) {
     return redirectToSignIn({ returnBackUrl: req.url });
+  }
+
+  // ── Convite (D3) ────────────────────────────────────────────────────────
+  // Ter sessão não basta: o acesso é fechado enquanto o app é validado.
+  //
+  // A verificação mora aqui, e não numa tela ou no layout de `(app)`, porque
+  // este é o único ponto que cobre tudo que a lista de rotas protegidas
+  // cobre. Uma rota interna futura criada fora daquele grupo escaparia de uma
+  // checagem feita no layout — aqui, não.
+  //
+  // O e-mail não vem nos claims padrão da sessão, então é preciso consultar o
+  // Clerk. Custo assumido: irrelevante para o tamanho deste app. Se um dia
+  // incomodar, a saída é publicar o e-mail como claim customizado e ler do
+  // token.
+  let convidado = false;
+
+  try {
+    const clerk = await clerkClient();
+    const usuario = await clerk.users.getUser(userId);
+    convidado = estaConvidado(usuario.primaryEmailAddress?.emailAddress);
+  } catch {
+    // Falha ao consultar o Clerk **nega** o acesso. Em dúvida, fecha:
+    // um app financeiro que abre por causa de erro de rede é pior do que um
+    // que recusa e pede para tentar de novo.
+    convidado = false;
+  }
+
+  if (!convidado) {
+    return NextResponse.redirect(new URL("/cadastrar?acesso=negado", req.url));
   }
 });
 

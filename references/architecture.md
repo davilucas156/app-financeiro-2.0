@@ -290,6 +290,25 @@ A decisão de acesso é do servidor; nenhuma tela decide se pode ser vista.
 próprias (`/entrar/sso-callback`, …). Numa rota simples isso dá 404 no meio do
 login. A URL que o usuário vê continua `/entrar`.
 
+**Acesso por convite (D3).** Ter sessão não basta. O `proxy.ts` também
+verifica se o e-mail está em `EMAILS_CONVIDADOS` — variável **sem** prefixo
+público, separada por vírgula, comparada normalizada. Quem não está cai em
+`/cadastrar?acesso=negado`.
+
+- **Lista vazia = ninguém entra.** Se a variável sumir num deploy, o app
+  tranca em vez de abrir. Um app financeiro que falha aberto é pior do que um
+  que falha fechado. Falha ao consultar o Clerk também nega.
+- **A verificação mora no proxy**, não numa tela nem no layout de `(app)`:
+  é o único ponto que cobre tudo que a lista de rotas protegidas cobre. Uma
+  rota interna futura criada fora daquele grupo escaparia de uma checagem
+  feita no layout.
+- **`/cadastrar?acesso=negado` não redireciona quem tem sessão.** Sem essa
+  exceção há laço infinito: o proxy manda para lá, a página manda de volta
+  para `/dashboard`, o proxy manda para lá de novo.
+- **Custo conhecido:** o e-mail não vem nos claims padrão, então há uma
+  consulta ao Clerk por requisição de rota interna. Irrelevante neste
+  tamanho; se incomodar, publicar o e-mail como claim customizado.
+
 **Aparência do Clerk:** `src/features/autenticacao/aparencia-clerk.ts`, com as
 cores vindo de `var(--color-*)` em vez de hex. Atenção aos nomes: o **Core 3
 renomeou** as variáveis — não existem mais `colorText`, `colorTextSecondary`,

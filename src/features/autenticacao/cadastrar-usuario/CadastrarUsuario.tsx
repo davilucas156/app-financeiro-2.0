@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SignUp } from "@clerk/nextjs";
+import { SignOutButton, SignUp } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { APARENCIA_CLERK } from "@/features/autenticacao/aparencia-clerk";
@@ -39,12 +39,24 @@ export function CadastrarUsuario({
             Nenhuma conta foi criada. Se você acha que deveria ter acesso, peça
             um convite.
           </p>
-          <a
-            href={linkSolicitarAcesso()}
-            className="mt-3 inline-block font-mono text-[11px] font-bold text-text underline underline-offset-4"
-          >
-            Solicitar acesso
-          </a>
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <a
+              href={linkSolicitarAcesso()}
+              className="font-mono text-[11px] font-bold text-text underline underline-offset-4"
+            >
+              Solicitar acesso
+            </a>
+            {/* Sem isto o usuário fica num limbo: autenticado no Clerk, sem
+                acesso a nada, e sem caminho para trocar de conta. */}
+            <SignOutButton>
+              <button
+                type="button"
+                className="font-mono text-[11px] font-bold text-dim underline underline-offset-4 hover:text-text"
+              >
+                Sair desta conta
+              </button>
+            </SignOutButton>
+          </div>
         </div>
       ) : (
         <SignUp
