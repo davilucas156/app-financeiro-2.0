@@ -496,6 +496,45 @@ D2 deixou provisório, e nenhuma sabia de `onboarding_concluido_em`.
 > vez, e a primeira versão da D6 o recriou — só apareceu ao bater nas seis
 > rotas por HTTP, não no build nem no tipo.
 
+### Onboarding — a gravação (D7)
+
+`src/features/onboarding/concluir-onboarding/` — o botão "Começar" grava, numa
+**única transação**, 8 potes, 22 categorias e `onboarding_concluido_em`.
+
+São 8 e não 6: os dois de fora do rateio (`percentual_meta` nulo) existem
+desde a C3. Criar só 6 deixaria gasto sem pote onde cair.
+
+| Arquivo | Papel |
+|---|---|
+| `seed.ts` | traduz `POTES_PADRAO` para linhas do banco. Sem sessão, sem transação |
+| `concluirOnboarding.service.ts` | a transação |
+| `concluirOnboarding.action.ts` | server action; pega o usuário de `garantirUsuario()` |
+| `AcaoComecar.tsx` | o único pedaço de cliente da tela |
+
+- **A transação é o motivo de a C1 ter escolhido o driver WebSocket** do Neon
+  em vez do HTTP: o HTTP não tem transação interativa. Falhar no meio das
+  categorias deixaria 8 potes vazios com o onboarding marcado — e a D6 não
+  traria mais o usuário de volta para consertar.
+- **Idempotência em três camadas:** botão desabilitado (cliente), `on conflict
+  do nothing` nas duas tabelas, e saída antecipada se já concluiu. Nenhuma
+  sozinha basta — cliente desabilitado não é garantia de nada.
+- **O `update` de `onboarding_concluido_em` tem `is null` na condição**, para
+  duas requisições simultâneas não deslocarem a data para frente.
+- **A tela continua Server Component**; só `AcaoComecar` é cliente, então
+  `POTES_PADRAO` inteiro não entra no bundle.
+- **`classification_rules` ficou de fora** (C5, adiada para a spec do motor de
+  classificação): a tabela não existe, e criá-la só para semear seria
+  construir o consumidor depois do consumido.
+
+> ⚠ **`on conflict do nothing` não devolve a linha que já existia.** O mapa
+> `slug → id` dos potes vem de um `select` depois do insert, não do
+> `returning`. Com `returning`, a segunda execução voltaria vazia e nenhuma
+> categoria acharia seu pote.
+
+> ⚠ **`redirect()` do Next funciona lançando uma exceção.** Dentro de um
+> `try/catch` em volta da gravação, o `catch` o engoliria e a tela mostraria
+> "erro" logo depois de gravar tudo com sucesso. O redirect fica **fora**.
+
 > ⚠ **Pasta de rota começando com `_` não vira rota.** O App Router trata
 > `_nome` como pasta privada. Isso já custou tempo duas vezes (C1 e D4): o
 > teste "passa" porque a rota nunca existiu.

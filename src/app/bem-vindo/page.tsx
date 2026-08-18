@@ -1,16 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
-import {
-  ConcluirOnboarding,
-  type EstadoOnboarding,
-} from "@/features/onboarding/concluir-onboarding/ConcluirOnboarding";
+import { ConcluirOnboarding } from "@/features/onboarding/concluir-onboarding/ConcluirOnboarding";
 
 export const metadata: Metadata = {
   title: "Bem-vindo · Painel Financeiro 6 Potes",
 };
-
-const ESTADOS: EstadoOnboarding[] = ["pronto", "enviando", "erro"];
 
 /**
  * A rota só compõe.
@@ -19,13 +14,11 @@ const ESTADOS: EstadoOnboarding[] = ["pronto", "enviando", "erro"];
  * D5 mais importa: aqui a linha em `users` quase sempre **acabou** de ser
  * criada, e é bem provável que o webhook ainda nem tenha chegado.
  *
- * `?estado=` continua sendo andaime de revisão visual — na D7 o estado vem da
- * server action. O `?nome=` saiu: o nome agora é o de verdade, e o fallback
- * cobre a variação "perfil sem nome" que a spec pede.
+ * Os andaimes de revisão visual da B3 (`?nome=` e `?estado=`) saíram: o nome
+ * é o de verdade, com fallback para a variação "perfil sem nome", e os
+ * estados de envio e erro vêm da server action.
  */
-export default async function BemVindoPage({
-  searchParams,
-}: PageProps<"/bem-vindo">) {
+export default async function BemVindoPage() {
   const usuario = await garantirUsuario();
 
   // Spec de `/bem-vindo`: "abre já tendo concluído o onboarding → redireciona
@@ -33,10 +26,5 @@ export default async function BemVindoPage({
   // meses depois — e tocar em "Começar" de novo.
   if (usuario.onboardingConcluidoEm) redirect("/dashboard");
 
-  const { estado } = await searchParams;
-  const escolhido = ESTADOS.find((e) => e === estado) ?? "pronto";
-
-  return (
-    <ConcluirOnboarding nome={usuario.nome ?? "por aqui"} estado={escolhido} />
-  );
+  return <ConcluirOnboarding nome={usuario.nome ?? undefined} />;
 }

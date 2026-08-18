@@ -1,26 +1,19 @@
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { AcaoComecar } from "@/features/onboarding/concluir-onboarding/AcaoComecar";
 import {
   POTES_PADRAO,
   rotuloMeta,
 } from "@/features/onboarding/potes-padrao";
 
 /**
- * Tela de boas-vindas do primeiro acesso — **protótipo visual** (tarefa B3).
+ * Tela de boas-vindas do primeiro acesso.
  *
- * Não grava nada: o botão é estático. A gravação dos potes numa única
- * transação, idempotente, é da tarefa D7.
+ * Continua **Server Component**: só o botão é cliente (`AcaoComecar`), então
+ * `POTES_PADRAO` inteiro não entra no bundle. A prop `estado` era andaime da
+ * B3 para revisar as variações por URL; agora os estados são de verdade e
+ * moram em quem os produz.
  */
-export type EstadoOnboarding = "pronto" | "enviando" | "erro";
-
-export function ConcluirOnboarding({
-  nome,
-  estado = "pronto",
-}: {
-  nome?: string;
-  estado?: EstadoOnboarding;
-}) {
+export function ConcluirOnboarding({ nome }: { nome?: string }) {
   const primeiroNome = nome?.trim().split(/\s+/)[0];
 
   return (
@@ -64,34 +57,7 @@ export function ConcluirOnboarding({
         repasses não são gasto seu. Dá para ajustar os percentuais depois.
       </p>
 
-      {estado === "erro" && (
-        <Card
-          role="alert"
-          className="mt-6 border-red/20 bg-red/8 p-4"
-        >
-          <p className="text-xs font-bold text-red">
-            Não conseguimos preparar sua conta.
-          </p>
-          <p className="mt-1.5 text-xs text-dim">
-            Nada foi gravado pela metade. Tente de novo.
-          </p>
-        </Card>
-      )}
-
-      <Button
-        loading={estado === "enviando"}
-        className="mt-6 w-full"
-      >
-        {estado === "enviando"
-          ? "Preparando sua conta…"
-          : estado === "erro"
-            ? "Tentar de novo"
-            : "Começar"}
-      </Button>
-
-      <p className="mt-3 text-center font-mono text-[10px] text-dim2">
-        Protótipo visual · a gravação entra na tarefa D7
-      </p>
+      <AcaoComecar />
     </div>
   );
 }
