@@ -2,27 +2,26 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users } from "@/db/schema";
-import { estaConvidado } from "@/features/autenticacao/allowlist";
+import {
+  salvarUsuario,
+  type DadosUsuario,
+  type ResultadoSalvar,
+} from "@/features/autenticacao/salvar-usuario";
 
 /**
  * Regra de negócio da sincronização Clerk → Postgres (tarefa D4).
  *
  * Separado do route handler de propósito: assim dá para testar sem forjar
  * uma requisição assinada.
+ *
+ * A **gravação** em si não mora aqui — mora em `salvar-usuario`, compartilhada
+ * com a garantia de primeira requisição (D5). O que é exclusivo deste arquivo
+ * é ler o formato do evento do Clerk e decidir o que cada tipo significa.
  */
 export type ResultadoSincronizacao =
-  | "criado"
-  | "atualizado"
+  | ResultadoSalvar
   | "removido"
-  | "ignorado_nao_convidado"
-  | "ignorado_sem_email"
   | "ignorado_evento";
-
-type DadosUsuario = {
-  id: string;
-  email: string | null;
-  nome: string | null;
-};
 
 /** Extrai o que interessa do payload do Clerk, sem confiar no formato. */
 export function extrairDados(data: unknown): DadosUsuario | null {
@@ -59,12 +58,10 @@ export async function sincronizarUsuario(
   const dados = extrairDados(data);
   if (!dados) return "ignorado_evento";
 
-  const db = getDb();
-
   // Remoção **lógica**: apagar a linha levaria junto meses de histórico
   // financeiro. O usuário some do app, os dados dele não somem do banco.
   if (tipo === "user.deleted") {
-    await db
+    await getDb()
       .update(users)
       .set({ removidoEm: new Date(), atualizadoEm: new Date() })
       .where(eq(users.id, dados.id));
@@ -75,31 +72,6 @@ export async function sincronizarUsuario(
     return "ignorado_evento";
   }
 
-  if (!dados.email) return "ignorado_sem_email";
-
-  // **O mesmo portão da D3.** É isto que cumpre a promessa de que quem não
-  // foi convidado não ganha linha em `users` — sem isso, qualquer pessoa que
-  // autenticasse no Google viraria registro no nosso banco.
-  if (!estaConvidado(dados.email)) return "ignorado_nao_convidado";
-
-  // `on conflict do update`: o Clerk reenvia webhook quando não recebe 200
-  // rápido, e entrega duplicada não pode virar linha duplicada.
-  const [linha] = await db
-    .insert(users)
-    .values({ id: dados.id, email: dados.email, nome: dados.nome })
-    .onConflictDoUpdate({
-      target: users.id,
-      set: {
-        email: dados.email,
-        nome: dados.nome,
-        atualizadoEm: new Date(),
-      },
-    })
-    .returning({ criadoEm: users.criadoEm, atualizadoEm: users.atualizadoEm });
-
-  const eraNovo =
-    linha != null &&
-    Math.abs(linha.atualizadoEm.getTime() - linha.criadoEm.getTime()) < 1000;
-
-  return eraNovo ? "criado" : "atualizado";
+  const { resultado } = await salvarUsuario(dados);
+  return resultado;
 }

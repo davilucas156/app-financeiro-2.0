@@ -248,6 +248,17 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   `/cadastrar`; a marca vive aqui para as duas telas não divergirem.
 - **`LogoGoogle`** — `src/features/autenticacao/LogoGoogle.tsx` — SVG inline.
 - **`EMAIL_CONTATO` / `linkSolicitarAcesso()`** — `src/features/autenticacao/contato.ts`.
+- **`estaConvidado()`** — `src/features/autenticacao/allowlist.ts` — o portão
+  do acesso por convite. Usado em **três** lugares (proxy, webhook, garantia de
+  primeira requisição); nenhum deles reimplementa a checagem.
+- **`salvarUsuario()`** — `src/features/autenticacao/salvar-usuario.ts` — a
+  **única** gravação de usuário do projeto (server-only). Carrega o portão da
+  allowlist e o `on conflict (id) do update`. Chamada pelo webhook (D4) e pela
+  garantia de primeira requisição (D5): duas cópias divergiriam, e a que
+  divergisse viraria a porta dos fundos por onde entra quem a D3 barrou.
+- **`obterUsuarioAtual()` / `garantirUsuario()`** —
+  `src/features/autenticacao/garantir-usuario/garantirUsuario.service.ts` — ver
+  a seção "Garantia de usuário" abaixo.
 - **`POTES_PADRAO` / `rotuloMeta()`** — `src/features/onboarding/potes-padrao.ts`
   — os 8 potes do onboarding. Carrega `hex` (para o seed no banco) **e**
   `classeCor` (para renderizar), porque tem dois consumidores: a tela
@@ -274,8 +285,10 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   não editar um `<nav>` à mão.
 
 > **A moldura interna não protege nada.** Quem bloqueia requisição sem sessão
-> é o `src/middleware.ts` (D1), no servidor. Renderizar o shell nunca é
-> evidência de que o usuário está autenticado.
+> é o `src/proxy.ts` (D1), no servidor. Renderizar o shell nunca é evidência
+> de que o usuário está autenticado. O que a moldura **faz** é chamar
+> `garantirUsuario()` (D5), porque é o único ponto por onde as três rotas
+> internas passam sem exceção.
 
 ## Autenticação e proteção de rotas
 
@@ -404,6 +417,45 @@ horas quando não recebe 200:
 - **O webhook usa o mesmo portão da allowlist (D3).** É isso que cumpre a
   promessa de que quem não foi convidado não ganha linha em `users` — sem
   isso, qualquer pessoa que autenticasse no Google viraria registro no banco.
+
+### Garantia de usuário na primeira requisição (D5)
+
+O webhook é **assíncrono e externo**. Entre o Google devolver a sessão e o
+Clerk entregar `user.created` existe uma janela em que o usuário está
+autenticado e não existe no nosso banco — normalmente milissegundos, infinita
+se o webhook estiver mal configurado ou fora do ar.
+
+`src/features/autenticacao/garantir-usuario/garantirUsuario.service.ts` fecha
+essa janela. Duas portas, de propósito:
+
+| Função | Sem sessão / sem convite | Quem usa |
+|---|---|---|
+| `obterUsuarioAtual()` | devolve `null` | D6, que precisa **decidir** o destino |
+| `garantirUsuario()` | `redirect("/entrar")` | rotas internas, que não têm decisão a tomar |
+
+Chamada em `src/app/(app)/layout.tsx` e em `/bem-vindo`. **Rota interna nova
+precisa chamar uma das duas** antes de ler qualquer coisa por `user_id`.
+
+- **Caminho quente é um `SELECT` por chave primária.** Só quando a linha falta
+  é que se paga uma ida ao Clerk (`currentUser()`) — o que acontece uma vez na
+  vida da conta, ou enquanto o webhook estiver quebrado.
+- **Consequência assumida:** com o webhook fora do ar, uma troca de nome no
+  Google não chega aqui. Sincronizar a cada requisição custaria uma chamada de
+  API por página para corrigir algo que o webhook corrige sozinho.
+- **`cache()` do React**, porque layout e página chamam cada um por conta
+  própria no mesmo render. É por requisição — uma sessão não enxerga a outra.
+- **`userId` sempre vem de `auth()`.** A parte que fala com o banco recebe o
+  id como parâmetro, mas **não é exportada**: uma função exportada que aceita
+  `userId` de fora é, no primeiro descuido, um jeito de ler a conta alheia.
+- **Linha com `removido_em` e sessão viva** é contradição — só `user.deleted`
+  escreve ali, e conta apagada no Clerk não tem sessão. A marca é limpa.
+
+> ⚠ **Insert ou update, num upsert, se descobre com `xmax = 0`** — numa linha
+> recém-inserida o `xmax` é zero. A primeira versão comparava `criado_em` com
+> `atualizado_em` e chamava de "criado" o que caísse dentro de um segundo:
+> classificava errado toda atualização logo após a criação, que é justamente o
+> caso comum (o webhook chega segundos depois da D5 já ter gravado). Só
+> apareceu quando o teste da D5 exercitou os dois caminhos em sequência.
 
 > ⚠ **Pasta de rota começando com `_` não vira rota.** O App Router trata
 > `_nome` como pasta privada. Isso já custou tempo duas vezes (C1 e D4): o

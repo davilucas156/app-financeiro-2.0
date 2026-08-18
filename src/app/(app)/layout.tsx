@@ -1,3 +1,4 @@
+import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { CabecalhoApp } from "@/features/shell/CabecalhoApp";
 import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
 
@@ -7,6 +8,10 @@ import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
  * **Esta moldura não protege nada.** Quem bloqueia requisição sem sessão é o
  * middleware, no servidor, na tarefa D1. Renderizar o shell não é evidência
  * de que o usuário está autenticado.
+ *
+ * O que ela faz é **garantir a linha do usuário no banco** (D5) antes de
+ * qualquer filha ler dados por `user_id` — a moldura é o único ponto por onde
+ * `/dashboard`, `/upload` e `/revisao` passam sem exceção.
  *
  * `force-dynamic` por causa do mês no cabeçalho: pré-renderizado no build, o
  * mês congelaria na data do deploy — um deploy em agosto continuaria dizendo
@@ -24,9 +29,11 @@ function mesAtualPtBr() {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-export default function AppLayout({ children }: LayoutProps<"/">) {
-  // Falso — vem do Clerk na D8.
-  const nome = "Davi Lucas";
+export default async function AppLayout({ children }: LayoutProps<"/">) {
+  const usuario = await garantirUsuario();
+
+  // O perfil do Google pode não ter nome — daí o fallback.
+  const nome = usuario.nome ?? "por aqui";
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
