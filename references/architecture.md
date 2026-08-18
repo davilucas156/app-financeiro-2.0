@@ -359,3 +359,21 @@ deploy sobe e responde erro.
 - **Dinheiro em inteiros (centavos)** no banco, para evitar erro de ponto
   flutuante em soma de potes. Formatação em R$ só na borda de exibição.
 ```
+### Armadilha do Clerk: cores por token não funcionam
+
+A configuração de aparência (`src/features/autenticacao/aparencia-clerk.ts`)
+usa **hex literal**, e é a única exceção à regra de não usar cor literal em
+componente.
+
+O Clerk deriva por cálculo as cores de texto e borda dos botões a partir das
+variáveis. Passando `var(--color-card)`, o cálculo devolve **preto** — e num
+tema escuro isso vira texto preto sobre fundo preto: o widget renderiza, está
+todo no DOM, e mesmo assim aparece como uma caixa vazia.
+
+Medido em navegador real: com `var()`, o texto do botão sai
+`srgb 0 0 0 / 0.62`; com hex, `srgb 0.35 0.35 0.44 / 0.62`.
+
+Custou três rodadas de diagnóstico porque o sintoma ("não aparece nada")
+sugere componente que não montou, quando na verdade é componente invisível.
+Ao mexer em aparência do Clerk, **verifique cor computada em navegador**, não
+a presença do elemento.
