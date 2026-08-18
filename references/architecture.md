@@ -377,3 +377,34 @@ Custou três rodadas de diagnóstico porque o sintoma ("não aparece nada")
 sugere componente que não montou, quando na verdade é componente invisível.
 Ao mexer em aparência do Clerk, **verifique cor computada em navegador**, não
 a presença do elemento.
+
+### Webhook do Clerk (D4)
+
+`src/app/api/webhooks/clerk/route.ts` recebe `user.created`/`updated`/
+`deleted`. A verificação de assinatura é do próprio SDK (`verifyWebhook`, com
+`CLERK_WEBHOOK_SIGNING_SECRET`) — não há verificação caseira.
+
+A regra fica separada em
+`src/features/autenticacao/sincronizar-usuario/sincronizarUsuario.service.ts`,
+para ser testável sem forjar uma requisição assinada.
+
+**Códigos de resposta são deliberados**, porque o Clerk reenvia em backoff por
+horas quando não recebe 200:
+
+| Situação | Resposta |
+|---|---|
+| Assinatura inválida | **401**, sem tocar no banco |
+| Evento que não interessa | **200**, para não gerar reenvio à toa |
+| Falha de banco | **500** — o único caso em que reenviar ajuda |
+
+- **Idempotência:** `on conflict (id) do update`. Entrega duplicada converge
+  para o mesmo estado em vez de duplicar linha.
+- **`user.deleted` é remoção lógica** (`removido_em`). Apagar a linha levaria
+  junto meses de histórico financeiro.
+- **O webhook usa o mesmo portão da allowlist (D3).** É isso que cumpre a
+  promessa de que quem não foi convidado não ganha linha em `users` — sem
+  isso, qualquer pessoa que autenticasse no Google viraria registro no banco.
+
+> ⚠ **Pasta de rota começando com `_` não vira rota.** O App Router trata
+> `_nome` como pasta privada. Isso já custou tempo duas vezes (C1 e D4): o
+> teste "passa" porque a rota nunca existiu.
