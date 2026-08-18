@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { destinoInicial } from "@/features/autenticacao/destino-inicial";
 import { FazerLogin } from "@/features/autenticacao/fazer-login/FazerLogin";
 
 export const metadata: Metadata = {
@@ -15,11 +15,11 @@ export const metadata: Metadata = {
  */
 export default async function EntrarPage() {
   // Verificação **no servidor**, antes de renderizar: quem já tem sessão não
-  // deve ver tela de login. A D6 substitui este destino fixo pela decisão
-  // completa (onboarding pendente vai para `/bem-vindo`) — não antecipo aqui
-  // para não espalhar a mesma regra em dois lugares.
-  const { userId } = await auth();
-  if (userId) redirect("/dashboard");
+  // deve ver tela de login. O destino sai de `destinoInicial()` (D6), que é
+  // quem sabe de allowlist e de onboarding — antes daqui saía um
+  // `/dashboard` fixo, e o primeiro acesso caía no lugar errado.
+  const destino = await destinoInicial();
+  if (destino !== "/entrar") redirect(destino);
 
   return <FazerLogin />;
 }

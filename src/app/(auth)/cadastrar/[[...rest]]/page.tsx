@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { destinoInicial } from "@/features/autenticacao/destino-inicial";
 import { CadastrarUsuario } from "@/features/autenticacao/cadastrar-usuario/CadastrarUsuario";
 
 export const metadata: Metadata = {
@@ -19,8 +19,13 @@ export default async function CadastrarPage({
   // para `/dashboard`, que o proxy manda para cá de novo. Esta é justamente a
   // tela que essa pessoa precisa ver.
   if (!recusado) {
-    const { userId } = await auth();
-    if (userId) redirect("/dashboard");
+    const destino = await destinoInicial();
+
+    // Só quem tem para onde ir sai daqui. **Visitante anônimo fica**: esta é
+    // a tela de solicitar acesso, e mandá-lo para `/entrar` fecharia o laço
+    // "entrar → solicitar acesso → entrar" que ele acabou de tentar sair.
+    const ficar = destino === "/entrar" || destino.startsWith("/cadastrar");
+    if (!ficar) redirect(destino);
   }
 
   return <CadastrarUsuario naoConvidado={recusado} />;

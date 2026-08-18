@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import {
   ConcluirOnboarding,
@@ -26,6 +27,11 @@ export default async function BemVindoPage({
   searchParams,
 }: PageProps<"/bem-vindo">) {
   const usuario = await garantirUsuario();
+
+  // Spec de `/bem-vindo`: "abre já tendo concluído o onboarding → redireciona
+  // para `/dashboard`". Sem isso, dá para reabrir a tela de primeiro acesso
+  // meses depois — e tocar em "Começar" de novo.
+  if (usuario.onboardingConcluidoEm) redirect("/dashboard");
 
   const { estado } = await searchParams;
   const escolhido = ESTADOS.find((e) => e === estado) ?? "pronto";

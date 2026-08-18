@@ -256,6 +256,9 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   allowlist e o `on conflict (id) do update`. Chamada pelo webhook (D4) e pela
   garantia de primeira requisição (D5): duas cópias divergiriam, e a que
   divergisse viraria a porta dos fundos por onde entra quem a D3 barrou.
+- **`destinoInicial()` / `destinoDoUsuario()`** —
+  `src/features/autenticacao/destino-inicial.ts` — para onde o usuário vai, ver
+  a seção "Destino inicial" abaixo.
 - **`obterUsuarioAtual()` / `garantirUsuario()`** —
   `src/features/autenticacao/garantir-usuario/garantirUsuario.service.ts` — ver
   a seção "Garantia de usuário" abaixo.
@@ -456,6 +459,42 @@ precisa chamar uma das duas** antes de ler qualquer coisa por `user_id`.
 > classificava errado toda atualização logo após a criação, que é justamente o
 > caso comum (o webhook chega segundos depois da D5 já ter gravado). Só
 > apareceu quando o teste da D5 exercitou os dois caminhos em sequência.
+
+### Destino inicial (D6)
+
+`src/features/autenticacao/destino-inicial.ts` responde a única pergunta que
+quatro rotas fazem:
+
+| Estado | Destino |
+|---|---|
+| Sem sessão | `/entrar` |
+| Sessão, e-mail fora da allowlist | `/cadastrar?acesso=negado` |
+| Sessão, convidado, onboarding pendente | `/bem-vindo` |
+| Sessão, convidado, onboarding concluído | `/dashboard` |
+
+A segunda linha não está na spec da raiz: é consequência da D3. Quem não foi
+convidado **tem** sessão, e mandá-lo para `/dashboard` só o faria bater no
+proxy e voltar.
+
+Chamam: `/` (que não tem tela — decide e desvia), `/entrar`, `/cadastrar` e
+`/bem-vindo`. Até a D5, três delas respondiam com um `/dashboard` fixo que a
+D2 deixou provisório, e nenhuma sabia de `onboarding_concluido_em`.
+
+- **A decisão é de Server Component, com `redirect()` antes de renderizar.** O
+  navegador recebe 307 e nunca pinta tela de espera.
+- **`destinoDoUsuario()` é pura** (recebe `Usuario`, não consulta nada), para
+  ser exercitável nos quatro estados. Pela porta de cima só se alcança o
+  estado que a sessão do momento permite.
+- **`/entrar` grava no banco**, e isso é intencional: a spec diz que o
+  primeiro acesso grava o usuário. Visitante anônimo não paga — sem `userId`,
+  `obterUsuarioAtual()` sai antes de tocar no banco.
+
+> ⚠ **Duas telas públicas não podem ser redirecionadas do mesmo jeito.**
+> `/cadastrar` precisa **ficar** quando o destino é `/entrar`: é a tela de
+> solicitar acesso, e mandar o visitante anônimo para `/entrar` fecha o laço
+> "entrar → solicitar acesso → entrar". Esse laço já apareceu de verdade uma
+> vez, e a primeira versão da D6 o recriou — só apareceu ao bater nas seis
+> rotas por HTTP, não no build nem no tipo.
 
 > ⚠ **Pasta de rota começando com `_` não vira rota.** O App Router trata
 > `_nome` como pasta privada. Isso já custou tempo duas vezes (C1 e D4): o
