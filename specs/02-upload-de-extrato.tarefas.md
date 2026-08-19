@@ -123,7 +123,9 @@ lançamentos dele junto.
 **Camada:** BACK + INFRA
 **Pronto quando:** o arquivo enviado vai para o Vercel Blob **privado**,
 `BLOB_READ_WRITE_TOKEN` configurado na Vercel, e a URL nunca é pública. Arquivo
-grande demais ou de tipo errado é recusado antes de subir.
+grande demais ou de tipo errado é recusado antes de subir. **Desfazer um envio
+apaga o arquivo junto** — veio da D5, porque gravar e apagar no Blob são a
+mesma decisão e só dá para provar as duas juntas.
 
 ### D2 · Importar — a gravação
 **Camada:** BACK
@@ -144,8 +146,11 @@ mostra números reais, e duplo toque não importa duas vezes.
 ### D5 · Desfazer uma importação
 **Camada:** BACK + FRONT-INTEGRADO
 **Pronto quando:** apagar um envio remove os lançamentos dele e mais nada;
-exige confirmação; o arquivo no Blob some junto; e o mesmo arquivo pode ser
-reenviado depois.
+exige confirmação; e o mesmo arquivo pode ser reenviado depois.
+
+O arquivo no Blob **saiu daqui e foi para a D1**: enquanto a D1 não existe,
+`url_no_blob` é nulo em toda linha, e escrever a remoção seria escrever um
+caminho que nunca executa nem dá para verificar.
 
 ### D6 · Estado vazio do painel deixa de mentir
 **Camada:** FRONT-INTEGRADO
