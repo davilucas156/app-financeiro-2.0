@@ -1,22 +1,18 @@
 import { Button } from "@/components/ui/Button";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import type { EnvioExibido } from "@/features/upload/enviar-extrato/exibirEnvio";
 import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
 
 /**
- * Histórico de envios e o desfazer (tarefa B3) — **protótipo visual**.
+ * Histórico de envios e o desfazer (tarefas B3 e D4).
  *
- * Nada aqui apaga nada; a D5 liga o botão de verdade.
+ * Os envios agora vêm do banco. O **desfazer continua desligado** — é a D5
+ * que liga o botão.
+ *
+ * O componente segue burro: não consulta nada, recebe pronto. Quem busca é a
+ * rota, com o `user_id` da sessão.
  */
-
-export type EnvioExibido = {
-  id: string;
-  mes: string;
-  rotuloDeOrigem: string;
-  nomeArquivo: string;
-  lancamentos: number;
-  enviadoEm: string;
-};
 
 export function MesesImportados({ envios }: { envios: EnvioExibido[] }) {
   return (

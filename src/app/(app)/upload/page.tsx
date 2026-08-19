@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { FormularioDeEnvio } from "@/features/upload/enviar-extrato/FormularioDeEnvio";
-import {
-  MesesImportados,
-  type EnvioExibido,
-} from "@/features/upload/enviar-extrato/MesesImportados";
+import { listarImportacoes } from "@/features/upload/enviar-extrato/listarImportacoes.service";
+import { MesesImportados } from "@/features/upload/enviar-extrato/MesesImportados";
 import { mesesDisponiveis } from "@/features/upload/enviar-extrato/SeletorDeMes";
 
 export const metadata: Metadata = {
@@ -12,36 +11,19 @@ export const metadata: Metadata = {
 };
 
 /**
- * Ainda falso — a D4 troca por uma consulta ao banco, filtrada pelo `user_id`
- * da sessão. Fica aqui para a tela não perder o pedaço enquanto isso.
- */
-const ENVIOS: EnvioExibido[] = [
-  {
-    id: "1",
-    mes: "2026-06",
-    rotuloDeOrigem: "conta",
-    nomeArquivo: "Extrato-02-06-2026-a-02-07-2026-CSV.csv",
-    lancamentos: 21,
-    enviadoEm: "18/08 às 21h",
-  },
-  {
-    id: "2",
-    mes: "2026-06",
-    rotuloDeOrigem: "cartão",
-    nomeArquivo: "fatura-inter-2026-07.csv",
-    lancamentos: 33,
-    enviadoEm: "18/08 às 21h",
-  },
-];
-
-/**
- * A rota só compõe.
+ * A rota compõe e busca — nada mais.
  *
- * O `?estado=` da fase B saiu: os estados agora acontecem de verdade, vindos
- * da server action.
+ * O `user_id` sai de `garantirUsuario()` e nunca de um parâmetro: é a razão de
+ * `listarImportacoes` não aceitar id de fora.
+ *
+ * A chamada não custa uma consulta a mais — a moldura de `(app)` já garantiu o
+ * usuário nesta requisição, e `obterUsuarioAtual` é embrulhado em `cache()`.
  */
-export default function UploadPage() {
+export default async function UploadPage() {
+  const usuario = await garantirUsuario();
+
   const meses = mesesDisponiveis();
+  const envios = await listarImportacoes(usuario.id);
 
   return (
     <>
@@ -49,7 +31,7 @@ export default function UploadPage() {
 
       <FormularioDeEnvio mes={meses[0]} meses={meses} />
 
-      <MesesImportados envios={ENVIOS} />
+      <MesesImportados envios={envios} />
     </>
   );
 }
