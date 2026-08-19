@@ -42,3 +42,14 @@ yarn-error.log*
 next-env.d.ts
 
 .env*
+
+# Extratos e faturas de verdade. Nunca versionar.
+# Têm número de conta, nomes de pessoas e o gasto do mês inteiro — o
+# repositório não é lugar para isso, mesmo sendo privado.
+# Para amostra de formato no repositório, use `references/formatos-de-extrato.md`,
+# que descreve as colunas sem carregar dado real.
+*.csv
+*.xls
+*.xlsx
+*.ofx
+*.pdf
