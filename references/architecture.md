@@ -315,6 +315,42 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
 > `garantirUsuario()` (D5), porque é o único ponto por onde as três rotas
 > internas passam sem exceção.
 
+### `imports` e `transactions` (C1/C2 da spec 02)
+
+`imports` guarda **um registro por arquivo enviado**. Não está no `readme.md`,
+e existe por duas perguntas que nada mais responde: "esse arquivo já foi
+enviado?" e "o que apagar quando o usuário desfizer?".
+
+`transactions` guarda os lançamentos. `categoria_id` nasce **nulo** e continua
+nulo até a spec de classificação.
+
+| Restrição | O que garante |
+|---|---|
+| `unique (user_id, impressao)` | Reimportar não duplica lançamento |
+| `unique (user_id, hash)` | Reenviar o mesmo arquivo é reconhecido |
+
+**A idempotência mora no banco, não em `if`** — mesma decisão que
+`(user_id, slug)` tomou pelos potes na D7. Duas requisições simultâneas não
+furam uma restrição de unicidade; nenhuma checagem em código promete isso.
+
+`user_id` entra nos dois únicos porque a impressão e o hash não incluem o
+usuário: sem ele, dois usuários com o mesmo lançamento colidiriam, e o segundo
+perderia um lançamento real por causa do primeiro.
+
+- **`data` é `date` lida como string.** `timestamp` obrigaria a inventar um
+  horário que não existe no extrato, e o fuso moveria o lançamento de dia.
+- **`par_de` guarda a impressão, não um id**: na hora de inserir, o outro lado
+  do par ainda não tem `id`.
+- **`text` + `check` em vez de `enum` do Postgres**: acrescentar valor a um
+  `enum` exige `ALTER TYPE`, e a spec de classificação vai acrescentar status.
+- **Apagar categoria faz `set null`, não `cascade`** — apagar uma categoria não
+  pode apagar meses de histórico financeiro.
+
+> ⚠ **O Drizzle envolve o erro do Postgres: o nome da constraint vive em
+> `error.cause`, não em `error.message`.** Um teste que só olha a mensagem
+> reporta falha justamente quando o banco fez o certo. Já me custou uma
+> rodada de diagnóstico.
+
 ## Autenticação e proteção de rotas
 
 `src/proxy.ts` roda o `clerkMiddleware` antes de qualquer renderização.

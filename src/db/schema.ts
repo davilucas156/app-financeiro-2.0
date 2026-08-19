@@ -1,4 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
+  check,
+  date,
   index,
   integer,
   pgTable,
@@ -180,3 +183,177 @@ export type Pote = typeof buckets.$inferSelect;
 export type NovoPote = typeof buckets.$inferInsert;
 export type Categoria = typeof categories.$inferSelect;
 export type NovaCategoria = typeof categories.$inferInsert;
+
+/**
+ * Um registro por **arquivo enviado** (tarefa C2).
+ *
+ * Não está no `readme.md`. Existe por duas perguntas que nada mais responde:
+ * "esse arquivo já foi enviado?" e "o que apagar quando o usuário desfizer?".
+ * Sem ela, desfazer viraria adivinhação sobre quais linhas vieram de qual
+ * envio.
+ */
+export const imports = pgTable(
+  "imports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    /** `YYYY-MM` — o mês que o usuário escolheu na tela. */
+    mesReferencia: text("mes_referencia").notNull(),
+
+    origem: text("origem").$type<"csv_conta" | "csv_cartao">().notNull(),
+
+    /** Só para exibir. **Não** é identidade — ver `hash`. */
+    nomeArquivo: text("nome_arquivo").notNull(),
+
+    /**
+     * SHA-256 do **conteúdo**. É a identidade do arquivo.
+     *
+     * Do conteúdo e não do nome porque banco chama tudo de `extrato.csv`, e os
+     * dois arquivos do Davi já chegaram renomeados por gente.
+     */
+    hash: text("hash").notNull(),
+
+    /** Nulo até a D1 existir. */
+    urlNoBlob: text("url_no_blob"),
+
+    /**
+     * O resumo congelado no momento do envio. Fica guardado porque a tela de
+     * histórico o mostra meses depois, e recontar exigiria reler o arquivo.
+     */
+    lancamentosImportados: integer("lancamentos_importados").notNull().default(0),
+    linhasIgnoradas: integer("linhas_ignoradas").notNull().default(0),
+
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("imports_user_id_idx").on(t.userId),
+    /** Responde "esse arquivo já foi enviado?" — a idempotência do envio. */
+    unique("imports_user_id_hash_unq").on(t.userId, t.hash),
+    check("imports_origem_ck", sql`${t.origem} in ('csv_conta','csv_cartao')`),
+    check("imports_mes_ck", sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`),
+  ],
+);
+
+/**
+ * Lançamentos (tarefa C1).
+ *
+ * `categoria_id` nasce **nulo** e continua nulo até a spec de classificação:
+ * esta funcionalidade lê o extrato, não decide em que pote cada gasto cai.
+ */
+export const transactions = pgTable(
+  "transactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    /** Apagar o envio leva os lançamentos dele — é o desfazer da D5. */
+    importId: uuid("import_id")
+      .notNull()
+      .references(() => imports.id, { onDelete: "cascade" }),
+
+    /**
+     * Coluna `date`, lida como **string** `YYYY-MM-DD`.
+     *
+     * `timestamp` obrigaria a escolher um horário que não existe no extrato, e
+     * a leitura no fuso errado moveria o lançamento de dia — às vezes de mês,
+     * num produto cujo eixo é o mês de referência.
+     */
+    data: date("data", { mode: "string" }).notNull(),
+
+    /** Como veio do banco, com o alinhamento por espaço preservado. */
+    descricaoOriginal: text("descricao_original").notNull(),
+
+    /** Sempre **positivo**. O sentido está em `direcao`. */
+    valorCentavos: integer("valor_centavos").notNull(),
+
+    /**
+     * Informação de verdade, não duplicação do sinal: os dois arquivos do
+     * Inter usam o sinal com significados opostos (ver A3).
+     */
+    direcao: text("direcao").$type<"entrada" | "saida">().notNull(),
+
+    status: text("status")
+      .$type<"importado" | "revisao_pendente" | "excluido">()
+      .notNull()
+      .default("importado"),
+
+    /** Por que caiu em revisão, ou por que saiu do cálculo. */
+    motivo: text("motivo"),
+
+    /**
+     * Impressão do outro lado do par que se anula — **não** um id.
+     *
+     * Na hora de inserir, o outro lado ainda não tem `id`. A impressão resolve
+     * sem exigir duas passadas de escrita, e é estável: sai idêntica se o
+     * arquivo for reimportado.
+     */
+    parDe: text("par_de"),
+
+    /** `YYYY-MM`. Pode diferir do mês da `data` — parcela antiga na fatura. */
+    mesReferencia: text("mes_referencia").notNull(),
+
+    origem: text("origem").$type<"csv_conta" | "csv_cartao">().notNull(),
+
+    /** A chave anti-duplicata da A4. */
+    impressao: text("impressao").notNull(),
+
+    /** Só do cartão. */
+    parcela: text("parcela"),
+    categoriaDoBanco: text("categoria_do_banco"),
+
+    /**
+     * `set null` e **não** `cascade`: apagar uma categoria não pode apagar
+     * meses de histórico financeiro. O lançamento fica, sem categoria.
+     */
+    categoriaId: uuid("categoria_id").references(() => categories.id, {
+      onDelete: "set null",
+    }),
+
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("transactions_user_id_idx").on(t.userId),
+    index("transactions_user_mes_idx").on(t.userId, t.mesReferencia),
+    index("transactions_import_id_idx").on(t.importId),
+
+    /**
+     * **A idempotência mora aqui, não num `if`.** Mesma decisão que
+     * `(user_id, slug)` tomou pelos potes na D7: duas requisições simultâneas
+     * não furam uma restrição de unicidade, e nenhuma checagem em código
+     * consegue prometer isso.
+     *
+     * Com `user_id` junto porque a impressão não inclui o usuário — sem ele,
+     * dois usuários com o mesmo lançamento colidiriam, e o segundo perderia um
+     * lançamento real por causa do primeiro.
+     */
+    unique("transactions_user_id_impressao_unq").on(t.userId, t.impressao),
+
+    check(
+      "transactions_direcao_ck",
+      sql`${t.direcao} in ('entrada','saida')`,
+    ),
+    check(
+      "transactions_status_ck",
+      sql`${t.status} in ('importado','revisao_pendente','excluido')`,
+    ),
+    check("transactions_origem_ck", sql`${t.origem} in ('csv_conta','csv_cartao')`),
+    check("transactions_mes_ck", sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`),
+    check("transactions_valor_ck", sql`${t.valorCentavos} >= 0`),
+  ],
+);
+
+export type Importacao = typeof imports.$inferSelect;
+export type NovaImportacao = typeof imports.$inferInsert;
+export type Transacao = typeof transactions.$inferSelect;
+export type NovaTransacao = typeof transactions.$inferInsert;
