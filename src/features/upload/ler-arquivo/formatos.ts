@@ -49,6 +49,19 @@ export type Formato = {
    */
   sinalNegativo: "entrada" | "saida";
 
+  /**
+   * Descrições que **não são gasto nem receita** — pagamento de fatura, e o
+   * que mais for pass-through neste formato.
+   *
+   * O texto difere entre os arquivos, por isso mora junto do formato: na
+   * conta é `Pagamento efetuado: "Pagamento fatura cartao Inter"`, na fatura
+   * é `PAGAMENTO ON LINE`. Importado dos dois sem marca, o mesmo dinheiro sai
+   * duas vezes e o mês fecha errado para menos.
+   *
+   * Casam contra a descrição **normalizada** (caixa alta, sem acento).
+   */
+  padroesDePassagem: { padrao: RegExp; motivo: string }[];
+
   /** Sem alguma destas, não é este formato. */
   obrigatorias: Papel[];
 };
@@ -70,6 +83,12 @@ export const FORMATOS: Formato[] = [
       saldo: "Saldo",
     },
     sinalNegativo: "saida",
+    padroesDePassagem: [
+      {
+        padrao: /PAGAMENTO FATURA CARTAO/,
+        motivo: "pagamento da fatura do cartão",
+      },
+    ],
     obrigatorias: ["data", "descricao", "valor"],
   },
   {
@@ -85,6 +104,9 @@ export const FORMATOS: Formato[] = [
       tipo: "Tipo",
     },
     sinalNegativo: "entrada",
+    padroesDePassagem: [
+      { padrao: /^PAGAMENTO ON LINE/, motivo: "pagamento da fatura do cartão" },
+    ],
     obrigatorias: ["data", "descricao", "valor"],
   },
 ];
