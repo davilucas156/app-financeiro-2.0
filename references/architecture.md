@@ -139,6 +139,28 @@ Aplicações específicas deste projeto:
 5. Validação no front-end é aceitável só como UX (feedback rápido), sempre
    duplicada no servidor.
 
+## Testes
+
+| Tipo de código | Como se verifica |
+|---|---|
+| Camada pura (sem banco, sem sessão) | **Vitest** — `npm test`. Os testes ficam no repositório |
+| Qualquer coisa com `server-only` | Rota temporária dentro do runtime do Next, apagada antes do commit |
+
+A divisão não é gosto: `import "server-only"` **impede** o módulo de rodar
+fora do Next, e é assim que deve ser. O que não tem essa marca — hoje o leitor
+de extrato — é testável de verdade, e converte dinheiro, então merece teste que
+sobrevive em vez de rota que eu apago.
+
+⚠ **O config é `vitest.config.mts`, não `.ts`.** O Vitest 4 é ESM puro e o
+`package.json` não declara `"type": "module"`; num `.ts` o arquivo carrega como
+CommonJS e morre com `ERR_REQUIRE_ESM`. Em ESM também não existe `__dirname` —
+o alias `@` usa `import.meta.dirname`.
+
+**Amostras de extrato vivem como strings em TypeScript**
+(`src/features/upload/ler-arquivo/amostras.ts`), nunca como `.csv`: arquivo de
+extrato está no `.gitignore` por carregar dado financeiro real, e amostra em
+código fica obviamente sintética e não some do repositório.
+
 ## Banco de dados — como mexer
 
 ```
