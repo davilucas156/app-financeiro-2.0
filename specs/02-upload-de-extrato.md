@@ -1,7 +1,7 @@
 # Spec — Upload de extrato (CSV → lançamentos no banco)
 
 **Etapa:** 1 (Spec) do workflow `dev-workflow-davi`
-**Status:** ⏳ aguardando aprovação do Davi
+**Status:** ✅ aprovada pelo Davi
 **Origem:** `readme.md` seções 2, 5, 6 (passos 2, 3 e 5), 12 e pergunta 4 da seção 14
 **Arquitetura:** `references/architecture.md` · `references/formatos-de-extrato.md`
 
