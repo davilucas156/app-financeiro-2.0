@@ -37,7 +37,11 @@ export function FazerLogin({
         // `fallback` e não `force`: assim o `redirect_url` da query string
         // vence, e quem tentou /upload sem sessão volta para /upload em vez
         // de cair no painel. É o que faz o returnBackUrl da D1 valer.
-        fallbackRedirectUrl="/dashboard"
+        //
+        // O destino é `/` e não `/dashboard` (D8): quem entra sem
+        // `redirect_url` — o caso normal — aterrissaria no painel mesmo sem
+        // ter feito onboarding, furando a decisão da D6.
+        fallbackRedirectUrl="/"
         signUpUrl="/cadastrar"
       />
 

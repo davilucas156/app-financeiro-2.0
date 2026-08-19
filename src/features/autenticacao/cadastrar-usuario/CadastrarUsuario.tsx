@@ -61,7 +61,8 @@ export function CadastrarUsuario({
       ) : (
         <SignUp
           appearance={APARENCIA_CLERK}
-          fallbackRedirectUrl="/dashboard"
+          // `/` para a D6 decidir o destino — ver a nota em `FazerLogin`.
+          fallbackRedirectUrl="/"
           signInUrl="/entrar"
         />
       )}

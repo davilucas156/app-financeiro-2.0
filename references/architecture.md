@@ -535,6 +535,27 @@ desde a C3. Criar só 6 deixaria gasto sem pote onde cair.
 > `try/catch` em volta da gravação, o `catch` o engoliria e a tela mostraria
 > "erro" logo depois de gravar tudo com sucesso. O redirect fica **fora**.
 
+### Sair e sessão expirada (D8)
+
+- **`<UserButton />` real** no `CabecalhoApp`, com a `APARENCIA_CLERK`. O
+  cabeçalho perdeu a prop `nome`: quem sabe nome e foto é o Clerk, e sem foto
+  o widget cai para iniciais sozinho. A moldura de `(app)` continua chamando
+  `garantirUsuario()` — a chamada nunca foi pelo nome, é a garantia da linha
+  (D5) antes de qualquer filha ler por `user_id`.
+- **Voltar para a rota tentada** já vinha montado: `returnBackUrl: req.url` no
+  proxy (D1) põe o `?redirect_url=`, e `fallbackRedirectUrl` — **fallback**, não
+  `force` — deixa esse parâmetro vencer.
+- **`fallbackRedirectUrl` é `/`**, nas duas telas de acesso. Com `/dashboard`,
+  quem entrava sem `redirect_url` (o caso normal) aterrissava no painel mesmo
+  sem ter feito onboarding, furando a decisão da D6.
+
+> ⚠ **`afterSignOutUrl` é opção do `<ClerkProvider>` no Core 3**, não prop do
+> `<UserButton />` — `UserButtonProps` não a declara e `ClerkOptions` sim
+> (`node_modules/@clerk/shared/dist/types/`). No botão ela **compila e não faz
+> nada**, que é o pior tipo de erro: sem aviso do compilador. A checagem que
+> pega isso é procurar o valor na configuração que o Clerk publica na página —
+> `curl` na rota e `grep afterSignOutUrl`.
+
 > ⚠ **Pasta de rota começando com `_` não vira rota.** O App Router trata
 > `_nome` como pasta privada. Isso já custou tempo duas vezes (C1 e D4): o
 > teste "passa" porque a rota nunca existiu.

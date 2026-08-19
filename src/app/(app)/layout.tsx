@@ -30,14 +30,13 @@ function mesAtualPtBr() {
 }
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const usuario = await garantirUsuario();
-
-  // O perfil do Google pode não ter nome — daí o fallback.
-  const nome = usuario.nome ?? "por aqui";
+  // O retorno não é usado aqui: a chamada existe pela **garantia** (D5), não
+  // pelo dado. Quem exibe nome e foto é o `<UserButton />` (D8).
+  await garantirUsuario();
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <CabecalhoApp nome={nome} mesReferencia={mesAtualPtBr()} />
+      <CabecalhoApp mesReferencia={mesAtualPtBr()} />
 
       {/* Espaço inferior no mobile para a barra fixa não cobrir o conteúdo. */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 pb-28 md:pb-8">

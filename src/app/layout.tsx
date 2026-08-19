@@ -21,9 +21,17 @@ export const metadata: Metadata = {
   description: "Controle financeiro pessoal pelo método dos 6 potes.",
 };
 
+/**
+ * ⚠ **`afterSignOutUrl` é opção do `<ClerkProvider>` no Core 3**, não prop do
+ * `<UserButton />`. Passada no botão, ela compila e não faz nada.
+ *
+ * O destino é `/entrar` e não `/`: quem acabou de sair não tem sessão, e `/`
+ * só o mandaria para `/entrar` de qualquer forma — um salto a mais e uma
+ * piscada de tela.
+ */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/entrar">
       <html
         lang="pt-br"
         className={`${syne.variable} ${dmMono.variable} h-full antialiased`}
