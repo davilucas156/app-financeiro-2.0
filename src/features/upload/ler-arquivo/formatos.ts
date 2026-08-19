@@ -36,6 +36,19 @@ export type Formato = {
   dialeto: Dialeto;
   /** Papel → nome da coluna no arquivo. */
   colunas: Partial<Record<Papel, string>>;
+  /**
+   * O que o **sinal negativo** significa neste arquivo.
+   *
+   * ⚠ Os dois arquivos do Inter usam o sinal com significados opostos, e isso
+   * foi medido. No extrato, `-318,19` é dinheiro que saiu. Na fatura, uma
+   * compra de `R$ 15,00` é positiva e **é gasto**; o único negativo do arquivo
+   * é o `PAGAMENTO ON LINE` de `-R$ 318,19`, que abate a fatura.
+   *
+   * Assumir "negativo é saída" para os dois faria todo gasto do cartão virar
+   * receita, e o mês fecharia com uma renda inventada de milhares de reais.
+   */
+  sinalNegativo: "entrada" | "saida";
+
   /** Sem alguma destas, não é este formato. */
   obrigatorias: Papel[];
 };
@@ -56,6 +69,7 @@ export const FORMATOS: Formato[] = [
       valor: "Valor",
       saldo: "Saldo",
     },
+    sinalNegativo: "saida",
     obrigatorias: ["data", "descricao", "valor"],
   },
   {
@@ -70,6 +84,7 @@ export const FORMATOS: Formato[] = [
       categoria: "Categoria",
       tipo: "Tipo",
     },
+    sinalNegativo: "entrada",
     obrigatorias: ["data", "descricao", "valor"],
   },
 ];

@@ -80,6 +80,34 @@ todas. **Um mesmo parser não lê os dois arquivos** — são duas configuraçõ
 
 ---
 
+## O sinal significa o oposto em cada arquivo
+
+| | Negativo | Positivo |
+|---|---|---|
+| Extrato da conta | dinheiro **saiu** | dinheiro **entrou** |
+| Fatura do cartão | crédito, **abate** a fatura | compra, dinheiro **vai sair** |
+
+Na fatura, uma compra de 15,00 é positiva **e é gasto**. Assumir "negativo é
+saída" para os dois faria todo gasto do cartão virar receita, e o mês fecharia
+com uma renda inventada de milhares de reais. Cada formato declara isso em
+`sinalNegativo` (`src/features/upload/ler-arquivo/formatos.ts`).
+
+## Conferência cruzada — os dois arquivos se validam
+
+Duas checagens independentes que o parser tem de passar, e passa:
+
+1. **A coluna `Saldo` do extrato é testemunha.** Aplicando cada valor lido ao
+   saldo da linha anterior, o resultado tem de dar exatamente o saldo da linha
+   seguinte. No arquivo medido: **20 de 20 transições batem**, e o saldo final
+   calculado é o mesmo do cabeçalho do arquivo.
+2. **O total da fatura tem de aparecer na conta.** A soma das compras da
+   fatura de julho deu **1.865,27** — o mesmo valor do lançamento
+   `Pagamento efetuado: "Pagamento fatura cartao Inter"` de 01/07 no extrato.
+   Dois arquivos, dois parsers, formatos opostos, e o número fecha.
+
+Quando um formato novo entrar, procure uma conferência equivalente antes de
+confiar no parser. Somar o que o próprio parser leu não prova nada.
+
 ## O par que se anula, entre os dois arquivos
 
 O pagamento da fatura aparece **duas vezes**, uma em cada arquivo:
