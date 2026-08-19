@@ -115,6 +115,17 @@ jeito que `(user_id, slug)` fez pelos potes na D7.
 `transactions.import_id` aponta para cá, e apagar um import leva os
 lançamentos dele junto.
 
+### C3 · Linhas ignoradas, com o motivo
+**Camada:** BANCO + FRONT-INTEGRADO
+**Acrescentada depois da D5**, quando decidimos não guardar o arquivo no
+Blob: ao medir o que se perdia sem ele, apareceu que as linhas não lidas
+eram mostradas uma vez e sumiam.
+
+**Pronto quando:** `imports.ignoradas` guarda número, motivo e conteúdo de
+cada linha que ficou de fora; a coluna `linhas_ignoradas` deixa de existir e
+a contagem sai de `.length`; e o histórico mostra **o porquê**, não só
+quantas.
+
 ---
 
 ## Fase D — Integração
@@ -156,7 +167,11 @@ caminho que nunca executa nem dá para verificar.
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** com lançamentos importados, `/dashboard` para de dizer "nada
 por aqui ainda" e diz quantos há esperando classificação, apontando para a
-próxima etapa. **Não é o dashboard** — é só não mentir.
+próxima etapa — inclusive dizendo que ela ainda não existe. **Não é o
+dashboard** — é só não mentir.
+
+`/revisao` entra junto, pelo mesmo motivo: assim que a importação passou a
+marcar pares que se anulam, "Nada para revisar" virou mentira ali também.
 
 ---
 
@@ -176,7 +191,7 @@ produção, conferindo o resumo contra o arquivo.
 |---|---|---|
 | A — Ler o arquivo | A1–A5 | — |
 | B — Protótipo visual | B1–B3 | A (o resumo depende do que o parser reporta) |
-| C — Banco | C1, C2 | aprovação visual de B |
+| C — Banco | C1, C2, C3 | aprovação visual de B |
 | D — Integração | D1–D6 | C |
 | E — Deploy | E1 | D |
 

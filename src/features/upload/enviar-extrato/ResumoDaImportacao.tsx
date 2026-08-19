@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { LinhasIgnoradas } from "@/features/upload/enviar-extrato/LinhasIgnoradas";
+import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
  * O que entrou e o que não entrou (tarefa B2) — **protótipo visual**.
@@ -21,16 +23,10 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
  * original** — é o que permite abrir o CSV e conferir sem adivinhar.
  */
 
-export type LinhaIgnoradaExibida = {
-  linha: number;
-  motivo: string;
-  conteudo: string;
-};
-
 export type ResumoDeArquivo = {
   rotulo: string;
   entraram: number;
-  ignoradas: LinhaIgnoradaExibida[];
+  ignoradas: LinhaIgnorada[];
 };
 
 export type DadosDoResumo = {
@@ -107,26 +103,9 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
         <>
           <SectionTitle>Linhas que ficaram de fora</SectionTitle>
 
-          <div className="space-y-2">
-            {ignoradas.map((i) => (
-              <div
-                key={`${i.arquivo}-${i.linha}`}
-                className="rounded-pote border border-border bg-card px-4 py-3"
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="shrink-0 font-mono text-[10px] tracking-[1px] text-dim2 uppercase">
-                    linha {i.linha}
-                  </span>
-                  <span className="text-xs font-bold text-gold">{i.motivo}</span>
-                </div>
-                {/* O conteúdo original é o que permite abrir o CSV e conferir.
-                    `break-all` porque a linha pode não ter espaço nenhum. */}
-                <p className="mt-1.5 font-mono text-[10px] leading-relaxed break-all text-dim2">
-                  {i.conteudo}
-                </p>
-              </div>
-            ))}
-          </div>
+          {/* O mesmo componente que o histórico usa: assim o que você vê agora
+              é o que continuará vendo daqui a dois meses. */}
+          <LinhasIgnoradas linhas={ignoradas} />
         </>
       )}
     </section>

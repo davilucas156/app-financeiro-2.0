@@ -33,6 +33,7 @@ export async function listarImportacoes(
       origem: imports.origem,
       nomeArquivo: imports.nomeArquivo,
       lancamentosImportados: imports.lancamentosImportados,
+      ignoradas: imports.ignoradas,
       criadoEm: imports.criadoEm,
     })
     .from(imports)

@@ -1,3 +1,5 @@
+import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
+
 /**
  * Linha da tabela `imports` → o que aparece na lista "Já importados" (D4).
  *
@@ -13,6 +15,13 @@ export type EnvioExibido = {
   nomeArquivo: string;
   lancamentos: number;
   enviadoEm: string;
+  /**
+   * As linhas que ficaram de fora, com o **motivo** de cada uma.
+   *
+   * Vem inteiro, e não como contagem: "3 ignoradas" meses depois não permite
+   * fazer nada a respeito.
+   */
+  ignoradas: LinhaIgnorada[];
 };
 
 /** O que a consulta precisa trazer para montar uma linha da tela. */
@@ -22,6 +31,7 @@ export type LinhaDeImportacao = {
   origem: "csv_conta" | "csv_cartao";
   nomeArquivo: string;
   lancamentosImportados: number;
+  ignoradas: LinhaIgnorada[];
   criadoEm: Date;
 };
 
@@ -69,6 +79,7 @@ export function paraEnvioExibido(linha: LinhaDeImportacao): EnvioExibido {
     rotuloDeOrigem: ROTULO_DE_ORIGEM[linha.origem],
     nomeArquivo: linha.nomeArquivo,
     lancamentos: linha.lancamentosImportados,
+    ignoradas: linha.ignoradas,
     enviadoEm: enviadoEmPtBr(linha.criadoEm),
   };
 }

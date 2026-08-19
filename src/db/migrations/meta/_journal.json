@@ -29,6 +29,20 @@
       "when": 1787103699042,
       "tag": "0003_colorful_captain_britain",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787106690083,
+      "tag": "0004_rare_vengeance",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787106698096,
+      "tag": "0005_common_impossible_man",
+      "breakpoints": true
     }
   ]
 }

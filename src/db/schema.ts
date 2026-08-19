@@ -4,12 +4,14 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
  * Schema do banco — fonte de verdade das tabelas.
@@ -225,7 +227,22 @@ export const imports = pgTable(
      * histórico o mostra meses depois, e recontar exigiria reler o arquivo.
      */
     lancamentosImportados: integer("lancamentos_importados").notNull().default(0),
-    linhasIgnoradas: integer("linhas_ignoradas").notNull().default(0),
+
+    /**
+     * As linhas que o leitor **não** conseguiu ler — número, motivo e o
+     * conteúdo original de cada uma.
+     *
+     * Guardava só a contagem. "3 linhas ignoradas" dois meses depois não
+     * permite fazer nada a respeito: não dá para saber o que ficou de fora,
+     * nem se importava. O motivo é a informação; o número é consequência
+     * dele, e sai por `.length` — dois lugares guardando o mesmo fato são
+     * só duas chances de eles divergirem.
+     *
+     * São poucas linhas de texto, e não o arquivo inteiro: é o mínimo que
+     * responde "o que eu perdi?" sem manter o extrato completo parado em
+     * algum lugar.
+     */
+    ignoradas: jsonb("ignoradas").$type<LinhaIgnorada[]>().notNull().default([]),
 
     criadoEm: timestamp("criado_em", { withTimezone: true })
       .notNull()

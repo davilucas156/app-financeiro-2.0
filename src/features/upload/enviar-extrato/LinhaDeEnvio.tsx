@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/Button";
 import { desfazerEnvio } from "@/features/upload/desfazer-envio/desfazerEnvio.action";
 import type { ResultadoDesfazer } from "@/features/upload/desfazer-envio/desfazerEnvio.service";
 import type { EnvioExibido } from "@/features/upload/enviar-extrato/exibirEnvio";
+import {
+  LinhasIgnoradas,
+  rotuloDeIgnoradas,
+} from "@/features/upload/enviar-extrato/LinhasIgnoradas";
 import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
 
 /**
@@ -58,6 +62,23 @@ export function LinhaDeEnvio({ envio }: { envio: EnvioExibido }) {
           </Button>
         )}
       </div>
+
+      {/*
+        As linhas que ficaram de fora, com o motivo — meses depois, não só no
+        instante do envio. Fechado por padrão: é informação de conferência, não
+        o assunto principal da linha.
+
+        `<details>` nativo e não estado meu: abre e fecha sem JavaScript, e o
+        leitor de tela já sabe anunciar que é uma seção expansível.
+      */}
+      {envio.ignoradas.length > 0 && (
+        <details className="mt-3 border-t border-border pt-3">
+          <summary className="cursor-pointer font-mono text-[11px] text-gold marker:text-dim2">
+            {rotuloDeIgnoradas(envio.ignoradas.length)}
+          </summary>
+          <LinhasIgnoradas linhas={envio.ignoradas} className="mt-2" />
+        </details>
+      )}
 
       {confirmando && (
         <form action={agir}>

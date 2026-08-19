@@ -188,7 +188,7 @@ export async function importarExtrato(
           origem: l.origem,
           nomeArquivo: l.arquivo.nome,
           hash: l.hash,
-          linhasIgnoradas: l.leitura.ignoradas.length,
+          ignoradas: l.leitura.ignoradas,
         })
         .returning({ id: imports.id });
 

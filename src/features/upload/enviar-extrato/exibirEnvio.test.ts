@@ -11,6 +11,7 @@ const linha = (parcial: Partial<LinhaDeImportacao> = {}): LinhaDeImportacao => (
   origem: "csv_conta",
   nomeArquivo: "Extrato-02-06-2026-a-02-07-2026-CSV.csv",
   lancamentosImportados: 21,
+  ignoradas: [],
   criadoEm: new Date("2026-08-19T00:12:00Z"),
   ...parcial,
 });
@@ -51,8 +52,19 @@ describe("paraEnvioExibido", () => {
       rotuloDeOrigem: "conta",
       nomeArquivo: "Extrato-02-06-2026-a-02-07-2026-CSV.csv",
       lancamentos: 21,
+      ignoradas: [],
       enviadoEm: "18/08 às 21h",
     });
+  });
+
+  it("carrega o motivo de cada linha ignorada, e não só quantas foram", () => {
+    // É o ponto todo da coluna: "3 ignoradas" meses depois não permite fazer
+    // nada a respeito.
+    const ignoradas = [
+      { linha: 12, motivo: "data inválida", conteudo: "31/02/2026;X;-10,00" },
+    ];
+
+    expect(paraEnvioExibido(linha({ ignoradas })).ignoradas).toEqual(ignoradas);
   });
 
   it("um envio sem nenhuma linha válida aparece com zero", () => {

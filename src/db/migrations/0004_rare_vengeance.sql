@@ -1,0 +1,1 @@
+ALTER TABLE "imports" ADD COLUMN "ignoradas" jsonb DEFAULT '[]'::jsonb NOT NULL;
