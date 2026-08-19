@@ -7,6 +7,7 @@ import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
 import { prepararLancamentos } from "@/features/upload/ler-arquivo/preparar";
 import { reconhecer, type Reconhecimento } from "@/features/upload/ler-arquivo/reconhecer";
+import { TAMANHO_MAXIMO } from "@/features/upload/limites";
 
 /**
  * A gravação da importação (tarefa D2).
@@ -20,9 +21,6 @@ import { reconhecer, type Reconhecimento } from "@/features/upload/ler-arquivo/r
  * pudesse mandar a lista de lançamentos poderia inventar qualquer valor
  * (`references/architecture.md`, Thin Client / Fat Server).
  */
-
-/** 2 MB. O extrato real tem 1,7 KB e a fatura 3,1 KB — é folga, não aperto. */
-export const TAMANHO_MAXIMO = 2 * 1024 * 1024;
 
 export type CampoDeEnvio = "conta" | "cartao";
 

@@ -1,26 +1,31 @@
 import { cn } from "@/lib/cn";
+import { EXTENSOES_ACEITAS } from "@/features/upload/limites";
 
 /**
- * Um campo de arquivo (tarefa B1) — **protótipo visual**.
- *
- * Não lê nada. O `<input type="file">` existe para o seletor do sistema abrir
- * no celular; quem faz algo com o arquivo é a D3.
+ * Um campo de arquivo (tarefas B1 e D3).
  *
  * O bloco inteiro é um `<label>` com o input dentro: assim tocar em qualquer
  * ponto abre o seletor. Num celular, um alvo do tamanho do cartão é a
  * diferença entre acertar de primeira e tentar três vezes.
+ *
+ * O componente continua **burro** — não valida, não lê o arquivo, não guarda
+ * estado. Quem faz isso é o `FormularioDeEnvio`.
  */
 export type EstadoDoCampo = "vazio" | "escolhido" | "enviando" | "erro";
 
 export function CampoDeArquivo({
+  nome,
   rotulo,
   descricao,
   opcional = false,
   estado = "vazio",
   arquivo,
   erro,
+  onArquivo,
   className,
 }: {
+  /** `name` do input — é por ele que a server action lê o arquivo. */
+  nome: string;
   rotulo: string;
   descricao: string;
   /** Diz na cara que dá para enviar sem este. Um campo que parece
@@ -29,6 +34,7 @@ export function CampoDeArquivo({
   estado?: EstadoDoCampo;
   arquivo?: { nome: string; tamanho: string };
   erro?: string;
+  onArquivo?: (arquivo: File | undefined) => void;
   className?: string;
 }) {
   const travado = estado === "enviando";
@@ -47,8 +53,10 @@ export function CampoDeArquivo({
       >
         <input
           type="file"
-          accept=".csv,text/csv"
+          name={nome}
+          accept={`${EXTENSOES_ACEITAS.join(",")},text/csv`}
           disabled={travado}
+          onChange={(e) => onArquivo?.(e.target.files?.[0])}
           className="sr-only"
         />
 
@@ -66,7 +74,7 @@ export function CampoDeArquivo({
             )}
           </span>
 
-          {arquivo && estado !== "vazio" ? (
+          {arquivo ? (
             <span className="mt-1 flex items-baseline gap-2">
               {/* `truncate` e não quebra de linha: nome de arquivo de banco é
                   longo e empurraria o tamanho para fora da tela em 360px. */}
@@ -82,7 +90,7 @@ export function CampoDeArquivo({
           )}
         </span>
 
-        {estado === "enviando" && (
+        {travado && (
           <span className="font-mono text-[9px] tracking-[1px] text-dim uppercase">
             enviando
           </span>
