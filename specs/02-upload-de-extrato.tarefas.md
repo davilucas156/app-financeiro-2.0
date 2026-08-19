@@ -179,9 +179,28 @@ marcar pares que se anulam, "Nada para revisar" virou mentira ali também.
 
 ### E1 · Publicar e usar de verdade
 **Camada:** INFRA
-**Pronto quando:** deploy por `npx vercel --prod`, `BLOB_READ_WRITE_TOKEN` em
-Production, e o Davi importa os extratos de junho **pelo celular**, na URL de
-produção, conferindo o resumo contra o arquivo.
+**Pronto quando:** deploy por `npx vercel --prod` e o Davi importa os extratos
+de junho **pelo celular**, na URL de produção, conferindo o resumo contra o
+arquivo.
+
+`BLOB_READ_WRITE_TOKEN` **saiu do critério** junto com a D1: sem Blob, não há
+token a configurar.
+
+Os números esperados foram medidos rodando o pipeline contra os dois arquivos
+reais, antes do envio — assim a conferência é comparar duas coisas, e não
+julgar se um número solto parece razoável:
+
+| | Esperado |
+|---|---|
+| Importados | 54 |
+| Para revisar | 4 |
+| Fora do cálculo | 3 |
+| Linhas ignoradas | 0 |
+| Extrato da conta | 21 lançamentos |
+| Fatura do cartão | 33 lançamentos |
+
+A validação independente continua fechando: as saídas da fatura somam
+**R$ 1.865,27**, exatamente o pagamento de fatura lançado na conta em 01/07.
 
 ---
 
