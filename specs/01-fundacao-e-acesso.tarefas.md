@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/01-fundacao-e-acesso.md` (aprovada)
-**Status:** aguardando aprovação do Davi
+**Status:** ✅ concluída — fases A a E entregues e em produção
 
 Ordem obrigatória: **protótipo visual primeiro**, integração depois. As fases
 C, D e E só começam depois que a fase B for aprovada visualmente pelo Davi.
@@ -198,11 +198,20 @@ o usuário tentou acessar.
 
 ## Fase E — Deploy
 
-### E1 · Publicar na Vercel
+### E1 · Publicar na Vercel ✅
 **Camada:** INFRA
-**Pronto quando:** push no GitHub gera deploy; todas as variáveis de ambiente
+**Pronto quando:** ~~push no GitHub gera deploy~~; todas as variáveis de ambiente
 configuradas na Vercel; URL do webhook do Clerk apontando pra produção; login
 com Google funcionando no celular do Davi, na URL de produção.
+
+- ✅ Variáveis configuradas em Production.
+- ✅ Webhook do Clerk apontando para produção — **entrega real de
+  `user.created` confirmada pelo Davi** pela aba Testing.
+- ✅ Login com Google no celular, na URL de produção, confirmado pelo Davi.
+- ⬜ **Critério dispensado:** "push no GitHub gera deploy". O Davi optou por
+  **não** conectar o repositório à Vercel por enquanto; o deploy é feito por
+  `npx vercel --prod`, que cumpre o mesmo papel. Se um dia a conexão for
+  ligada, este critério volta a valer sozinho.
 
 ---
 
@@ -215,5 +224,12 @@ com Google funcionando no celular do Davi, na URL de produção.
 | C — Banco de dados | C1–C5 | aprovação visual de B |
 | D — Auth e integração | D1–D8 | C |
 | E — Deploy | E1 | D |
+
+**Pendente fora do código:** trancar o Clerk no Google (hoje aceita também
+e-mail e senha como primeiro fator). A allowlist já barra quem não é
+convidado, então é redução de superfície, não correção de falha.
+
+**Adiada:** C5 (`classification_rules` + seed do Davi) vai junto com a spec do
+motor de classificação, quando as duas se desenharem juntas.
 
 A Etapa 3 (Plan) é feita **tarefa por tarefa**, não tudo de uma vez.
