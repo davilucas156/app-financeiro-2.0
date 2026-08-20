@@ -4,7 +4,7 @@
 **Depende de:** spec 02 (os lançamentos existem no banco, sem categoria)
 **Traz de volta:** C5 da spec 01 (`classification_rules` + seed do Davi), adiada
 para ser desenhada junto com o motor que a consome
-**Status:** aguardando aprovação do Davi
+**Status:** pendências resolvidas pelo Davi; aguardando aprovação para a Etapa 2
 
 > ⚠ Nenhum dado real deste documento veio de nome ou valor do extrato. As
 > medições abaixo são contagens; os exemplos são inventados. Mesma regra de
@@ -191,50 +191,54 @@ cresce por uso.
 
 ---
 
-## Pendências — precisam da sua decisão
+## Pendências — todas resolvidas
 
-### 1. ❓ O LLM entra agora ou depois?
+### 1. ✅ O LLM fica para depois
 
 A medição diz que ele resolveria **6 lançamentos de 47** — os comerciantes do
 cartão. Os outros 5 pendentes ele não tem como acertar.
 
-**Recomendo deixar para depois.** Onze toques uma vez por mês, e cada correção
-vira regra que apaga o caso no mês seguinte. Ligar a API Anthropic agora
-significa chave, custo, tratamento de erro e um caminho a mais para testar — em
-troca de seis toques. Se daqui a três meses o resíduo continuar alto, aí ele se
-paga.
+São onze toques uma vez por mês, e cada correção vira regra que apaga o caso
+no mês seguinte. Ligar a API agora custaria chave, custo por mês, tratamento
+de erro e um caminho a mais para testar — em troca de seis toques.
 
-A estrutura já nasce pronta para recebê-lo: as sugestões da tela de revisão são
-uma lista ordenada, e o LLM vira só mais uma fonte de sugestão.
+A estrutura nasce pronta para recebê-lo: as sugestões da tela de revisão são
+uma **lista ordenada de fontes**, e o LLM entra como mais uma fonte, sem
+reescrever nada. Se em três meses o resíduo continuar alto, ele se paga.
 
-### 2. ❓ Entradas de dinheiro caem em qual pote?
+### 2. ✅ Entrada não cai em pote
 
-**Nenhum dos 8 potes é de renda.** Eles repartem o que você gasta. Mas o extrato
-tem 8 entradas no mês medido, e hoje elas iriam para "sem categoria" para
-sempre.
-
-**Recomendo não classificar entrada em pote.** Ela recebe uma categoria de
+Os 8 potes repartem o que você **gasta**. Entrada recebe uma categoria de
 renda (salário, renda extra, repasse recebido) e forma o total do mês — que é
-justamente a base dos percentuais dos potes. Sem isso as metas em reais não têm
-de onde sair.
+a base dos percentuais dos potes. Sem isso as metas em reais não têm de onde
+sair.
 
-### 3. ❓ Quando o motor roda?
+**Consequência que a Etapa 3 tem de resolver:** `categories.bucket_id` é
+`not null`, então uma categoria de renda precisa de um pote para pendurar. E
+`percentual_meta` nulo não serve para escondê-la — Manutenção e Outros já são
+nulos e aparecem na tela.
 
-**Recomendo dentro da transação da importação.** 47 linhas é nada, você já está
-esperando a tela, e o resumo passa a dizer a verdade completa no mesmo
-instante. A alternativa — classificar ao abrir `/revisao` — faz o resumo da
-importação mentir por omissão.
+O caminho é `buckets` ganhar um **tipo** (`gasto` / `renda`), com um pote de
+renda semeado e filtrado fora das telas de pote. Vira migration e entra na
+fase de banco.
 
-### 4. ❓ Limiar de valor alto: R$ 200?
+### 3. ✅ O motor roda dentro da transação da importação
+
+47 linhas é nada, você já está esperando a tela, e o resumo passa a dizer a
+verdade completa no mesmo instante. Classificar só ao abrir `/revisao` faria
+o resumo da importação mentir por omissão — o problema que a D6 acabou de
+consertar em duas telas.
+
+### 4. ✅ Valor alto = R$ 200
 
 É o número que o painel usa hoje. No mês medido, 6 lançamentos passam disso.
-Recomendo manter, e deixar configurável só na fase 2.
+Configurável só na fase 2.
 
 ---
-
 ## Fora do escopo
 
 - Tela de cadastrar/editar regras do zero → fase 2 (`readme.md`, seção 3)
+- Fallback via LLM → decidido: depois, quando o resíduo justificar
 - O painel de verdade: potes com barra, gráficos, comparativo anual → spec própria
 - Fechar o mês / veredito / insights → spec própria
 - Regra por recorrência → precisa de histórico que ainda não existe
