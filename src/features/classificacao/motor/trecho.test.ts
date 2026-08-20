@@ -68,7 +68,7 @@ describe("extrato · o conteúdo fica, o tipo do evento sai", () => {
     // número da conta, que muda de banco para banco.
     expect(conta('Pix enviado: "Cp :00000000-Fulana de Tal"')).toBeNull();
     expect(conta('Pix recebido: "Cp :12345678-Empresa Exemplo Ltda"')).toBeNull();
-    expect(conta('Pix enviado: "00019 42357470 FULANO SOUZA"')).toBeNull();
+    expect(conta('Pix enviado: "00000 11112222 FULANO SOUZA"')).toBeNull();
   });
 
   it("descrição sem aspas passa como está", () => {

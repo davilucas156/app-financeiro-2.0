@@ -59,7 +59,7 @@ const EVENTO_DA_CONTA = /^([^:]+):\s*"(.*)"\s*$/;
  */
 const PARECE_PESSOA = [
   /^CP\s*:?\s*\d+\s*-/, // Cp :00000000-Fulana
-  /^\d{3,}\s+\d{3,}\s+/, // 00019 42357470 Fulana
+  /^\d{3,}\s+\d{3,}\s+/, // 00000 11112222 Fulana
 ];
 
 /** Curto demais para ser específico: casaria com meio extrato. */
