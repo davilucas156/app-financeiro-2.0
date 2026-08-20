@@ -83,13 +83,24 @@ mais uma fonte, sem reescrever esta tarefa.
 de dados versionada, **mais as três que a medição mostrou faltar** (aplicação e
 resgate de CDB, IOF internacional, transferência para si mesmo).
 
-### A6 · Medir a cobertura contra os arquivos reais
+### A6 · Medir a cobertura contra os arquivos reais ✅
 **Camada:** BACK
 **Pronto quando:** o motor inteiro roda contra os 54 lançamentos reais e o
 resultado bate com o medido na spec: **36 classificados, 11 pendentes**. Roda
 fora do repositório, contra os arquivos que só existem na máquina do Davi.
 
 Se der diferente, é a A1–A5 que estão erradas — não a medição.
+
+> **Deu diferente, e desta vez era a medição.** O resultado real é **30
+> classificados e 17 pendentes**; os 6 de diferença estão explicados na spec e
+> em `specs/plans/A6-medir-o-motor-inteiro.md`. Nenhum dos seis é defeito do
+> motor: um é a regra `99` que a A5 recusou por classificar um restaurante como
+> transporte, três são petshop sem categoria, e dois são transferência para si
+> mesmo entrando, que ninguém acerta de fora.
+>
+> O harness ficou versionado como `motor/cobertura.test.ts`, e **se pula
+> sozinho** onde os arquivos não existem. Na máquina do Davi, `npm test` confere
+> o motor contra o extrato real toda vez.
 
 ---
 
@@ -99,14 +110,25 @@ Se der diferente, é a A1–A5 que estão erradas — não a medição.
 **Camada:** FRONT-VISUAL
 **Pronto quando:** com dados falsos, `/revisao` mostra um lançamento por vez:
 descrição original **sem truncar** (é o que você lê para decidir), valor, data,
-origem, contador "3 de 11" e barra de progresso. Legível em 360px, alvos ≥44px.
+origem, contador "3 de 17" e barra de progresso. Legível em 360px, alvos ≥44px.
 
 ### B2 · Escolher a categoria
 **Camada:** FRONT-VISUAL
 **Pronto quando:** aparecem até 3 sugestões tocáveis e a lista completa
-agrupada por pote, recolhida por padrão. Mais o botão "Fora do cálculo". Os
-rótulos das sugestões dizem **de onde vieram** — sugestão sem procedência é
-palpite anônimo.
+agrupada por pote. Mais o botão "Fora do cálculo". Os rótulos das sugestões
+dizem **de onde vieram** — sugestão sem procedência é palpite anônimo.
+
+> ⚠ **A A6 mudou o que esta tarefa tem de entregar.** Medindo o motor real
+> contra o primeiro mês do Davi: **só 2 dos 17 pendentes recebem alguma
+> sugestão**. O histórico está vazio e a categoria do banco quase nunca traduz.
+>
+> Ou seja, **no primeiro mês a lista completa não é o caminho de exceção — é o
+> caminho principal**: 15 de 17 vão direto para ela.
+>
+> Ela precisa ser tela de primeira classe, não um `<details>` no rodapé:
+> agrupada por pote, alvos ≥44px, alcançável com o polegar, sem rolagem
+> infinita. A partir do segundo mês a proporção se inverte, porque o histórico
+> passa a existir — mas é o primeiro mês que decide se o Davi continua usando.
 
 ### B3 · "Sempre classificar assim?" e o Voltar
 **Camada:** FRONT-VISUAL
@@ -157,7 +179,7 @@ Falha no motor não pode deixar a importação pela metade.
 
 ### D2 · O resumo do upload conta a classificação
 **Camada:** FRONT-INTEGRADO
-**Pronto quando:** o resumo diz "36 classificados · 11 para decidir", com link
+**Pronto quando:** o resumo diz "30 classificados · 17 para decidir", com link
 para `/revisao`. Mês em que tudo bateu diz "tudo classificado" e não manda você
 para uma tela vazia.
 
@@ -204,7 +226,8 @@ spec 02: não mentir.
 ### E1 · Publicar e classificar de verdade
 **Camada:** INFRA
 **Pronto quando:** deploy por `npx vercel --prod` e o Davi classifica junho
-**pelo celular**, conferindo contra o esperado: 36 automáticos e 11 decisões.
+**pelo celular**, conferindo contra o esperado: **30 automáticos e 17 pendentes, que se resolvem
+em 14 decisões** (três pendentes repetem comerciante ou contraparte de outro).
 
 ---
 

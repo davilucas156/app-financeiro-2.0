@@ -117,7 +117,7 @@ describe("os termos curtos que ficaram de fora", () => {
     // O readme manda classificar `99` como Transporte/Apps. No mês medido ele
     // casa com o app de corrida, com um restaurante e com o número da conta.
     expect(
-      chaveEscolhida(alvo({ descricao: "99Food  DRIVE THRU AVA Belo Horizont BRA" })),
+      chaveEscolhida(alvo({ descricao: "99SABORES LANCHES     BETIM         BRA" })),
     ).toBe(null);
   });
 

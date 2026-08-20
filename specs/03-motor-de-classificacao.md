@@ -34,6 +34,22 @@ reais de junho/julho. Isso mudou o desenho três vezes.
 | Cobertos após somar 3 regras que o readme não previa | **36 (77%)** |
 | Sobram | **11 (23%)** |
 
+> ⚠ **Corrigido pela A6.** Os números `36 / 11` acima estão errados e ficam
+> registrados só para o histórico. A medição foi feita por mim lendo o arquivo
+> com julgamento humano, antes de o motor existir. Rodando o motor de verdade
+> (A1–A6), o resultado é **30 classificados e 17 pendentes**.
+>
+> A diferença de 6 tem nome, e nenhum dos seis é defeito do motor:
+>
+> | Quantos | O que | Por quê |
+> |---|---|---|
+> | 1 | App de corrida no cartão | A única regra que o pegaria é `99`, e ela também classifica um **restaurante** como Transporte e casa com o número da conta. A A5 recusou a regra |
+> | 3 | Petshop e clínica veterinária | **Não existe categoria de pet** nos 8 potes semeados |
+> | 2 | Transferência para si mesmo, entrando | Deliberado: pode ser passagem ou pode ser salário chegando de outro banco, e as duas leituras mudam a base de todos os potes |
+>
+> O julgamento humano contava o `99` como acerto sem enxergar o que ele leva
+> junto. **A medição estava otimista, e o otimismo era meu.**
+
 ### Descoberta 1 — o readme esqueceu três regras
 
 Não estavam na seção 7 e aparecem no mês medido: **aplicação/resgate de CDB**
@@ -41,20 +57,27 @@ Não estavam na seção 7 e aparecem no mês medido: **aplicação/resgate de CD
 **transferência para si mesmo** (o extrato traz o próprio nome do titular).
 Sozinhas, levam a cobertura de 64% para 77%.
 
-### Descoberta 2 — os 11 que sobram são de dois tipos, e só um é problema de LLM
+### Descoberta 2 — os pendentes são de dois tipos, e só um é problema de LLM
+
+Números conferidos pela A6 contra o motor real:
 
 | Tipo | Quantos | Exemplo (inventado) |
 |---|---|---|
-| **Comerciante no cartão** | 6 | `ACME AI SUB SAN FRANCISCO CA` |
-| **Pix de/para uma pessoa** | 5 | `Pix enviado: "Cp :00000000-Fulana de Tal"` |
+| **Comerciante no cartão** | 9 | `ACME AI SUB SAN FRANCISCO CA` |
+| **Pix de/para uma pessoa** | 6 | `Pix enviado: "Cp :00000000-Fulana de Tal"` |
+| **Transferência para si mesmo** | 2 | `Pix recebido: "Cp :00000000-<você>"` |
 
-Os 6 primeiros um LLM classifica bem: o nome do comerciante diz o que ele
-vende.
+Os 9 primeiros um LLM classifica bem: o nome do comerciante diz o que ele
+vende. **Menos três deles**, que são petshop e veterinário — ali não falta
+palpite, falta categoria.
 
-**Os 5 últimos, não.** Nenhum modelo sabe que a pessoa X é sua mãe e que a
+**Os 6 seguintes, não.** Nenhum modelo sabe que a pessoa X é sua mãe e que a
 pessoa Y é o mecânico. Mandar esses para a API é pagar por um chute pior do que
 perguntar. Eles precisam de uma coisa diferente: **você nomear a pessoa uma
 vez**.
+
+**Os 2 últimos ninguém acerta de fora**, nem LLM nem regra: só você sabe se o
+dinheiro que chega da sua outra conta é passagem ou é salário.
 
 Essa distinção é o eixo do desenho. "Não classificado" não é um estado só.
 
@@ -87,7 +110,7 @@ uma, no polegar. É a única tela nova desta spec.
 
 | Componente | Estado inicial | Variações |
 |---|---|---|
-| Contador de pendentes ("3 de 11") | Posição atual | **Zero:** estado vazio "tudo classificado" |
+| Contador de pendentes ("3 de 17") | Posição atual | **Zero:** estado vazio "tudo classificado" |
 | Cartão do lançamento (descrição original, valor, data, origem) | Um por vez | **Descrição longa:** quebra, sem truncar — é o que você usa para decidir |
 | Sugestões de categoria (até 3, ordenadas) | Do motor: categoria do banco, histórico, regra fraca | **Sem sugestão:** vai direto para a lista completa |
 | Lista completa de categorias, agrupada por pote | Recolhida | Busca por nome quando passar de ~20 |
@@ -128,7 +151,7 @@ uma, no polegar. É a única tela nova desta spec.
 
 | Ação do usuário | Resposta do sistema |
 |---|---|
-| Importa um extrato | O motor roda **na mesma transação da importação**. O resumo mostra "36 classificados automaticamente · 11 para você decidir" |
+| Importa um extrato | O motor roda **na mesma transação da importação**. O resumo mostra "30 classificados automaticamente · 17 para você decidir" |
 | Toca em "Decidir agora" | Vai para `/revisao` |
 | Importa um mês cujas regras já cobrem tudo | "Tudo classificado." Nenhuma visita a `/revisao` é necessária |
 | Desfaz uma importação | Os lançamentos somem; as regras que nasceram deles **ficam** |
@@ -195,12 +218,16 @@ cresce por uso.
 
 ### 1. ✅ O LLM fica para depois
 
-A medição diz que ele resolveria **6 lançamentos de 47** — os comerciantes do
-cartão. Os outros 5 pendentes ele não tem como acertar.
+A medição corrigida pela A6 diz que ele resolveria **6 lançamentos de 47** — os
+comerciantes do cartão, tirando os três de petshop e veterinário, que não
+precisam de palpite e sim de uma categoria que não existe. Os outros 8
+pendentes ele não tem como acertar.
 
-São onze toques uma vez por mês, e cada correção vira regra que apaga o caso
-no mês seguinte. Ligar a API agora custaria chave, custo por mês, tratamento
-de erro e um caminho a mais para testar — em troca de seis toques.
+E são **14 decisões**, não 17: três pendentes repetem comerciante ou
+contraparte de outro, e a D5 aplica a regra nova aos outros pendentes do mesmo
+mês. Cada correção apaga o caso no mês seguinte. Ligar a API agora custaria
+chave, custo por mês, tratamento de erro e um caminho a mais para testar — em
+troca de seis toques.
 
 A estrutura nasce pronta para recebê-lo: as sugestões da tela de revisão são
 uma **lista ordenada de fontes**, e o LLM entra como mais uma fonte, sem
