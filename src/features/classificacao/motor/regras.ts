@@ -18,7 +18,19 @@ export type TipoDeRegra = "descricao_contem" | "pessoa" | "valor_direcao";
 export type Criterio =
   | { tipo: "descricao_contem"; termo: string }
   /** Casa contra `alvo.pessoa`, que a A3 preenche. */
-  | { tipo: "pessoa"; nome: string }
+  | {
+      tipo: "pessoa";
+      nome: string;
+      /**
+       * Opcional. Sem ela, casa nos dois sentidos.
+       *
+       * Existe porque a A5 encontrou duas regras que sem direção classificam
+       * errado **em silêncio**: dinheiro que sai para a sua própria outra
+       * conta é passagem, e dinheiro que entra pode ser renda; e uma empresa
+       * que te paga por Pix não vira "renda" quando **você** paga ela.
+       */
+      direcao?: Direcao;
+    }
   | {
       tipo: "valor_direcao";
       direcao: Direcao;
@@ -108,6 +120,7 @@ function casa(criterio: Criterio, alvo: AlvoDaRegra): boolean {
 
     case "pessoa": {
       if (!alvo.pessoa) return false;
+      if (criterio.direcao && alvo.direcao !== criterio.direcao) return false;
       return normalizarDescricao(alvo.pessoa).includes(
         normalizarDescricao(criterio.nome),
       );

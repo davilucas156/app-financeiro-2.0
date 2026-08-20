@@ -106,6 +106,31 @@ describe("casarRegra · pessoa", () => {
     expect(casarRegra([r], alvo({ pessoa: null }))).toBeNull();
     expect(casarRegra([r], alvo({ pessoa: undefined }))).toBeNull();
   });
+
+  // A direção é opcional e chegou com a A5, que achou duas regras impossíveis
+  // de escrever sem ela: dinheiro que sai para a sua própria outra conta é
+  // passagem, e o que entra pode ser renda; e uma empresa que te paga por Pix
+  // não vira "renda" quando é você quem paga ela.
+  it("com direção, só casa naquele sentido", () => {
+    const r = regra({ tipo: "pessoa", nome: "Fulana de Tal", direcao: "entrada" });
+
+    const recebido = alvo({ pessoa: "Fulana de Tal", direcao: "entrada" });
+    const enviado = alvo({ pessoa: "Fulana de Tal", direcao: "saida" });
+
+    expect(casarRegra([r], recebido)?.id).toBe(r.id);
+    expect(casarRegra([r], enviado)).toBeNull();
+  });
+
+  it("sem direção, continua casando nos dois sentidos", () => {
+    // Garante que a A5 não mudou nada do que já existia.
+    const r = regra({ tipo: "pessoa", nome: "Fulana de Tal" });
+
+    for (const direcao of ["entrada", "saida"] as const) {
+      expect(
+        casarRegra([r], alvo({ pessoa: "Fulana de Tal", direcao }))?.id,
+      ).toBe(r.id);
+    }
+  });
 });
 
 describe("casarRegra · valor_direcao", () => {
