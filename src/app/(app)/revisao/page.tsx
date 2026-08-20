@@ -3,6 +3,9 @@ import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { Andaime } from "@/features/classificacao/revisar-lancamento/Andaime";
+import { estadoDe } from "@/features/classificacao/revisar-lancamento/dadosFalsos";
+import { TelaDeRevisao } from "@/features/classificacao/revisar-lancamento/TelaDeRevisao";
 import { resumoDeLancamentos } from "@/features/painel/resumo-de-lancamentos/resumoDeLancamentos.service";
 
 export const metadata: Metadata = {
@@ -10,14 +13,38 @@ export const metadata: Metadata = {
 };
 
 /**
- * A revisão de verdade tem spec própria.
+ * Duas telas convivem aqui, e isso é deliberado.
  *
- * Esta tela entra na D6 pelo mesmo motivo que o painel: assim que a
- * importação passou a marcar pares que se anulam, "Nada para revisar" virou
- * mentira aqui também. Corrigir o painel e deixar esta mentindo seria trocar
- * um problema de lugar.
+ * Sem parâmetro, é a tela **verdadeira** que a D6 da spec 02 entregou: ela diz
+ * quantos lançamentos esperam decisão, e diz a verdade.
+ *
+ * Com `?estado=`, é o **protótipo visual** da nova revisão (B1, B2 e B3),
+ * esperando o portão de aprovação do Davi.
+ *
+ * Substituir a tela verdadeira pelo protótipo desfaria a D6 — o painel voltaria
+ * a mostrar dado inventado como se fosse real. O protótipo atrás de um
+ * parâmetro custa uma linha e não custa a honestidade da tela.
+ *
+ * A D3 apaga o protótipo e o andaime, e põe os pendentes de verdade no lugar.
  */
-export default async function RevisaoPage() {
+export default async function RevisaoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ estado?: string }>;
+}) {
+  const { estado } = await searchParams;
+
+  if (estado !== undefined) {
+    const atual = estadoDe(estado);
+
+    return (
+      <>
+        <TelaDeRevisao estado={atual} />
+        <Andaime atual={atual} />
+      </>
+    );
+  }
+
   const usuario = await garantirUsuario();
   const { emRevisao } = await resumoDeLancamentos(usuario.id);
 
