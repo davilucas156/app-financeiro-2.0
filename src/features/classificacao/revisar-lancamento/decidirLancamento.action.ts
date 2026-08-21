@@ -29,6 +29,8 @@ export type EntradaDaDecisao = {
   lancamentoId: string;
   categoriaId?: string;
   fonteDaSugestao?: string;
+  /** "Sempre classificar assim" (D5). */
+  sempre?: boolean;
 };
 
 export async function decidir(
@@ -86,6 +88,7 @@ function montar(e: EntradaDaDecisao): Decisao | null {
       // não é confiável não serve para responder "por que caiu aqui?".
       fonte: fonteDaSugestao ? "sugestao" : "manual",
       fonteDaSugestao,
+      sempre: e.sempre === true,
     };
   }
 

@@ -1,10 +1,12 @@
+"use client";
+
 import type {
   FonteDeSugestao,
   Sugestao,
 } from "@/features/classificacao/motor/sugestoes";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { CategoriaEscolhivel } from "./categorias";
-import { AcaoDeDecidir } from "./AcaoDeDecidir";
+
 
 /**
  * Os até 3 botões de sugestão (tarefa B2).
@@ -32,13 +34,13 @@ const ROTULO: Record<FonteDeSugestao, string> = {
 };
 
 export function Sugestoes({
-  lancamentoId,
   sugestoes,
   porId,
+  aoEscolher,
 }: {
-  lancamentoId: string;
   sugestoes: Sugestao[];
   porId: Map<string, CategoriaEscolhivel>;
+  aoEscolher: (c: CategoriaEscolhivel, fonte: FonteDeSugestao) => void;
 }) {
   if (sugestoes.length === 0) return null;
 
@@ -55,14 +57,10 @@ export function Sugestoes({
 
           return (
             <li key={s.categoriaId}>
-              <AcaoDeDecidir
-                entrada={{
-                  tipo: "categoria",
-                  lancamentoId,
-                  categoriaId: s.categoriaId,
-                  fonteDaSugestao: s.fonte,
-                }}
-                className="flex min-h-14 w-full items-center gap-3 rounded-card border border-border2 bg-card px-4 py-3 text-left hover:bg-card2"
+              <button
+                type="button"
+                onClick={() => aoEscolher(categoria, s.fonte)}
+                className="flex min-h-14 w-full items-center gap-3 rounded-card border border-border2 bg-card px-4 py-3 text-left transition-colors hover:bg-card2"
               >
                 <span
                   aria-hidden="true"
@@ -82,7 +80,7 @@ export function Sugestoes({
                 <span className="shrink-0 font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
                   {ROTULO[s.fonte]}
                 </span>
-              </AcaoDeDecidir>
+              </button>
             </li>
           );
         })}

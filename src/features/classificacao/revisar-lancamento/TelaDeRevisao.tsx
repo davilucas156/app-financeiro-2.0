@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -8,8 +11,10 @@ import { CartaoDoLancamento } from "./CartaoDoLancamento";
 import { ListaDeCategorias } from "./ListaDeCategorias";
 import { ProgressoDaRevisao } from "./ProgressoDaRevisao";
 import { Sugestoes } from "./Sugestoes";
+import { PerguntaDeRegra } from "./PerguntaDeRegra";
 import { porId, type CategoriaEscolhivel } from "./categorias";
 import type { PendenteParaRevisar } from "./pendentes";
+import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 
 /**
  * `/revisao` — um lançamento por vez, no polegar (B1, B2, B3 e D3).
@@ -57,7 +62,42 @@ export function TelaDeRevisao({
     );
   }
 
-  const atual = pendentes[0];
+  return (
+    <Revisando
+      key={pendentes[0].id}
+      atual={pendentes[0]}
+      total={pendentes.length}
+      categorias={categorias}
+      mes={mes}
+    />
+  );
+}
+
+/**
+ * ⚠ **A `key` acima é o que faz a escolha não vazar de um lançamento para o
+ * seguinte.**
+ *
+ * Sem ela, o React reaproveitaria este componente quando a lista revalidasse, e
+ * o estado `escolhida` sobreviveria — a tela abriria o próximo lançamento já
+ * com a pergunta de regra do anterior aberta. Trocando a chave, o estado morre
+ * junto com o lançamento a que pertencia.
+ */
+function Revisando({
+  atual,
+  total,
+  categorias,
+  mes,
+}: {
+  atual: PendenteParaRevisar;
+  total: number;
+  categorias: CategoriaEscolhivel[];
+  mes: string;
+}) {
+  const [escolhida, setEscolhida] = useState<{
+    categoria: CategoriaEscolhivel;
+    fonte?: FonteDeSugestao;
+  } | null>(null);
+
   const catalogo = porId(categorias);
   const jaClassificado = atual.categoriaId
     ? catalogo.get(atual.categoriaId)
@@ -67,7 +107,7 @@ export function TelaDeRevisao({
     <>
       <SectionTitle>Revisar transações</SectionTitle>
 
-      <ProgressoDaRevisao posicao={1} total={pendentes.length} mes={mes} />
+      <ProgressoDaRevisao posicao={1} total={total} mes={mes} />
 
       <CartaoDoLancamento l={atual} />
 
@@ -100,7 +140,21 @@ export function TelaDeRevisao({
         </Card>
       )}
 
-      {atual.categoriaId ? (
+      {/*
+        Escolheu: a tela vira a pergunta de virar regra e a lista some.
+        Deixar as 25 categorias abertas embaixo da pergunta convidaria a tocar
+        noutra sem perceber que já havia uma escolha pendente.
+      */}
+      {escolhida ? (
+        <PerguntaDeRegra
+          lancamentoId={atual.id}
+          categoria={escolhida.categoria}
+          fonteDaSugestao={escolhida.fonte}
+          trecho={atual.trecho}
+          pegaJunto={atual.pegaJunto}
+          aoCancelar={() => setEscolhida(null)}
+        />
+      ) : atual.categoriaId ? (
         <>
           <Card className="mt-4 border-green/20 bg-green/8">
             <p className="text-xs text-dim">
@@ -131,33 +185,23 @@ export function TelaDeRevisao({
 
           <SectionTitle>Ou troque a categoria</SectionTitle>
           <ListaDeCategorias
-            lancamentoId={atual.id}
             categorias={categorias}
             direcao={atual.direcao}
+            aoEscolher={(categoria) => setEscolhida({ categoria })}
           />
         </>
       ) : (
         <>
           <Sugestoes
-            lancamentoId={atual.id}
             sugestoes={atual.sugestoes}
             porId={catalogo}
+            aoEscolher={(categoria, fonte) => setEscolhida({ categoria, fonte })}
           />
           <ListaDeCategorias
-            lancamentoId={atual.id}
             categorias={categorias}
             direcao={atual.direcao}
+            aoEscolher={(categoria) => setEscolhida({ categoria })}
           />
-
-          {/*
-            A pergunta "sempre classificar assim?" **não** aparece aqui, e é
-            deliberado: ela só faz sentido depois de você escolher, e escolher
-            é a D4. Mostrá-la antes diria "guardado em…" sem nada ter sido
-            guardado — a tela mentindo de novo.
-
-            O `trecho` e o `pegaJunto` já vêm calculados de `pendentes.ts`,
-            prontos para a D5 usar.
-          */}
         </>
       )}
     </>

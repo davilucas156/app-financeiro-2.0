@@ -1,6 +1,6 @@
 import { casarRegra, type Criterio } from "@/features/classificacao/motor/regras";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
-import { trechoEstavel } from "@/features/classificacao/motor/trecho";
+import { criterioDaCorrecao, textoDoCriterio } from "./criterioDaCorrecao";
 import {
   sugerir,
   type Classificado,
@@ -61,15 +61,18 @@ export function prepararRevisao(
   { historico, idPorChave }: ContextoDaRevisao,
 ): PendenteParaRevisar[] {
   const comIdentidade = pendentes.map((p) => {
-    const pessoa = pessoaDe(p.descricao);
+    // ⚠ **O mesmo módulo que o serviço usa para gravar a regra.**
+    //
+    // Eu tinha escrito os dois separados. Se divergirem, a tela mostra um
+    // texto e o banco guarda outro — você aprovaria uma regra e receberia
+    // outra, numa pergunta cuja única função é te deixar conferir.
+    const criterio = criterioDaCorrecao(p.descricao, p.origem);
 
     return {
       ...p,
-      pessoa,
-      // Numa transferência o que identifica é **quem**, e a regra certa é a do
-      // tipo `pessoa` (A3). No cartão é o trecho estável (A2).
-      trecho: pessoa ?? trechoEstavel(p.descricao, p.origem),
-      criterio: criterioDe(pessoa, p),
+      pessoa: pessoaDe(p.descricao),
+      trecho: criterio ? textoDoCriterio(criterio) : null,
+      criterio,
     };
   });
 
@@ -102,16 +105,6 @@ type ComCriterio = LancamentoPendente & {
 function semCriterio(p: ComCriterio) {
   const { criterio: _criterio, ...resto } = p;
   return resto;
-}
-
-function criterioDe(
-  pessoa: string | null,
-  p: LancamentoPendente,
-): Criterio | null {
-  if (pessoa) return { tipo: "pessoa", nome: pessoa };
-
-  const trecho = trechoEstavel(p.descricao, p.origem);
-  return trecho ? { tipo: "descricao_contem", termo: trecho } : null;
 }
 
 /**
