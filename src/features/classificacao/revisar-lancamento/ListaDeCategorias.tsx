@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
+import { AcaoDeDecidir } from "./AcaoDeDecidir";
 
 /**
  * ⚠ **Não é o `normalizarDescricao` do motor**, e não é descuido.
@@ -40,9 +41,11 @@ const comparavel = (texto: string) =>
  * conta. A cor também vem do banco, para a fase 2 poder deixar você mudá-la.
  */
 export function ListaDeCategorias({
+  lancamentoId,
   categorias,
   direcao,
 }: {
+  lancamentoId: string;
   categorias: CategoriaEscolhivel[];
   direcao: Direcao;
 }) {
@@ -89,7 +92,7 @@ export function ListaDeCategorias({
           <ul className="mt-3 space-y-2">
             {encontradas.map((c) => (
               <li key={c.id}>
-                <BotaoDeCategoria categoria={c} mostrarPote />
+                <BotaoDeCategoria lancamentoId={lancamentoId} categoria={c} mostrarPote />
               </li>
             ))}
           </ul>
@@ -112,7 +115,7 @@ export function ListaDeCategorias({
               <ul className="mt-2 space-y-2">
                 {doPote.map((c) => (
                   <li key={c.id}>
-                    <BotaoDeCategoria categoria={c} />
+                    <BotaoDeCategoria lancamentoId={lancamentoId} categoria={c} />
                   </li>
                 ))}
               </ul>
@@ -126,16 +129,18 @@ export function ListaDeCategorias({
 
 /** Uma coluna só, 44px de altura: em 360px dois por linha viram alvo de agulha. */
 function BotaoDeCategoria({
+  lancamentoId,
   categoria,
   mostrarPote = false,
 }: {
+  lancamentoId: string;
   categoria: CategoriaEscolhivel;
   mostrarPote?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      className="flex min-h-11 w-full items-center gap-3 rounded-pote border border-border bg-card px-4 py-2.5 text-left transition-colors hover:border-border2 hover:bg-card2"
+    <AcaoDeDecidir
+      entrada={{ tipo: "categoria", lancamentoId, categoriaId: categoria.id }}
+      className="flex min-h-11 w-full items-center gap-3 rounded-pote border border-border bg-card px-4 py-2.5 text-left hover:border-border2 hover:bg-card2"
     >
       <span
         aria-hidden="true"
@@ -150,6 +155,6 @@ function BotaoDeCategoria({
           {categoria.pote.nome}
         </span>
       )}
-    </button>
+    </AcaoDeDecidir>
   );
 }

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { AcaoDeDecidir } from "./AcaoDeDecidir";
 import { CartaoDoLancamento } from "./CartaoDoLancamento";
 import { ListaDeCategorias } from "./ListaDeCategorias";
 import { ProgressoDaRevisao } from "./ProgressoDaRevisao";
@@ -77,12 +78,20 @@ export function TelaDeRevisao({
         mentira.
       */}
       <div className="mt-3 flex gap-2">
+        {/* O "Voltar" é a D6: desfazer a gravação anterior é outra escrita, e
+            fingir que ele funciona seria pior do que ele estar apagado. */}
         <Button variant="secondary" className="flex-1 px-3 text-xs" disabled>
           ← Voltar
         </Button>
-        <Button variant="secondary" className="flex-1 px-3 text-xs">
-          Fora do cálculo
-        </Button>
+
+        <div className="flex-1">
+          <AcaoDeDecidir
+            entrada={{ tipo: "fora-do-calculo", lancamentoId: atual.id }}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-card border border-border2 bg-card px-3 text-xs font-bold text-text hover:bg-card2"
+          >
+            Fora do cálculo
+          </AcaoDeDecidir>
+        </div>
       </div>
 
       {atual.motivo && (
@@ -111,17 +120,34 @@ export function TelaDeRevisao({
             )}
 
             <div className="mt-4">
-              <Button className="w-full">Está certo</Button>
+              <AcaoDeDecidir
+                entrada={{ tipo: "confirmar", lancamentoId: atual.id }}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-card bg-primary px-5 text-sm font-bold text-bg hover:bg-orange"
+              >
+                Está certo
+              </AcaoDeDecidir>
             </div>
           </Card>
 
           <SectionTitle>Ou troque a categoria</SectionTitle>
-          <ListaDeCategorias categorias={categorias} direcao={atual.direcao} />
+          <ListaDeCategorias
+            lancamentoId={atual.id}
+            categorias={categorias}
+            direcao={atual.direcao}
+          />
         </>
       ) : (
         <>
-          <Sugestoes sugestoes={atual.sugestoes} porId={catalogo} />
-          <ListaDeCategorias categorias={categorias} direcao={atual.direcao} />
+          <Sugestoes
+            lancamentoId={atual.id}
+            sugestoes={atual.sugestoes}
+            porId={catalogo}
+          />
+          <ListaDeCategorias
+            lancamentoId={atual.id}
+            categorias={categorias}
+            direcao={atual.direcao}
+          />
 
           {/*
             A pergunta "sempre classificar assim?" **não** aparece aqui, e é
