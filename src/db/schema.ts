@@ -11,6 +11,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { Criterio, TipoDeRegra } from "@/features/classificacao/motor/regras";
 import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
@@ -19,7 +20,8 @@ import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
  * Toda mudança aqui vira um `.sql` versionado em `src/db/migrations/` via
  * `npm run db:generate` — nunca alterar o banco à mão.
  *
- * Ainda por vir: `buckets` e `categories` (C3), `classification_rules` (C5).
+ * As `classification_rules` chegaram na C1 da spec 03, junto com o motor que
+ * as consome — a C5 da spec 01 foi adiada exatamente para isso.
  */
 
 /**
@@ -374,3 +376,123 @@ export type Importacao = typeof imports.$inferSelect;
 export type NovaImportacao = typeof imports.$inferInsert;
 export type Transacao = typeof transactions.$inferSelect;
 export type NovaTransacao = typeof transactions.$inferInsert;
+
+/**
+ * As regras que o motor consome (tarefa C1 — a C5 adiada da spec 01).
+ *
+ * Uma linha por regra, **por usuário**. A tabela nasce vazia em toda conta e
+ * cresce por uso; só a do Davi recebe o seed da A5 no onboarding (D7).
+ *
+ * ## O `criterio` é jsonb porque os três tipos têm campos diferentes
+ *
+ * `descricao_contem` tem um termo, `pessoa` tem nome e direção opcional,
+ * `valor_direcao` tem faixa e sentido. Três colunas nulas para cada tipo seria
+ * uma tabela com dois terços de buracos e nenhuma garantia.
+ *
+ * O tipo vem da A1, importado. Uma segunda definição divergiria da primeira e
+ * o motor deixaria de casar regra sem ninguém entender por quê.
+ *
+ * `tipoRegra` fica **também** em coluna própria, redundante com o json de
+ * propósito: é por ela que o índice e o `check` funcionam, e é ela que a D9
+ * usa para agrupar na tela sem abrir cada json.
+ */
+export const classificationRules = pgTable(
+  "classification_rules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    tipoRegra: text("tipo_regra").$type<TipoDeRegra>().notNull(),
+
+    criterio: jsonb("criterio").$type<Criterio>().notNull(),
+
+    /**
+     * A identidade normalizada do critério —
+     * `descricao_contem:PAPELARIA DO ZE BETIM`.
+     *
+     * ⚠ **Única por usuário, e isso carrega duas garantias.** A D7 precisa ser
+     * idempotente como o resto do onboarding: rodar o seed duas vezes não pode
+     * dobrar as regras. E a D5 não pode criar duplicata: responder "sempre"
+     * duas vezes para o mesmo trecho tem de dar uma regra, não duas.
+     *
+     * Mesmo padrão de `imports.hash` e `transactions.impressao` — a unicidade
+     * que torna repetir a operação inofensiva mora no banco, não na esperança.
+     *
+     * **Para a D9:** editar o texto de uma regra até colidir com outra vai
+     * bater aqui. É o comportamento certo — dois critérios iguais com destinos
+     * diferentes seriam um empate impossível de explicar — mas a tela deve
+     * traduzir para "já existe uma regra procurando por esse texto".
+     */
+    chave: text("chave").notNull(),
+
+    /**
+     * ⚠ **`cascade`, e o motivo é desconfortável.**
+     *
+     * `set null` deixaria a regra órfã apontando para o nada, que é o que a
+     * tarefa proíbe. `restrict` **quebraria apagar o usuário**: `users` já
+     * cascateia para `categories`, e um restrict imediato faria a exclusão da
+     * conta falhar.
+     *
+     * Sobra cascade, que tem um defeito real: apagar uma categoria apaga
+     * aprendizado em silêncio. O banco garante que não sobra lixo; **quem deve
+     * o aviso é a tela.** Quando a fase 2 permitir apagar categoria, ela tem
+     * de dizer "isto leva junto 4 regras" antes de confirmar — do mesmo jeito
+     * que a B3 mostra quantos pendentes uma regra nova pega.
+     */
+    categoriaId: uuid("categoria_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+
+    /**
+     * **Menor vence.** Sem default de propósito.
+     *
+     * A A5 reservou a faixa: 20 para movimento (passagem, aplicação, imposto),
+     * 30 para o comum, e **abaixo de 20 livre para as correções do Davi** —
+     * correção de quem olhou o lançamento ganha do que foi semeado de longe.
+     * Um default aqui convidaria a esquecer disso.
+     */
+    prioridade: integer("prioridade").notNull(),
+
+    /**
+     * `seed` (veio pronta no onboarding) ou `correcao` (nasceu de uma escolha
+     * sua na revisão).
+     *
+     * Responde "de onde saiu essa regra?" seis meses depois — a mesma pergunta
+     * que a C3 responde para a classificação. Regra de seed **pode ser apagada
+     * como qualquer outra**: marcar a origem é informação, não proteção.
+     */
+    origem: text("origem").$type<"seed" | "correcao">().notNull(),
+
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    /** A D9 edita categoria e texto; é por aqui que se sabe que mexeram. */
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // Toda leitura filtra por usuário — é a primeira cláusula de todo where.
+    index("classification_rules_user_id_idx").on(t.userId),
+    // A D9 conta quantas regras apontam para cada categoria.
+    index("classification_rules_categoria_id_idx").on(t.categoriaId),
+
+    unique("classification_rules_user_id_chave_unq").on(t.userId, t.chave),
+
+    check(
+      "classification_rules_tipo_ck",
+      sql`${t.tipoRegra} in ('descricao_contem','pessoa','valor_direcao')`,
+    ),
+    check(
+      "classification_rules_origem_ck",
+      sql`${t.origem} in ('seed','correcao')`,
+    ),
+  ],
+);
+
+export type RegraSalva = typeof classificationRules.$inferSelect;
+export type NovaRegraSalva = typeof classificationRules.$inferInsert;

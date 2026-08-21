@@ -158,6 +158,45 @@ uma, no polegar. É a única tela nova desta spec.
 
 ---
 
+## Página: `/regras` — ver, mexer e apagar o que foi aprendido
+
+**Decidido pelo Davi no portão visual da fase B.** O `readme.md` colocava isso
+na fase 2; ele trouxe para cá, e a razão é boa: um motor que aprende sozinho e
+nunca desaprende é um motor que você deixa de confiar no dia em que ele erra.
+
+**Propósito:** ver todas as regras da sua conta, corrigir uma que ficou larga
+demais, e apagar a que não deveria ter nascido.
+
+### Comportamentos do usuário
+
+| Ação do usuário | Resposta do sistema |
+|---|---|
+| Abre `/regras` | Lista as regras da conta, agrupadas por pote, mostrando **o texto que cada uma procura** e quantos lançamentos ela já classificou |
+| Toca numa regra | Abre para editar: a categoria de destino e o texto procurado |
+| Muda a categoria de destino | Vale **daqui para frente**. O que já foi classificado não se mexe |
+| Apaga uma regra | Ela para de classificar. **Os lançamentos que ela já classificou ficam como estão** |
+| Regra veio do seed | Aparece marcada como tal, e pode ser apagada igual às outras |
+| Nenhuma regra ainda | Estado vazio explicando que regra nasce de uma correção sua na revisão |
+
+### A decisão que sustenta as duas linhas acima
+
+**Apagar ou editar uma regra não reescreve o passado.**
+
+A tentação é a oposta: apagou a regra errada, reclassifica tudo que ela pegou.
+Mas isso significa que um toque seu muda meses de painel de uma vez, em
+silêncio — inclusive lançamentos que você tinha conferido e aprovado na
+revisão.
+
+É a mesma régua da D6: desfazer uma classificação não desfaz o aprendizado, e
+desfazer o aprendizado não desfaz as classificações. Cada uma é uma decisão
+sua, e nenhuma arrasta a outra sem você pedir.
+
+Isso só é possível porque a C3 grava a **procedência**: dá para dizer "estes 8
+lançamentos vieram desta regra" e oferecer a reclassificação como uma segunda
+ação explícita, se você quiser. Não como efeito colateral.
+
+---
+
 ## Página: `/dashboard` — deixa de dizer que falta classificar
 
 Só a frase muda: quando não há mais pendências, o aviso "falta classificar"
@@ -264,7 +303,9 @@ Configurável só na fase 2.
 ---
 ## Fora do escopo
 
-- Tela de cadastrar/editar regras do zero → fase 2 (`readme.md`, seção 3)
+- Tela de **cadastrar** regra do zero → fase 2 (`readme.md`, seção 3). Continua
+  fora: regra nasce de correção sobre descrição real, nunca da sua memória
+  (descoberta 3)
 - Fallback via LLM → decidido: depois, quando o resíduo justificar
 - O painel de verdade: potes com barra, gráficos, comparativo anual → spec própria
 - Fechar o mês / veredito / insights → spec própria

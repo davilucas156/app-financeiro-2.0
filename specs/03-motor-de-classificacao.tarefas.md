@@ -139,6 +139,15 @@ mês ela pegaria junto. Mais o "Voltar", que reabre o anterior. Estado final:
 
 > ⛔ **Portão de aprovação do Davi.** Não seguir para a fase C sem o "ok"
 > visual.
+>
+> ✅ **Aprovado.** Espaços originais na descrição: fica. "Voltar" e "Fora do
+> cálculo" logo abaixo do cartão: fica. Dois retornos:
+>
+> - **Contraste do andaime:** os botões de estado estavam ilegíveis no celular
+>   (`text-dim` em 10px). Corrigido para texto claro, 14px em negrito e alvo de
+>   44px. O cinza que serve para rótulo secundário não serve para o que se toca.
+> - **Regras têm de poder ser editadas e apagadas** → virou a **D9**, e tirou
+>   edição de regras da fase 2 do `readme.md`.
 
 ---
 
@@ -219,6 +228,28 @@ onboarding.
 `/dashboard` e de `/revisao`. **Não é o painel** — é a mesma régua da D6 da
 spec 02: não mentir.
 
+### D9 · Ver, mexer e apagar as regras salvas
+**Camada:** FRONT-INTEGRADO + BACK
+**Pronto quando:** `/regras` lista as regras da conta com **o texto que cada uma
+procura** e quantos lançamentos ela já classificou; dá para trocar a categoria
+de destino, corrigir o texto e apagar.
+
+**Pedido do Davi no portão visual da fase B.** O `readme.md` colocava edição de
+regras na fase 2; ele trouxe para cá. Motor que aprende sozinho e nunca
+desaprende é motor em que se para de confiar no dia em que ele erra.
+
+> ⚠ **Editar ou apagar não reescreve o passado.** A regra para de valer daqui
+> para frente; o que ela já classificou fica como está. Mesma régua da D6:
+> desfazer uma classificação não desfaz o aprendizado, e desfazer o aprendizado
+> não desfaz as classificações.
+>
+> Só é possível porque a C3 grava a procedência — dá para dizer "estes 8 vieram
+> desta regra" e oferecer a reclassificação como **segunda ação explícita**, se
+> ele quiser, em vez de efeito colateral silencioso.
+
+**Continua fora:** cadastrar regra do zero. Regra nasce de correção sobre
+descrição real — a descoberta 3 da spec.
+
 ---
 
 ## Fase E — Deploy
@@ -238,7 +269,7 @@ em 14 decisões** (três pendentes repetem comerciante ou contraparte de outro).
 | A — O motor | A1–A6 | spec 02 no banco |
 | B — Protótipo visual | B1–B3 | A (as sugestões dependem do que o motor produz) |
 | C — Banco | C1–C3 | aprovação visual de B |
-| D — Integração | D1–D8 | C |
+| D — Integração | D1–D9 | C |
 | E — Deploy | E1 | D |
 
 A Etapa 3 (Plan) é feita **tarefa por tarefa**, não tudo de uma vez.
