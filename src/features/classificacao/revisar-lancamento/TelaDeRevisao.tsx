@@ -52,10 +52,16 @@ export function TelaDeRevisao({
     return (
       <>
         <SectionTitle>Revisar transações</SectionTitle>
+        {/*
+          A frase antiga prometia que "o painel pode contar a história inteira
+          do mês". Ele não pode — os potes com valores são a spec 04. Mesma
+          correção da D8 no `/dashboard`: uma tela não promete o que a próxima
+          spec ainda vai construir.
+        */}
         <EstadoVazio
           emoji="✅"
           titulo="Nada pendente"
-          descricao="Todos os lançamentos importados já têm categoria. O painel pode contar a história inteira do mês."
+          descricao="Todos os lançamentos importados já têm categoria. Nada aqui espera por você."
         />
         <div className="mt-4 flex justify-center">
           <Link href="/dashboard">

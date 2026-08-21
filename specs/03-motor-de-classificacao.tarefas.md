@@ -264,11 +264,28 @@ onboarding.
 > deles seriam resolvidos por estas regras num reenvio. Detalhes em
 > `specs/plans/D7-seed-das-regras.md`.
 
-### D8 · O painel para de pedir classificação
+### D8 · O painel para de pedir classificação ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** sem pendências, o aviso "falta classificar" some do
 `/dashboard` e de `/revisao`. **Não é o painel** — é a mesma régua da D6 da
 spec 02: não mentir.
+
+> **A spec 03 tornou falsas três frases do painel**, e todas foram criadas por
+> ele ter sido construído: "nenhum caiu num pote ainda" (a D1 classifica na
+> importação), "a próxima funcionalidade a ser construída" (foi), e o cartão
+> aparecia mesmo sem nada pendente. Havia uma quarta coisa, pior de usar: ele
+> **nomeava o passo que faltava e não oferecia o caminho** — nenhum link para
+> `/revisao`.
+>
+> A causa era fundir duas verdades diferentes num cartão só: a pendência
+> (que acaba) e a limitação do produto (que continua até a spec 04). Como a
+> segunda é permanente, o cartão nunca sumia e a primeira ia junto para sempre.
+> Agora são dois estados, e a decisão mora em `avisoDoPainel.ts`, testada.
+>
+> **O número do painel é o tamanho da fila por construção.** O critério da fila
+> virou `filaDeRevisao.ts` e os dois lados leem de lá — terceira vez nesta spec
+> que uma regra escrita duas vezes vira arquivo. Verificado contra o Neon:
+> 32 = 32. Detalhes em `specs/plans/D8-painel-para-de-pedir.md`.
 
 ### D9 · Ver, mexer e apagar as regras salvas
 **Camada:** FRONT-INTEGRADO + BACK

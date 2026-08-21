@@ -2,6 +2,10 @@ import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import {
+  jaClassificado,
+  naFilaDeRevisao,
+} from "@/features/classificacao/revisar-lancamento/filaDeRevisao";
 
 /**
  * Quantos lançamentos existem e em que estado (tarefa D6).
@@ -17,10 +21,22 @@ import { getDb } from "@/lib/db";
 
 export type ResumoDeLancamentos = {
   total: number;
-  /** Importados e ainda sem categoria: o que a próxima spec vai resolver. */
-  aguardandoClassificacao: number;
-  /** Pares que parecem se anular, esperando você decidir. */
-  emRevisao: number;
+  /**
+   * Já têm categoria, vindo de regra ou da sua mão.
+   *
+   * Só passou a ser um número interessante na spec 03 — antes dela era zero por
+   * construção.
+   */
+  classificados: number;
+  /**
+   * O tamanho **exato** da fila de `/revisao` (D8).
+   *
+   * ⚠ Sobrepõe-se a `classificados` no lançamento de valor alto: ele está
+   * classificado **e** pede confirmação. A sobreposição é real, é a mesma que a
+   * D2 documentou em `paraDecidir`, e escolher um dos dois lados esconderia
+   * metade do fato.
+   */
+  paraDecidir: number;
   /** Pagamento de fatura e afins: guardados, fora da conta de gastos. */
   foraDoCalculo: number;
   /** `YYYY-MM`, do mais recente para o mais antigo. */
@@ -40,10 +56,12 @@ export async function resumoDeLancamentos(
     db
       .select({
         total: sql<number>`count(*)::int`,
-        aguardandoClassificacao: quantos(
-          sql`${transactions.status} = 'importado' and ${transactions.categoriaId} is null`,
-        ),
-        emRevisao: quantos(sql`${transactions.status} = 'revisao_pendente'`),
+        // ⚠ **Os dois critérios vêm de `filaDeRevisao.ts`**, o mesmo arquivo
+        // que `/revisao` usa no `where` (D8). O painel diz "N para decidir" e
+        // leva até lá; contar diferente aqui seria mostrar 17 e abrir uma tela
+        // com 23 — a mentira por omissão que a D2 consertou no upload.
+        classificados: quantos(jaClassificado()),
+        paraDecidir: quantos(naFilaDeRevisao()),
         foraDoCalculo: quantos(sql`${transactions.status} = 'excluido'`),
       })
       .from(transactions)
@@ -60,8 +78,8 @@ export async function resumoDeLancamentos(
   // não sabe disso, e um `!` aqui seria mentira de tipo por conveniência.
   const c = contagens[0] ?? {
     total: 0,
-    aguardandoClassificacao: 0,
-    emRevisao: 0,
+    classificados: 0,
+    paraDecidir: 0,
     foraDoCalculo: 0,
   };
 

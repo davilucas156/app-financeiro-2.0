@@ -2,23 +2,36 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import type { ResumoDeLancamentos } from "@/features/painel/resumo-de-lancamentos/resumoDeLancamentos.service";
+import { avisoDoPainel, type AvisoDoPainel } from "./avisoDoPainel";
 import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
 
 /**
- * O que o painel mostra **enquanto o painel não existe** (tarefa D6).
+ * O que o painel mostra **enquanto o painel não existe** (tarefas D6 e D8).
  *
  * A régua aqui é uma só: não mentir. Não invento potes, não somo gastos, não
  * comparo com o mês passado — nada disso é possível antes da classificação.
  * Digo o que há no banco, de quem é, e qual é o passo que ainda falta.
+ *
+ * ⚠ **A spec 03 tornou falsas três frases desta tela**, e a D8 as corrigiu.
+ * Ela dizia "nenhum caiu num pote ainda" (a D1 classifica na importação),
+ * "a próxima funcionalidade a ser construída" (foi construída) e pedia
+ * classificação mesmo sem nada pendente. Código que descreve o produto envelhece
+ * junto com o produto; esta tela é a que envelhece mais rápido.
  */
 export function ResumoDoQueEntrou({ resumo }: { resumo: ResumoDeLancamentos }) {
   return (
     <>
       <Card className="p-0">
         <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {/*
+            "Sem categoria" e "Para revisar" eram dois terços da mesma fila, e
+            nenhum dos dois era o tamanho dela. Agora o segundo número é o que
+            já está resolvido e o terceiro é **exatamente** o que `/revisao`
+            abre — mesma definição, mesmo arquivo.
+          */}
           <Numero rotulo="Lançamentos" valor={resumo.total} destaque />
-          <Numero rotulo="Sem categoria" valor={resumo.aguardandoClassificacao} />
-          <Numero rotulo="Para revisar" valor={resumo.emRevisao} />
+          <Numero rotulo="Classificados" valor={resumo.classificados} />
+          <Numero rotulo="Para decidir" valor={resumo.paraDecidir} />
         </div>
       </Card>
 
@@ -34,19 +47,14 @@ export function ResumoDoQueEntrou({ resumo }: { resumo: ResumoDeLancamentos }) {
       </div>
 
       {/*
-        A parte que importa: dizer que o painel ainda não existe, em vez de
-        deixar você procurar os potes numa tela que nunca vai mostrá-los.
+        ⚠ **Sem pendência, o app não pede nada.**
+
+        Este cartão era fixo e dizia "falta classificar" mesmo depois de você
+        classificar tudo — porque misturava a pendência (que acaba) com a
+        limitação do produto (que continua). São dois estados agora, e a
+        decisão de qual mostrar mora em `avisoDoPainel.ts`, testada.
       */}
-      <Card className="mt-3 border-gold/20 bg-gold/8">
-        <p className="text-xs font-bold text-gold">
-          Falta classificar para o painel existir.
-        </p>
-        <p className="mt-1.5 text-xs leading-relaxed text-dim">
-          Seus lançamentos estão guardados, mas nenhum caiu num pote ainda —
-          separar gasto fixo de lazer é a próxima funcionalidade a ser
-          construída. Até lá, esta tela conta o que entrou e mais nada.
-        </p>
-      </Card>
+      <Aviso aviso={avisoDoPainel(resumo.paraDecidir)} />
 
       {resumo.foraDoCalculo > 0 && (
         <Card className="mt-3 border-blue/20 bg-blue/8">
@@ -94,5 +102,41 @@ function Numero({
         {valor}
       </p>
     </div>
+  );
+}
+
+/**
+ * Os dois estados do aviso, com a mesma forma e cores diferentes.
+ *
+ * Dourado pede atenção; verde registra. Um componente só para os dois porque a
+ * diferença entre eles é de conteúdo e de tom, não de estrutura — e dois
+ * componentes iguais divergiriam de espaçamento no primeiro ajuste.
+ */
+function Aviso({ aviso }: { aviso: AvisoDoPainel }) {
+  const pedindo = aviso.tom === "pedir";
+
+  return (
+    <Card
+      className={`mt-3 ${
+        pedindo ? "border-gold/20 bg-gold/8" : "border-green/20 bg-green/8"
+      }`}
+    >
+      <p
+        className={`text-xs font-bold ${pedindo ? "text-gold" : "text-green"}`}
+      >
+        {aviso.titulo}
+      </p>
+
+      <p className="mt-1.5 text-xs leading-relaxed text-dim">{aviso.texto}</p>
+
+      {aviso.acao && (
+        <Link
+          href={aviso.acao.href}
+          className="mt-4 inline-flex min-h-11 items-center rounded-card bg-primary px-5 text-sm font-bold text-bg transition-colors hover:bg-orange"
+        >
+          {aviso.acao.rotulo}
+        </Link>
+      )}
+    </Card>
   );
 }

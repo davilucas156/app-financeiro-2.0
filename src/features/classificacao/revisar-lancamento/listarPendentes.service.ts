@@ -1,11 +1,12 @@
 import "server-only";
-import { and, asc, eq, isNotNull, isNull, ne, or } from "drizzle-orm";
+import { and, asc, eq, isNotNull } from "drizzle-orm";
 import { buckets, categories, decisionUndo, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import type { Classificado } from "@/features/classificacao/motor/sugestoes";
 import type { CategoriaEscolhivel } from "./categorias";
 import type { PodeVoltar } from "./desfazer";
+import { naFilaDeRevisao } from "./filaDeRevisao";
 import {
   prepararRevisao,
   type LancamentoPendente,
@@ -59,26 +60,10 @@ export async function listarPendentes(
       })
       .from(transactions)
       .where(
-        and(
-          eq(transactions.userId, userId),
-          /*
-           * Dois tipos de pendência, e os dois caem nesta tela:
-           *
-           * - **sem categoria** — nenhuma regra bateu, você escolhe;
-           * - **`revisao_pendente`** — par que se anula (spec 02) ou valor
-           *   alto que uma regra classificou (D1), e você confirma.
-           *
-           * Excluído fica de fora: pagamento de fatura não pede decisão.
-           */
-          or(
-            isNull(transactions.categoriaId),
-            eq(transactions.status, "revisao_pendente"),
-          ),
-          // Excluído também tem categoria nula. Sem esta linha, o pagamento de
-          // fatura entraria na fila de decisão — e ele não pede decisão
-          // nenhuma, é justamente o que a spec 02 já resolveu.
-          ne(transactions.status, "excluido"),
-        ),
+        // ⚠ **A definição da fila mora em `filaDeRevisao.ts`** desde a D8. O
+        // painel conta com o mesmo critério, e as duas cópias divergiriam no
+        // dia em que alguém ajustasse uma delas.
+        and(eq(transactions.userId, userId), naFilaDeRevisao()),
       )
       .orderBy(asc(transactions.data), asc(transactions.id)),
 
