@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import type { Criterio, TipoDeRegra } from "@/features/classificacao/motor/regras";
+import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
@@ -354,6 +355,59 @@ export const transactions = pgTable(
       onDelete: "set null",
     }),
 
+    // ── Procedência da classificação (tarefa C3) ───────────────────────────
+    //
+    // Nasceu de uma pergunta feita seis meses depois: "por que isso caiu em
+    // Lazer?". Tudo nulo enquanto o lançamento está pendente.
+
+    /** `regra`, `sugestao` ou `manual`. Nulo = ainda não classificado. */
+    classificadoPor: text("classificado_por").$type<
+      "regra" | "sugestao" | "manual"
+    >(),
+
+    /**
+     * Qual regra classificou.
+     *
+     * ⚠ **`set null`, jamais `cascade`.** O erro é fácil e catastrófico: com
+     * cascade, apagar uma regra apagaria os **lançamentos** que ela
+     * classificou. Uma regra some; o dinheiro que passou pela conta, não.
+     *
+     * Sobrevive à edição da regra, porque o id não muda quando o texto muda.
+     * Morre quando a regra é apagada — e é por isso que a coluna abaixo
+     * existe.
+     */
+    regraId: uuid("regra_id").references(() => classificationRules.id, {
+      onDelete: "set null",
+    }),
+
+    /**
+     * O que a regra procurava, **congelado no instante da classificação**.
+     *
+     * Esta é a coluna que faz a C3 cumprir o que promete. A D9 deixa o Davi
+     * apagar regra; se a procedência fosse só a chave estrangeira acima, no
+     * dia em que ele apagasse uma regra a resposta sumiria para todos os
+     * lançamentos que ela classificou — a C3 falharia exatamente no cenário
+     * que a D9 cria.
+     *
+     * Congelada, e não lida da regra ao vivo, porque procedência conta o que
+     * era verdade **naquele dia**. Se a regra foi editada depois, o lançamento
+     * antigo continua explicado pelo texto que de fato o pegou.
+     */
+    regraChave: text("regra_chave"),
+
+    /**
+     * Qual das quatro fontes da A4 foi aceita.
+     *
+     * "Sugestão aceita" sozinha não diz de quem era a sugestão, e a diferença
+     * é de confiança: "você aceitou o que você mesmo já tinha classificado" e
+     * "você aceitou um palpite do banco" são histórias diferentes no dia em
+     * que algo deu errado.
+     */
+    fonteDaSugestao: text("fonte_da_sugestao").$type<FonteDeSugestao>(),
+
+    /** "Quando" é parte de "por quê" — e o "Voltar" da D6 precisa da ordem. */
+    classificadoEm: timestamp("classificado_em", { withTimezone: true }),
+
     criadoEm: timestamp("criado_em", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -386,6 +440,37 @@ export const transactions = pgTable(
     check("transactions_origem_ck", sql`${t.origem} in ('csv_conta','csv_cartao')`),
     check("transactions_mes_ck", sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`),
     check("transactions_valor_ck", sql`${t.valorCentavos} >= 0`),
+
+    // A consulta da D9: "me mostre os 8 lançamentos que esta regra pegou".
+    index("transactions_regra_id_idx").on(t.regraId),
+
+    /*
+     * Três invariantes de procedência, para não existir estado impossível.
+     *
+     * Lançamento classificado tem de dizer **como**; lançamento pendente não
+     * pode alegar procedência nenhuma.
+     *
+     * ⚠ Repare que o primeiro check **não** cobre `regra_id`: depois de um
+     * `set null` ele fica nulo enquanto `classificado_por` continua `'regra'`.
+     * Isso não é inconsistência — é o registro de que a regra foi apagada, e
+     * é exatamente por isso que `regra_chave` existe.
+     */
+    check(
+      "transactions_classificacao_ck",
+      sql`(${t.categoriaId} is null) = (${t.classificadoPor} is null)`,
+    ),
+    check(
+      "transactions_classificado_por_ck",
+      sql`${t.classificadoPor} is null or ${t.classificadoPor} in ('regra','sugestao','manual')`,
+    ),
+    check(
+      "transactions_regra_chave_ck",
+      sql`${t.regraChave} is null or ${t.classificadoPor} = 'regra'`,
+    ),
+    check(
+      "transactions_fonte_sugestao_ck",
+      sql`${t.fonteDaSugestao} is null or ${t.classificadoPor} = 'sugestao'`,
+    ),
   ],
 );
 
