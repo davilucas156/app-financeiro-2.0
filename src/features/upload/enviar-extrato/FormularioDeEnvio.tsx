@@ -164,6 +164,9 @@ export function FormularioDeEnvio({
             })),
             excluidos: sucesso.excluidos,
             revisao: sucesso.revisao,
+            classificados: sucesso.classificados,
+            pendentes: sucesso.pendentes,
+            conferir: sucesso.conferir,
           }}
         />
       )}

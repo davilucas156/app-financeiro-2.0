@@ -1,8 +1,15 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { LinhasIgnoradas } from "@/features/upload/enviar-extrato/LinhasIgnoradas";
 import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
+import {
+  paraDecidir,
+  tudoResolvido,
+  type ContagemDaImportacao,
+} from "@/features/upload/enviar-extrato/contagemDaImportacao";
 
 /**
  * O que entrou e o que não entrou (tarefa B2) — **protótipo visual**.
@@ -35,6 +42,12 @@ export type DadosDoResumo = {
   excluidos: number;
   /** Pares que se anulam, esperando o usuário decidir. */
   revisao: number;
+  /** O motor bateu regra (D1). */
+  classificados: number;
+  /** Nenhuma regra bateu: você escolhe a categoria. */
+  pendentes: number;
+  /** Classificados de valor alto, que ainda pedem confirmação (D1). */
+  conferir: number;
 };
 
 export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
@@ -42,6 +55,17 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
   const ignoradas = dados.arquivos.flatMap((a) =>
     a.ignoradas.map((i) => ({ ...i, arquivo: a.rotulo })),
   );
+
+  const contagem: ContagemDaImportacao = {
+    importados: total,
+    classificados: dados.classificados,
+    pendentes: dados.pendentes,
+    pares: dados.revisao,
+    conferir: dados.conferir,
+    excluidos: dados.excluidos,
+  };
+
+  const decidir = paraDecidir(contagem);
 
   return (
     <section aria-labelledby="resumo-da-importacao">
@@ -53,11 +77,37 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
         {/* Empilha no celular, vira colunas a partir de sm:. Três números
             lado a lado em 360px ficariam ilegíveis. */}
         <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          <Numero rotulo="Importados" valor={total} destaque />
-          <Numero rotulo="Para revisar" valor={dados.revisao} />
-          <Numero rotulo="Fora do cálculo" valor={dados.excluidos} />
+          <Numero rotulo="Importados" valor={total} />
+          <Numero rotulo="Classificados" valor={dados.classificados} />
+          <Numero rotulo="Para decidir" valor={decidir} destaque />
         </div>
       </Card>
+
+      {/*
+        O número que pede ação é o destacado — não o total. E ele leva a algum
+        lugar: "23 para decidir" sem caminho é só um número que gera culpa.
+
+        Quando não sobra nada, **não** existe link. Mandar alguém para uma tela
+        vazia depois de dizer "tudo pronto" é a definição de caminho inútil.
+      */}
+      {tudoResolvido(contagem) ? (
+        total > 0 && (
+          <Card className="mt-3 border-green/20 bg-green/8">
+            <p className="text-xs font-bold text-green">Tudo classificado.</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-dim">
+              As suas regras deram conta do mês inteiro. Não há nada esperando
+              você em Revisar.
+            </p>
+          </Card>
+        )
+      ) : (
+        <Link href="/revisao" className="mt-3 block">
+          <Button className="w-full">
+            Decidir agora
+            <span aria-hidden="true">→</span>
+          </Button>
+        </Link>
+      )}
 
       <div className="mt-3 space-y-2">
         {dados.arquivos.map((a) => (
@@ -73,10 +123,46 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
         ))}
       </div>
 
+      {/*
+        Um cartão por tipo de pendência. "23 para decidir" sem dizer de quê é
+        um número que gera desconfiança, não ação — mesma régua das linhas
+        ignoradas na spec 02.
+      */}
+      {dados.pendentes > 0 && (
+        <Card className="mt-3 border-gold/20 bg-gold/8">
+          <div className="flex items-start gap-3">
+            <Badge variant="gold">Escolher</Badge>
+            <p className="text-xs leading-relaxed text-dim">
+              {dados.pendentes === 1
+                ? "1 lançamento não bateu com nenhuma regra sua."
+                : `${dados.pendentes} lançamentos não bateram com nenhuma regra sua.`}{" "}
+              Você escolhe a categoria, e pode transformar a escolha em regra
+              para o mês que vem.
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {dados.conferir > 0 && (
+        <Card className="mt-3 border-gold/20 bg-gold/8">
+          <div className="flex items-start gap-3">
+            <Badge variant="gold">Conferir</Badge>
+            <p className="text-xs leading-relaxed text-dim">
+              {dados.conferir === 1
+                ? "1 lançamento foi classificado por uma regra, mas passa de R$ 200"
+                : `${dados.conferir} lançamentos foram classificados por regra, mas passam de R$ 200`}
+              . Já estão no lugar — é só confirmar que a categoria está certa.
+              Regra errada em valor alto é o erro mais caro, e o mais fácil de
+              não notar.
+            </p>
+          </div>
+        </Card>
+      )}
+
       {dados.revisao > 0 && (
         <Card className="mt-3 border-gold/20 bg-gold/8">
           <div className="flex items-start gap-3">
-            <Badge variant="gold">Revisar</Badge>
+            <Badge variant="gold">Anulam?</Badge>
             <p className="text-xs leading-relaxed text-dim">
               {dados.revisao} lançamentos parecem se anular entre si — mesmo
               valor, sentidos opostos, datas próximas. Nada foi apagado; você
