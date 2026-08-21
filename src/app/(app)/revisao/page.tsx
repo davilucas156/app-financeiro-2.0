@@ -20,12 +20,13 @@ export const metadata: Metadata = {
  */
 export default async function RevisaoPage() {
   const usuario = await garantirUsuario();
-  const { pendentes, categorias } = await listarPendentes(usuario.id);
+  const { pendentes, categorias, voltar } = await listarPendentes(usuario.id);
 
   return (
     <TelaDeRevisao
       pendentes={pendentes}
       categorias={categorias}
+      voltar={voltar}
       mes={pendentes[0]?.data.slice(0, 7) ?? ""}
     />
   );

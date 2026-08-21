@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   date,
   index,
@@ -598,3 +599,93 @@ export const classificationRules = pgTable(
 
 export type RegraSalva = typeof classificationRules.$inferSelect;
 export type NovaRegraSalva = typeof classificationRules.$inferInsert;
+
+/**
+ * A sombra da última decisão da revisão (tarefa D6).
+ *
+ * ## Por que uma tabela, para um botão
+ *
+ * `UPDATE ... RETURNING` devolve o valor **novo**. No instante em que a decisão
+ * grava, o estado anterior deixa de existir — e sem ele o "Voltar" não desfaz,
+ * chuta.
+ *
+ * E o chute é ambíguo de verdade: um pendente da fila pode estar sem categoria
+ * e `importado`, sem categoria e `revisao_pendente` (par que se anula), ou
+ * **com** categoria e `revisao_pendente` (o valor alto que uma regra
+ * classificou). O terceiro é o que não fecha — a categoria que a regra tinha
+ * posto foi sobrescrita pela sua, e ir buscá-la na `classification_rules`, que
+ * a D9 deixa apagar, é uma dedução de quatro elos.
+ *
+ * ## Uma linha por usuário
+ *
+ * Não é log e não é histórico: é o rascunho do último passo. A chave primária
+ * ser o `user_id` **é** a promessa do botão — "reabre o anterior", singular.
+ * Sem pilha que cresce, sem limpeza agendada.
+ *
+ * ## Colunas de verdade, não um jsonb
+ *
+ * `categoria_id` e `regra_id` repetem o `set null` que `transactions` usa. Se a
+ * categoria sumir entre decidir e desfazer, o Postgres cuida; num json eu
+ * descobriria pelo erro de chave estrangeira na hora de restaurar.
+ *
+ * ⚠ **Sem os `check`s de `transactions`, de propósito.** O `set null` acima é
+ * disparado por um `delete` de categoria; com o check
+ * `(categoria_id is null) = (classificado_por is null)` aqui, esse delete
+ * falharia. O rascunho de um desfazer não pode ter poder de veto sobre o resto
+ * do app — a coerência é garantida no restaurar, que devolve pendente limpo
+ * quando a categoria não existe mais.
+ */
+export const decisionUndo = pgTable("decision_undo", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  /**
+   * `cascade`: apagar o envio apaga os lançamentos (spec 02), e não sobra
+   * desfazer apontando para algo que não existe mais.
+   */
+  transactionId: uuid("transaction_id")
+    .notNull()
+    .references(() => transactions.id, { onDelete: "cascade" }),
+
+  // ── A sombra exata das oito colunas que a decisão escreve ────────────────
+
+  categoriaId: uuid("categoria_id").references(() => categories.id, {
+    onDelete: "set null",
+  }),
+  classificadoPor: text("classificado_por").$type<
+    "regra" | "sugestao" | "manual"
+  >(),
+  regraId: uuid("regra_id").references(() => classificationRules.id, {
+    onDelete: "set null",
+  }),
+  regraChave: text("regra_chave"),
+  fonteDaSugestao: text("fonte_da_sugestao").$type<FonteDeSugestao>(),
+  classificadoEm: timestamp("classificado_em", { withTimezone: true }),
+  status: text("status")
+    .$type<"importado" | "revisao_pendente" | "excluido">()
+    .notNull(),
+  motivo: text("motivo"),
+
+  // ── O que a tela precisa avisar antes de você tocar em "Voltar" ──────────
+
+  /**
+   * Aquela decisão criou uma regra?
+   *
+   * Desfazer reabre **um** lançamento; a regra fica, e os irmãos que ela pegou
+   * seguem classificados. É o que a D6 manda, e é surpreendente se ninguém
+   * disser — então a tela diz, **antes**. Avisar depois seria explicar um
+   * susto.
+   */
+  regraCriada: boolean("regra_criada").notNull().default(false),
+
+  /** Quantos irmãos a regra pegou junto, para o aviso ser específico. */
+  irmaos: integer("irmaos").notNull().default(0),
+
+  criadoEm: timestamp("criado_em", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type DesfazerSalvo = typeof decisionUndo.$inferSelect;
+export type NovoDesfazerSalvo = typeof decisionUndo.$inferInsert;

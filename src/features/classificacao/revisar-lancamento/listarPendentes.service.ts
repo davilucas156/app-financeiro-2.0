@@ -1,10 +1,11 @@
 import "server-only";
 import { and, asc, eq, isNotNull, isNull, ne, or } from "drizzle-orm";
-import { buckets, categories, transactions } from "@/db/schema";
+import { buckets, categories, decisionUndo, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import type { Classificado } from "@/features/classificacao/motor/sugestoes";
 import type { CategoriaEscolhivel } from "./categorias";
+import type { PodeVoltar } from "./desfazer";
 import {
   prepararRevisao,
   type LancamentoPendente,
@@ -22,6 +23,8 @@ import {
 export type DadosDaRevisao = {
   pendentes: PendenteParaRevisar[];
   categorias: CategoriaEscolhivel[];
+  /** A sombra da última decisão, ou nada — é o que acende o "Voltar" (D6). */
+  voltar: PodeVoltar | null;
 };
 
 /**
@@ -39,7 +42,7 @@ export async function listarPendentes(
 ): Promise<DadosDaRevisao> {
   const db = getDb();
 
-  const [linhas, categoriasDoBanco, historico] = await Promise.all([
+  const [linhas, categoriasDoBanco, historico, sombra] = await Promise.all([
     db
       .select({
         id: transactions.id,
@@ -113,6 +116,24 @@ export async function listarPendentes(
         and(eq(transactions.userId, userId), isNotNull(transactions.categoriaId)),
       )
       .limit(TETO_DE_HISTORICO),
+
+    /*
+     * O que o "Voltar" reabriria (D6).
+     *
+     * `innerJoin` e não uma leitura solta: a descrição vem do lançamento vivo,
+     * não de uma cópia congelada. Se ele deixou de existir, o join não devolve
+     * nada e o botão apaga — que é a resposta certa.
+     */
+    db
+      .select({
+        descricao: transactions.descricaoOriginal,
+        regraCriada: decisionUndo.regraCriada,
+        irmaos: decisionUndo.irmaos,
+      })
+      .from(decisionUndo)
+      .innerJoin(transactions, eq(transactions.id, decisionUndo.transactionId))
+      .where(eq(decisionUndo.userId, userId))
+      .limit(1),
   ]);
 
   const categoriasEscolhiveis: CategoriaEscolhivel[] = categoriasDoBanco.map(
@@ -140,6 +161,7 @@ export async function listarPendentes(
 
   return {
     categorias: categoriasEscolhiveis,
+    voltar: sombra[0] ?? null,
     pendentes: prepararRevisao(linhas as LancamentoPendente[], {
       idPorChave,
       historico: historico.map(

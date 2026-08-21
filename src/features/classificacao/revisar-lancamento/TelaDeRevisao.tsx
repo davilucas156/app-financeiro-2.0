@@ -7,12 +7,14 @@ import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { AcaoDeDecidir } from "./AcaoDeDecidir";
+import { AcaoDeVoltar } from "./AcaoDeVoltar";
 import { CartaoDoLancamento } from "./CartaoDoLancamento";
 import { ListaDeCategorias } from "./ListaDeCategorias";
 import { ProgressoDaRevisao } from "./ProgressoDaRevisao";
 import { Sugestoes } from "./Sugestoes";
 import { PerguntaDeRegra } from "./PerguntaDeRegra";
 import { porId, type CategoriaEscolhivel } from "./categorias";
+import { avisoDoVoltar, type PodeVoltar } from "./desfazer";
 import type { PendenteParaRevisar } from "./pendentes";
 import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 
@@ -39,10 +41,12 @@ export function TelaDeRevisao({
   pendentes,
   categorias,
   mes,
+  voltar,
 }: {
   pendentes: PendenteParaRevisar[];
   categorias: CategoriaEscolhivel[];
   mes: string;
+  voltar: PodeVoltar | null;
 }) {
   if (pendentes.length === 0) {
     return (
@@ -58,6 +62,20 @@ export function TelaDeRevisao({
             <Button>Ver o painel</Button>
           </Link>
         </div>
+
+        {/*
+          ⚠ **O "Voltar" precisa existir aqui também.**
+
+          Ao classificar o último pendente a tela vira esta — e o botão mora
+          dentro do componente do lançamento. Sem esta cópia ele sumiria
+          exatamente na decisão mais provável de se querer desfazer: a última.
+        */}
+        {voltar && (
+          <div className="mx-auto mt-8 max-w-xs">
+            <AcaoDeVoltar voltar={voltar} />
+            <AvisoDoVoltar voltar={voltar} />
+          </div>
+        )}
       </>
     );
   }
@@ -69,7 +87,24 @@ export function TelaDeRevisao({
       total={pendentes.length}
       categorias={categorias}
       mes={mes}
+      voltar={voltar}
     />
+  );
+}
+
+/**
+ * O que o "Voltar" **não** desfaz, dito antes de você tocar nele.
+ *
+ * Desfazer reabre um lançamento; a regra que aquela decisão criou fica, e os
+ * irmãos que ela pegou seguem classificados. É o que a D6 manda — e é
+ * surpreendente se ninguém disser. Avisar depois seria explicar um susto.
+ */
+function AvisoDoVoltar({ voltar }: { voltar: PodeVoltar | null }) {
+  const aviso = avisoDoVoltar(voltar);
+  if (!aviso) return null;
+
+  return (
+    <p className="mt-2 text-[11px] leading-relaxed text-dim">↩ {aviso}</p>
   );
 }
 
@@ -87,11 +122,13 @@ function Revisando({
   total,
   categorias,
   mes,
+  voltar,
 }: {
   atual: PendenteParaRevisar;
   total: number;
   categorias: CategoriaEscolhivel[];
   mes: string;
+  voltar: PodeVoltar | null;
 }) {
   const [escolhida, setEscolhida] = useState<{
     categoria: CategoriaEscolhivel;
@@ -118,11 +155,9 @@ function Revisando({
         mentira.
       */}
       <div className="mt-3 flex gap-2">
-        {/* O "Voltar" é a D6: desfazer a gravação anterior é outra escrita, e
-            fingir que ele funciona seria pior do que ele estar apagado. */}
-        <Button variant="secondary" className="flex-1 px-3 text-xs" disabled>
-          ← Voltar
-        </Button>
+        <div className="flex-1">
+          <AcaoDeVoltar voltar={voltar} />
+        </div>
 
         <div className="flex-1">
           <AcaoDeDecidir
@@ -133,6 +168,8 @@ function Revisando({
           </AcaoDeDecidir>
         </div>
       </div>
+
+      <AvisoDoVoltar voltar={voltar} />
 
       {atual.motivo && (
         <Card className="mt-3 border-gold/20 bg-gold/8">

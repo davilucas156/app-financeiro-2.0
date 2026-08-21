@@ -209,12 +209,29 @@ o `user_id`, como no desfazer da spec 02.
 trecho da A2 e **aplica aos outros pendentes do mesmo mês** na mesma transação.
 Responder "só desta vez" não cria nada.
 
-### D6 · Voltar desfaz
-**Camada:** FRONT-INTEGRADO
+### D6 · Voltar desfaz ✅
+**Camada:** FRONT-INTEGRADO — **mais um pedaço de BANCO que a tarefa não previa**
 **Pronto quando:** "Voltar" reabre o lançamento anterior e desfaz a gravação
 dele. Se aquela decisão criou uma regra, a regra **fica** — desfazer uma
 classificação não é desfazer o aprendizado, e apagar a regra em silêncio seria
 pior surpresa.
+
+> **Precisou de tabela.** `UPDATE ... RETURNING` devolve o valor **novo**: no
+> instante da gravação o estado anterior deixa de existir, e sem ele o "Voltar"
+> não desfaz, chuta. Nasceu a `decision_undo` (migration `0009`) — uma linha por
+> usuário, a sombra exata das oito colunas que a decisão escreve. A chave
+> primária ser o `user_id` **é** a promessa do botão: "reabre o anterior",
+> singular. Detalhes em `specs/plans/D6-voltar-desfaz.md`.
+>
+> **A verificação achou um bug de produção que era da D4.** Trocar a categoria
+> de um valor alto já classificado por regra — o caminho "Ou troque a categoria"
+> da própria tela — deixava `classificado_por = 'manual'` com a `regra_chave`
+> pendurada, batia no `transactions_regra_chave_ck` e derrubava a gravação com
+> erro de banco. Corrigido: escolher categoria limpa a procedência da regra,
+> porque a resposta para "como esta classificação surgiu?" passou a ser você.
+>
+> 13 garantias verificadas contra o Neon real, com conta descartável e serviços
+> de verdade.
 
 ### D7 · Seed das regras do Davi
 **Camada:** BACK

@@ -1,6 +1,11 @@
 import "server-only";
 import { and, eq, inArray, isNull, ne } from "drizzle-orm";
-import { categories, classificationRules, transactions } from "@/db/schema";
+import {
+  categories,
+  classificationRules,
+  decisionUndo,
+  transactions,
+} from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { VALOR_ALTO_CENTAVOS } from "@/features/classificacao/classificar-importacao/classificarImportacao";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
@@ -20,6 +25,9 @@ type Transacao = Parameters<
  * ele entra no `where` **junto** com o `user_id`, nunca sozinho — mesma regra
  * do desfazer da spec 02. Sem isso, um id adivinhado mexeria no lançamento de
  * outra conta.
+ *
+ * Desde a D6 toda decisão deixa também a **sombra do estado anterior** em
+ * `decision_undo`, na mesma transação — é o que o "Voltar" restaura.
  */
 
 export type Decisao =
@@ -108,6 +116,21 @@ export async function decidirLancamento(
           // (`transactions_fonte_sugestao_ck`).
           fonteDaSugestao:
             decisao.fonte === "sugestao" ? (decisao.fonteDaSugestao ?? null) : null,
+          /*
+           * ⚠ **A procedência da regra sai.** Encontrado pela verificação da
+           * D6, no caminho "Ou troque a categoria" da tela: um valor alto que
+           * uma regra classificou tem `regra_chave` preenchida, e trocar a
+           * categoria deixava `classificado_por = 'manual'` com a chave da
+           * regra pendurada — o que bate no `transactions_regra_chave_ck` e
+           * derrubava a gravação com erro de banco.
+           *
+           * Limpar é o certo mesmo sem o check: a C3 responde "como esta
+           * classificação surgiu?", e a resposta passou a ser você. Manter a
+           * regra ali diria que ela ainda explica algo que ela não explica
+           * mais.
+           */
+          regraId: null,
+          regraChave: null,
           classificadoEm: agora,
           // Escolher resolve a pendência: o aviso de valor alto ou de par que
           // se anula deixa de valer, porque você acabou de olhar.
@@ -129,7 +152,45 @@ export async function decidirLancamento(
           };
 
   return db.transaction(async (tx) => {
-    const [alterado] = await tx
+    /*
+     * ⚠ **O estado anterior é lido antes, e não depois.**
+     *
+     * `UPDATE ... RETURNING` devolve o valor **novo**. Sem este `select`, o
+     * "antes" deixa de existir no instante da gravação — e o "Voltar" da D6
+     * não teria como desfazer, só como chutar.
+     *
+     * `for update` porque dois toques quase simultâneos no celular acontecem:
+     * sem o lock, os dois leriam o mesmo "antes" e a sombra do desfazer
+     * apontaria para um estado intermediário que ninguém escolheu.
+     */
+    const [antes] = await tx
+      .select({
+        id: transactions.id,
+        descricao: transactions.descricaoOriginal,
+        origem: transactions.origem,
+        mesReferencia: transactions.mesReferencia,
+        categoriaId: transactions.categoriaId,
+        classificadoPor: transactions.classificadoPor,
+        regraId: transactions.regraId,
+        regraChave: transactions.regraChave,
+        fonteDaSugestao: transactions.fonteDaSugestao,
+        classificadoEm: transactions.classificadoEm,
+        status: transactions.status,
+        motivo: transactions.motivo,
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.id, decisao.lancamentoId),
+          eq(transactions.userId, userId),
+        ),
+      )
+      .for("update")
+      .limit(1);
+
+    if (!antes) return { ok: false, erro: NAO_ENCONTRADO };
+
+    await tx
       .update(transactions)
       .set(alteracao)
       .where(
@@ -137,41 +198,89 @@ export async function decidirLancamento(
           eq(transactions.id, decisao.lancamentoId),
           eq(transactions.userId, userId),
         ),
-      )
-      .returning({
-        id: transactions.id,
-        descricao: transactions.descricaoOriginal,
-        origem: transactions.origem,
-        mesReferencia: transactions.mesReferencia,
-      });
+      );
 
-    if (!alterado) return { ok: false, erro: NAO_ENCONTRADO };
+    let regraCriada = false;
+    let irmaos = 0;
 
-    if (decisao.tipo !== "categoria" || !decisao.sempre) return { ok: true };
+    if (decisao.tipo === "categoria" && decisao.sempre) {
+      const criterio = criterioDaCorrecao(antes.descricao, antes.origem);
 
-    const criterio = criterioDaCorrecao(alterado.descricao, alterado.origem);
+      // Sem trecho estável não há o que virar regra. A tela nem oferece a
+      // pergunta nesse caso; aqui é a mesma decisão, do outro lado.
+      if (criterio) {
+        const regraId = await gravarRegra(tx, {
+          userId,
+          criterio,
+          categoriaId: decisao.categoriaId,
+        });
 
-    // Sem trecho estável não há o que virar regra. A tela nem oferece a
-    // pergunta nesse caso; aqui é a mesma decisão, do outro lado.
-    if (!criterio) return { ok: true };
+        irmaos = await aplicarAosIrmaos(tx, {
+          userId,
+          mesReferencia: antes.mesReferencia,
+          exceto: antes.id,
+          regraId,
+          criterio,
+          categoriaId: decisao.categoriaId,
+        });
 
-    const regraId = await gravarRegra(tx, {
-      userId,
-      criterio,
-      categoriaId: decisao.categoriaId,
-    });
+        regraCriada = true;
+      }
+    }
 
-    const irmaos = await aplicarAosIrmaos(tx, {
-      userId,
-      mesReferencia: alterado.mesReferencia,
-      exceto: alterado.id,
-      regraId,
-      criterio,
-      categoriaId: decisao.categoriaId,
-    });
+    await guardarODesfazer(tx, userId, antes, { regraCriada, irmaos });
 
-    return { ok: true, regraCriada: true, irmaos };
+    return regraCriada ? { ok: true, regraCriada: true, irmaos } : { ok: true };
   });
+}
+
+/**
+ * A sombra que o "Voltar" da D6 vai restaurar.
+ *
+ * Uma linha por usuário — a chave primária é o `user_id`, e isso **é** a
+ * promessa do botão: "reabre o anterior", singular. Responder de novo
+ * sobrescreve; não há pilha, não há refazer, não há limpeza agendada.
+ *
+ * Dentro da transação de quem chama, de propósito: a sombra e a decisão nascem
+ * juntas ou não nascem. Uma decisão gravada sem sombra deixaria o botão
+ * apagado sem explicação; uma sombra sem decisão desfaria algo que não
+ * aconteceu.
+ */
+async function guardarODesfazer(
+  tx: Transacao,
+  userId: string,
+  antes: {
+    id: string;
+    categoriaId: string | null;
+    classificadoPor: "regra" | "sugestao" | "manual" | null;
+    regraId: string | null;
+    regraChave: string | null;
+    fonteDaSugestao: FonteDeSugestao | null;
+    classificadoEm: Date | null;
+    status: "importado" | "revisao_pendente" | "excluido";
+    motivo: string | null;
+  },
+  extra: { regraCriada: boolean; irmaos: number },
+): Promise<void> {
+  const sombra = {
+    transactionId: antes.id,
+    categoriaId: antes.categoriaId,
+    classificadoPor: antes.classificadoPor,
+    regraId: antes.regraId,
+    regraChave: antes.regraChave,
+    fonteDaSugestao: antes.fonteDaSugestao,
+    classificadoEm: antes.classificadoEm,
+    status: antes.status,
+    motivo: antes.motivo,
+    regraCriada: extra.regraCriada,
+    irmaos: extra.irmaos,
+    criadoEm: new Date(),
+  };
+
+  await tx
+    .insert(decisionUndo)
+    .values({ userId, ...sombra })
+    .onConflictDoUpdate({ target: decisionUndo.userId, set: sombra });
 }
 
 /**
