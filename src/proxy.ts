@@ -26,6 +26,7 @@ const ehRotaProtegida = createRouteMatcher([
   "/dashboard(.*)",
   "/upload(.*)",
   "/revisao(.*)",
+  "/regras(.*)",
   // Onboarding: já exige usuário autenticado, mas não aparece no menu.
   "/bem-vindo(.*)",
 ]);

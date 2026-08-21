@@ -94,11 +94,23 @@ function Icone({ href }: { href: RotaInterna["href"] }) {
     );
   }
 
-  // Check dentro de círculo — revisar/confirmar.
+  if (href === "/revisao") {
+    // Check dentro de círculo — revisar/confirmar.
+    return (
+      <svg {...comum}>
+        <path d="M6.5 10.5 9 13l5-5.5" />
+        <circle cx="10" cy="10" r="7" />
+      </svg>
+    );
+  }
+
+  // Faders — as regras que se ajustam.
   return (
     <svg {...comum}>
-      <path d="M6.5 10.5 9 13l5-5.5" />
-      <circle cx="10" cy="10" r="7" />
+      <path d="M4 5h12M4 10h12M4 15h12" />
+      <circle cx="8" cy="5" r="1.6" />
+      <circle cx="13" cy="10" r="1.6" />
+      <circle cx="7" cy="15" r="1.6" />
     </svg>
   );
 }

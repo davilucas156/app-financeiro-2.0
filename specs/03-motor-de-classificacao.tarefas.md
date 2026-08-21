@@ -287,7 +287,7 @@ spec 02: não mentir.
 > que uma regra escrita duas vezes vira arquivo. Verificado contra o Neon:
 > 32 = 32. Detalhes em `specs/plans/D8-painel-para-de-pedir.md`.
 
-### D9 · Ver, mexer e apagar as regras salvas
+### D9 · Ver, mexer e apagar as regras salvas ✅
 **Camada:** FRONT-INTEGRADO + BACK
 **Pronto quando:** `/regras` lista as regras da conta com **o texto que cada uma
 procura** e quantos lançamentos ela já classificou; dá para trocar a categoria
@@ -308,6 +308,22 @@ desaprende é motor em que se para de confiar no dia em que ele erra.
 
 **Continua fora:** cadastrar regra do zero. Regra nasce de correção sobre
 descrição real — a descoberta 3 da spec.
+
+> ✅ **`/regras` no ar**, quarta rota da barra, protegida no `proxy.ts`. Cada
+> regra mostra o texto que procura, o destino, e **quantos lançamentos já
+> pegou** — o número é o que transforma uma lista de textos numa lista de
+> consequências. Editar marca `origem = 'correcao'` e **não** mexe na
+> prioridade; texto repetido vira a frase que o schema da C1 já tinha escrito.
+> A direção de uma regra `pessoa` sobrevive à edição do nome, com teste e
+> verificação — perdê-la faria dinheiro que sai virar renda, em silêncio.
+> 18 garantias contra o Neon real.
+>
+> ⚠ **Buraco que esta tarefa deixa exposto, e que é da spec 04:** corrigir a
+> regra não conserta o que ela já classificou, e **hoje não existe caminho
+> nenhum** para trocar a categoria de um lançamento já classificado —
+> `/revisao` só mostra a fila. A "segunda ação explícita" acima continua
+> possível (a C3 sabe quais vieram de qual regra); o que falta é a tela onde
+> ela caberia.
 
 ---
 
