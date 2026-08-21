@@ -4,7 +4,8 @@
 **Depende de:** spec 03 (as categorias já são escolhidas, e regras apontam para elas)
 **Paga uma dívida nomeada:** o comentário da C1 no `schema.ts`, que mandou esta
 spec avisar antes de apagar aprendizado
-**Status:** aguardando as pendências do Davi
+**Status:** pendências resolvidas pelo Davi; aguardando aprovação para a Etapa 2
+**Vem depois de:** spec 04 (o painel do mês) — decisão dele na pendência 4
 
 > ⚠ Nenhum dado real neste documento. As medições são contagens feitas contra o
 > Neon com conta descartável; os exemplos são inventados.
@@ -173,29 +174,27 @@ lá.
 
 ---
 
-## Pendências — precisam da sua resposta antes da Etapa 2
+## Pendências — respondidas
 
 **1. Criar categoria durante a revisão, ou só numa tela de gestão?**
-Recomendo os dois, com a criação inline sendo a principal: é onde a falta
-aparece. Custa uma tela a mais e evita perder o lugar na fila.
+✅ **Os dois, com a criação inline sendo a principal.** É onde a falta aparece:
+você está olhando um lançamento que não cabe em nada, cria ali e ele já fica
+selecionável. Sem sair da fila e sem perder o lugar.
 
 **2. Apagar categoria usada: exigir destino, ou permitir devolver à revisão?**
-Recomendo oferecer os dois, com "mover para outra categoria" pré-selecionado.
-Devolver 12 lançamentos para a fila é trabalho real, e quem escolhe isso deve
-estar escolhendo de propósito.
+✅ **Os dois, com "mover para outra categoria" pré-selecionado.** Devolver 12
+lançamentos para a fila é trabalho real, e quem escolhe isso deve estar
+escolhendo de propósito — não por ser o caminho de menor resistência.
 
 **3. `/categorias` entra na barra de navegação?**
-Ela tem 4 itens desde a D9; a 360px um quinto deixa cada um com 72px. Recomendo
-**não** entrar: linkar da `/revisao` e do painel, que são de onde a vontade de
-mexer em categoria nasce. Se você preferir na barra, o rótulo teria de ser curto
-("Potes").
+✅ **Não.** A barra tem 4 itens desde a D9; a 360px um quinto deixaria 72px cada.
+Linkada da `/revisao` e do painel, que é de onde a vontade de mexer em categoria
+nasce.
 
 **4. Esta spec vem antes ou depois do painel de verdade?**
-Recomendo **depois**. Três motivos: o painel é o produto (potes com valores é o
-que você abre o app para ver); a D9 acabou de expor que **não existe caminho
-nenhum** para trocar a categoria de um lançamento já classificado, e essa tela
-nasce com o painel; e a descoberta 4 mostra que mover categoria só pode ser
-desenhado direito com o painel na frente.
+✅ **Depois.** O painel é o produto; a tela de "trocar a categoria de algo já
+classificado" — o buraco que a D9 expôs — nasce com ele; e a descoberta 4 mostra
+que mover categoria só se desenha direito com o painel na frente para mostrar o
+efeito.
 
-Se você já sentir falta de uma categoria classificando junho, a ordem inverte —
-essa informação é sua, não minha.
+Por isso esta spec virou a **05**, e a **04** é o painel do mês.
