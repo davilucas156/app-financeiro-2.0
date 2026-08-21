@@ -2,7 +2,13 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { imports, transactions, type NovaTransacao } from "@/db/schema";
+import {
+  classificationRules,
+  imports,
+  transactions,
+  type NovaTransacao,
+} from "@/db/schema";
+import { classificarImportacao } from "@/features/classificacao/classificar-importacao/classificarImportacao";
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
 import { prepararLancamentos } from "@/features/upload/ler-arquivo/preparar";
@@ -46,6 +52,12 @@ export type ResultadoImportacao =
       arquivos: ResumoDeArquivoImportado[];
       excluidos: number;
       revisao: number;
+      /** O motor bateu regra (D1). */
+      classificados: number;
+      /** Nenhuma regra bateu: vão para `/revisao`. */
+      pendentes: number;
+      /** Classificados que ainda assim pedem confirmação — valor alto. */
+      conferir: number;
     }
   | { ok: false; erro: string };
 
@@ -159,6 +171,9 @@ export async function importarExtrato(
       })),
       excluidos: 0,
       revisao: 0,
+      classificados: 0,
+      pendentes: 0,
+      conferir: 0,
     };
   }
 
@@ -176,8 +191,29 @@ export async function importarExtrato(
   const revisao = preparados.filter((p) => p.marcacao === "revisao").length;
 
   // ── Gravação: tudo ou nada ───────────────────────────────────────────────
-  const inseridosPorOrigem = await db.transaction(async (tx) => {
+  //
+  // O motor (D1) roda **aqui dentro**, entre a leitura das regras e o insert.
+  //
+  // Se ele lançar, a transação inteira volta atrás. A alternativa — importar
+  // mesmo assim, tudo pendente — parece gentil e é pior: motor quebrado fica
+  // idêntico a motor sem regras, e o usuário conclui que não tem regra
+  // cadastrada quando na verdade tem um bug.
+  const gravacao = await db.transaction(async (tx) => {
     const contagem = new Map<Origem, number>();
+
+    const regras = await tx
+      .select({
+        id: classificationRules.id,
+        criterio: classificationRules.criterio,
+        categoriaId: classificationRules.categoriaId,
+        prioridade: classificationRules.prioridade,
+        chave: classificationRules.chave,
+      })
+      .from(classificationRules)
+      .where(eq(classificationRules.userId, userId));
+
+    const decisao = classificarImportacao(preparados, regras);
+    const agora = new Date();
 
     for (const l of leituras) {
       const [registro] = await tx
@@ -194,22 +230,35 @@ export async function importarExtrato(
 
       const linhas: NovaTransacao[] = preparados
         .filter((p) => p.origem === l.origem)
-        .map((p) => ({
-          userId,
-          importId: registro.id,
-          data: p.data,
-          descricaoOriginal: p.descricao,
-          valorCentavos: p.valorCentavos,
-          direcao: p.direcao,
-          status: statusDe(p.marcacao),
-          motivo: p.motivo,
-          parDe: p.parDe,
-          mesReferencia: mesDoLancamento(l.origem, p.data, mesEscolhido),
-          origem: p.origem,
-          impressao: p.impressao,
-          parcela: p.parcela,
-          categoriaDoBanco: p.categoriaDoBanco,
-        }));
+        .map((p) => {
+          const d = decisao.porImpressao.get(p.impressao)!;
+
+          return {
+            userId,
+            importId: registro.id,
+            data: p.data,
+            descricaoOriginal: p.descricao,
+            valorCentavos: p.valorCentavos,
+            direcao: p.direcao,
+            status: d.status,
+            motivo: d.motivo,
+            parDe: p.parDe,
+            mesReferencia: mesDoLancamento(l.origem, p.data, mesEscolhido),
+            origem: p.origem,
+            impressao: p.impressao,
+            parcela: p.parcela,
+            categoriaDoBanco: p.categoriaDoBanco,
+
+            // Procedência (C3). A chave da regra vai **congelada**: é o que
+            // faz "por que isso caiu em Lazer?" continuar tendo resposta
+            // depois que a regra for apagada.
+            categoriaId: d.categoriaId,
+            classificadoPor: d.classificadoPor,
+            regraId: d.regraId,
+            regraChave: d.regraChave,
+            classificadoEm: d.categoriaId ? agora : null,
+          };
+        });
 
       // `entraram` conta o que o `returning` devolveu, e não o que foi
       // tentado: com `do nothing`, a linha que colide não volta. O número na
@@ -231,11 +280,16 @@ export async function importarExtrato(
         .where(eq(imports.id, registro.id));
     }
 
-    return contagem;
+    return { contagem, decisao };
   });
+
+  const inseridosPorOrigem = gravacao.contagem;
 
   return {
     ok: true,
+    classificados: gravacao.decisao.classificados,
+    pendentes: gravacao.decisao.pendentes,
+    conferir: gravacao.decisao.conferir,
     arquivos: lidos.map((l) => {
       const leitura = leituras.find((x) => x.hash === l.hash);
       return {
@@ -250,12 +304,6 @@ export async function importarExtrato(
     excluidos,
     revisao,
   };
-}
-
-function statusDe(marcacao: "normal" | "excluido" | "revisao") {
-  if (marcacao === "excluido") return "excluido" as const;
-  if (marcacao === "revisao") return "revisao_pendente" as const;
-  return "importado" as const;
 }
 
 /**

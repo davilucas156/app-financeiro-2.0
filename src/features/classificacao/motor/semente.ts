@@ -214,7 +214,7 @@ export type OpcoesDaSemente = {
 export function regrasSemente({
   idPorChave,
   nomeDoTitular,
-}: OpcoesDaSemente): Regra[] {
+}: OpcoesDaSemente): (Regra & { chave: string })[] {
   const todas = [...REGRAS_BASE, ...paraSiMesmo(nomeDoTitular)];
 
   return todas.flatMap((r) => {
@@ -225,9 +225,15 @@ export function regrasSemente({
     // barulhenta, porque o teste conta quantas entraram.
     if (!categoriaId) return [];
 
+    const chave = idDe(r);
+
     return [
       {
-        id: idDe(r),
+        // Antes do banco, a chave **é** a identidade: não existe uuid ainda.
+        // Depois da D7 o `id` vira o uuid da linha e a `chave` continua sendo
+        // este texto, que é o que a C1 usa para não duplicar no reseed.
+        id: chave,
+        chave,
         criterio: r.criterio,
         categoriaId,
         prioridade: r.prioridade,

@@ -142,10 +142,10 @@ function casa(criterio: Criterio, alvo: AlvoDaRegra): boolean {
  * `null` não é erro: é o mês normal de quem começou a usar o app ontem, e é o
  * que manda o lançamento para a tela de revisão.
  */
-export function casarRegra(
-  regras: Regra[],
+export function casarRegra<T extends Regra>(
+  regras: T[],
   alvo: AlvoDaRegra,
-): Regra | null {
+): T | null {
   const candidatas = regras.filter(
     (r) => regraValida(r.criterio) && casa(r.criterio, alvo),
   );

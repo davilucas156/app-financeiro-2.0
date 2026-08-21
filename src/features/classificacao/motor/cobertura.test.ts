@@ -5,7 +5,7 @@ import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
 import { prepararLancamentos } from "@/features/upload/ler-arquivo/preparar";
 import { reconhecer } from "@/features/upload/ler-arquivo/reconhecer";
 import { pessoaDe } from "./pessoa";
-import { casarRegra } from "./regras";
+import { classificarImportacao } from "@/features/classificacao/classificar-importacao/classificarImportacao";
 import { regrasSemente } from "./semente";
 import { sugerir } from "./sugestoes";
 import { trechoEstavel } from "./trecho";
@@ -60,8 +60,8 @@ const ENTRADA = { lancamentos: 54, ignoradas: 0 };
 const ESPERADO = {
   /** 3 excluídos (pagamento de fatura) + 4 em par que se anula. */
   foraNaImportacao: 7,
-  comTitular: { classificados: 30, pendentes: 17 },
-  semTitular: { classificados: 29, pendentes: 18 },
+  comTitular: { classificados: 30, pendentes: 17, conferir: 2 },
+  semTitular: { classificados: 29, pendentes: 18, conferir: 1 },
   /** Primeiro mês: histórico vazio, e a categoria do banco quase nunca traduz. */
   pendentesComSugestao: 2,
   /** Todo pendente consegue virar regra — a pergunta da B3 sempre pode aparecer. */
@@ -97,24 +97,17 @@ function medir() {
 
   const regras = regrasSemente({ idPorChave, nomeDoTitular: TITULAR });
 
-  const pendentes: typeof preparados = [];
-  let classificados = 0;
+  // ⚠ **O mesmo módulo que a importação usa** (D1), e não uma reimplementação.
+  //
+  // Até a D1, este harness repetia aqui a lógica do serviço. As duas versões
+  // podiam divergir sem ninguém notar: a medição continuaria verde, medindo
+  // código que ninguém executa em produção.
+  const decisao = classificarImportacao(preparados, regras);
 
-  for (const l of preparados) {
-    // Excluído e "possível par" já foram resolvidos na importação: não são
-    // trabalho do motor nem decisão de categoria.
-    if (l.marcacao !== "normal") continue;
-
-    const vencedora = casarRegra(regras, {
-      descricao: l.descricao,
-      valorCentavos: l.valorCentavos,
-      direcao: l.direcao,
-      pessoa: pessoaDe(l.descricao),
-    });
-
-    if (vencedora) classificados++;
-    else pendentes.push(l);
-  }
+  const pendentes = preparados.filter(
+    (l) => l.marcacao === "normal" && !decisao.porImpressao.get(l.impressao)?.categoriaId,
+  );
+  const classificados = decisao.classificados;
 
   let comSugestao = 0;
   let semComoVirarRegra = 0;
@@ -150,6 +143,7 @@ function medir() {
     lidos: conta.lancamentos.length + cartao.lancamentos.length,
     ignoradas: conta.ignoradas.length + cartao.ignoradas.length,
     foraNaImportacao: preparados.filter((l) => l.marcacao !== "normal").length,
+    conferir: decisao.conferir,
     classificados,
     pendentes: pendentes.length,
     comSugestao,
@@ -205,6 +199,18 @@ describe.skipIf(!TEM_OS_ARQUIVOS)(
       // Nenhum cai no caso em que a pergunta "sempre classificar assim?" não
       // pode aparecer (B3).
       expect(m.semComoVirarRegra).toBe(ESPERADO.pendentesSemComoVirarRegra);
+    });
+
+    it("só 2 dos 30 classificados pedem confirmação por valor alto", () => {
+      // R$ 200, do `readme.md` seção 7. Regra errada num valor alto é o erro
+      // mais caro que existe aqui, e o mais fácil de não notar: some no meio
+      // de trinta lançamentos certos.
+      //
+      // A spec dizia "6 lançamentos passam de R$ 200 no mês medido" — verdade,
+      // mas quatro deles já estão pendentes de qualquer jeito. O custo real da
+      // regra é **2 toques a mais**, não 6.
+      const esperado = TITULAR ? ESPERADO.comTitular : ESPERADO.semTitular;
+      expect(m.conferir).toBe(esperado.conferir);
     });
 
     it("17 pendentes precisam de 14 regras, não 17", () => {
