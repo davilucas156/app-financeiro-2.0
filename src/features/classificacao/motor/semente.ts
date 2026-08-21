@@ -1,3 +1,4 @@
+import { chaveDoCriterio } from "./chaveDaRegra";
 import type { Criterio, Regra } from "./regras";
 
 /**
@@ -273,14 +274,19 @@ function paraSiMesmo(nome?: string | null): RegraSemente[] {
  * A A1 usa o id só para desempatar, mas usa — então ele tem de ser estável.
  * Numerar por posição faria inserir uma regra no meio renumerar todas as de
  * baixo e mudar desempates que não tinham nada a ver.
+ *
+ * ## Era um formato próprio, e isso era um defeito (D7)
+ *
+ * Gerava `semente:descricao_contem:PETROBRAS:transporte/gasolina`, enquanto a
+ * correção da D5 grava `descricao_contem:PETROBRAS`. O `(user_id, chave)` único
+ * da C1 existe para "impedir o seed e a correção de criarem duas regras para a
+ * mesma coisa" — e com dois formatos ele nunca disparava entre eles: corrigir um
+ * PETROBRAS semeado criava uma **segunda** regra para PETROBRAS, com destino
+ * diferente, e qual vencia saía do desempate da A1.
+ *
+ * Agora é a mesma função dos dois lados. A categoria saiu da chave junto: ela
+ * dentro é o que permitia os dois destinos conviverem.
  */
 function idDe(r: RegraSemente): string {
-  const alvo =
-    r.criterio.tipo === "descricao_contem"
-      ? r.criterio.termo
-      : r.criterio.tipo === "pessoa"
-        ? r.criterio.nome
-        : r.criterio.direcao;
-
-  return `semente:${r.criterio.tipo}:${alvo}:${r.chaveDaCategoria}`;
+  return chaveDoCriterio(r.criterio);
 }

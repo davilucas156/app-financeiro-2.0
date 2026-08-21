@@ -11,7 +11,8 @@ import { VALOR_ALTO_CENTAVOS } from "@/features/classificacao/classificar-import
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import { casarRegra, type Criterio } from "@/features/classificacao/motor/regras";
 import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
-import { chaveDoCriterio, criterioDaCorrecao } from "./criterioDaCorrecao";
+import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
+import { criterioDaCorrecao } from "./criterioDaCorrecao";
 
 /** A transação do Drizzle, para as funções auxiliares no fim do arquivo. */
 type Transacao = Parameters<
@@ -312,6 +313,14 @@ async function gravarRegra(
       set: {
         categoriaId: dados.categoriaId,
         prioridade: PRIORIDADE_DE_CORRECAO,
+        /*
+         * Corrigir uma regra **semeada** a torna sua (D7).
+         *
+         * A coluna responde "de onde saiu essa regra?", e depois que você
+         * mexeu nela a resposta deixou de ser "veio pronta". Sem isto a D9
+         * mostraria como seed algo que você mesmo escreveu.
+         */
+        origem: "correcao" as const,
         atualizadoEm: new Date(),
       },
     })

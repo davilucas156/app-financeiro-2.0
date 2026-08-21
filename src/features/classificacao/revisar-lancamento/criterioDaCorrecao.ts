@@ -17,6 +17,10 @@ import type { Origem } from "@/features/upload/ler-arquivo/formatos";
  * este projeto evita em toda parte: se divergirem, a tela mostra um texto e o
  * banco guarda outro. Você aprovaria uma regra e receberia outra — o pior erro
  * possível numa pergunta cuja única função é te deixar conferir.
+ *
+ * ⚠ **`textoDoCriterio` e `chaveDoCriterio` mudaram de casa na D7.** Foram para
+ * `motor/chaveDaRegra.ts`, porque o seed também produz regra e precisava da
+ * mesma chave — e estava produzindo outra. Ver o arquivo de lá.
  */
 
 /**
@@ -35,26 +39,4 @@ export function criterioDaCorrecao(
 
   const trecho = trechoEstavel(descricao, origem);
   return trecho ? { tipo: "descricao_contem", termo: trecho } : null;
-}
-
-/** O texto que a tela mostra dentro do quadro amarelo. */
-export function textoDoCriterio(criterio: Criterio): string {
-  switch (criterio.tipo) {
-    case "descricao_contem":
-      return criterio.termo;
-    case "pessoa":
-      return criterio.nome;
-    case "valor_direcao":
-      return criterio.direcao;
-  }
-}
-
-/**
- * `descricao_contem:PADARIA CEU AZUL BETIM` — a identidade única por usuário
- * (C1), na mesma forma que a A5 usa no seed.
- *
- * É o que impede o seed e a correção de criarem duas regras para a mesma coisa.
- */
-export function chaveDoCriterio(criterio: Criterio): string {
-  return `${criterio.tipo}:${textoDoCriterio(criterio)}`;
 }

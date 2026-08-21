@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { POTES_PADRAO } from "@/features/onboarding/potes-padrao";
+import { chaveDoCriterio } from "./chaveDaRegra";
 import { casarRegra, regraValida, type AlvoDaRegra } from "./regras";
 import { AGUARDANDO_C2, REGRAS_BASE, regrasSemente } from "./semente";
 
@@ -55,7 +56,32 @@ describe("higiene da lista", () => {
     // meio mudar desempates que não tinham nada a ver com ela.
     const antes = semente().map((r) => r.id);
     expect(antes).toEqual(semente().map((r) => r.id));
-    expect(antes.every((id) => id.startsWith("semente:"))).toBe(true);
+  });
+
+  it("a chave do seed é a mesma que uma correção geraria", () => {
+    /*
+     * ⚠ O teste que faltava na A5, e o defeito que ele não pegou.
+     *
+     * O seed gerava `semente:descricao_contem:PETROBRAS:transporte/gasolina`;
+     * a correção da D5 grava `descricao_contem:PETROBRAS`. Formatos diferentes
+     * fazem o `(user_id, chave)` único da C1 nunca disparar entre os dois — e
+     * corrigir uma regra semeada criaria uma **segunda** regra para o mesmo
+     * texto, com destino diferente.
+     */
+    for (const r of semente("Titular Da Conta")) {
+      expect(r.chave).toBe(chaveDoCriterio(r.criterio));
+    }
+  });
+
+  it("a categoria de destino NÃO entra na chave", () => {
+    // Ela dentro deixaria duas regras com o mesmo critério e destinos
+    // diferentes conviverem — o empate impossível de explicar que a C1 avisa.
+    const chave = chaveDoCriterio({
+      tipo: "descricao_contem",
+      termo: "PETROBRAS",
+    });
+
+    expect(chave).toBe("descricao_contem:PETROBRAS");
   });
 });
 

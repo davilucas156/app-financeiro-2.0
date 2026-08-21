@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   chaveDoCriterio,
-  criterioDaCorrecao,
   textoDoCriterio,
-} from "./criterioDaCorrecao";
+} from "@/features/classificacao/motor/chaveDaRegra";
+import { criterioDaCorrecao } from "./criterioDaCorrecao";
 import { prepararRevisao, type LancamentoPendente } from "./pendentes";
 
 /** ⚠ Nenhum nome real: as formas medidas, com comerciantes inventados. */

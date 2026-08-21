@@ -233,11 +233,36 @@ pior surpresa.
 > 13 garantias verificadas contra o Neon real, com conta descartável e serviços
 > de verdade.
 
-### D7 · Seed das regras do Davi
+### D7 · Seed das regras do Davi ✅
 **Camada:** BACK
 **Pronto quando:** no onboarding da conta do Davi, as regras da A5 entram
 prontas. Outras contas nascem com a tabela vazia. Idempotente, como o resto do
 onboarding.
+
+> **27 regras na conta dele, `origem = 'seed'`, rodar duas vezes continua 27.**
+>
+> **Um defeito de encaixe apareceu aqui.** A C1 diz no schema que
+> `(user_id, chave)` único "impede o seed e a correção de criarem duas regras
+> para a mesma coisa", e a D5 diz que usa a chave "na mesma forma que a A5 usa
+> no seed". Não usava: a A5 gerava
+> `semente:descricao_contem:PETROBRAS:transporte/gasolina` e a correção grava
+> `descricao_contem:PETROBRAS`. Dois formatos, restrição que nunca dispara entre
+> eles — corrigir uma regra semeada criava a **segunda** regra para o mesmo
+> texto. `chaveDoCriterio` virou uma função só, no motor
+> (`motor/chaveDaRegra.ts`), e a categoria saiu da chave.
+>
+> **`do nothing` no reseed, e não `do update`** — o oposto da D5, pelo mesmo
+> critério: a instrução mais recente do Davi vence. Junto, corrigir uma regra
+> semeada passa a marcar `origem = 'correcao'`.
+>
+> **Quem recebe sai de `EMAILS_COM_REGRAS_BASE`**, lista própria e não a do
+> convite: `EDSON` é o mecânico dele, e convidar alguém não pode fazer essa
+> pessoa herdar o mecânico dos outros.
+>
+> ⚠ **O seed não reclassifica o que já está no banco.** As regras valem na
+> importação (D1). Os 33 lançamentos que já estão lá continuam pendentes — 23
+> deles seriam resolvidos por estas regras num reenvio. Detalhes em
+> `specs/plans/D7-seed-das-regras.md`.
 
 ### D8 · O painel para de pedir classificação
 **Camada:** FRONT-INTEGRADO
