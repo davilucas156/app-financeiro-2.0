@@ -130,6 +130,32 @@ const PIX: EstadoFalso = {
   },
 };
 
+/**
+ * Uma **entrada**: dinheiro chegando.
+ *
+ * Existe para a C2 dar para ver. Numa lista de 9 potes, quem acabou de receber
+ * um Pix não devia rolar até o fim para achar "Renda extra" — então numa
+ * entrada o pote de renda vem primeiro.
+ */
+const RECEBIDO: EstadoFalso = {
+  mes: "2026-07",
+  posicao: 14,
+  total: 17,
+  lancamento: {
+    descricao: 'Pix recebido: "Cp :00000000-Beltrano Servicos Ltda"',
+    valorCentavos: 42000,
+    direcao: "entrada",
+    data: "2026-06-26",
+    origem: "csv_conta",
+    parcela: null,
+    categoriaDoBanco: null,
+    pessoa: "Beltrano Servicos Ltda",
+    trecho: "Beltrano Servicos Ltda",
+    pegaJunto: 2,
+    sugestoes: [],
+  },
+};
+
 /** Depois de escolher: a pergunta de virar regra (B3). */
 const PERGUNTA_DE_REGRA: EstadoFalso = {
   ...COM_SUGESTOES,
@@ -166,6 +192,7 @@ export const ESTADOS = {
   padrao: SEM_SUGESTAO,
   sugestoes: COM_SUGESTOES,
   pix: PIX,
+  recebido: RECEBIDO,
   regra: PERGUNTA_DE_REGRA,
   "sem-trecho": SEM_TRECHO,
   fim: null,

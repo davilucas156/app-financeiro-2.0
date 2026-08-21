@@ -14,7 +14,8 @@ import { NOMES_DOS_ESTADOS, type NomeDoEstado } from "./dadosFalsos";
 const ROTULO: Record<NomeDoEstado, string> = {
   padrao: "sem sugestão",
   sugestoes: "com sugestão",
-  pix: "pix",
+  pix: "pix enviado",
+  recebido: "pix recebido",
   regra: "virar regra?",
   "sem-trecho": "sem trecho",
   fim: "acabou",

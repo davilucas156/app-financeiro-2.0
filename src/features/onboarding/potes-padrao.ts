@@ -36,6 +36,14 @@ export type PotePadrao = {
   slug: string;
   nome: string;
   emoji: string;
+  /**
+   * `gasto` ou `renda` (C2).
+   *
+   * Os 8 potes originais repartem o que sai. O de renda existe porque
+   * `categories.bucket_id` é `not null` e entrada precisa de um lugar — ver o
+   * comentário em `schema.ts`.
+   */
+  tipo: "gasto" | "renda";
   /** Para o seed no banco. */
   hex: string;
   /** Para renderizar. Precisa existir como token em `globals.css`. */
@@ -55,6 +63,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "custos-fixos",
     nome: "Custos Fixos",
     emoji: "🏠",
+    tipo: "gasto",
     hex: "#FF5000",
     classeCor: "bg-pote-fix",
     percentual: 30,
@@ -71,6 +80,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "liberdade-financeira",
     nome: "Liberdade Financeira",
     emoji: "📈",
+    tipo: "gasto",
     hex: "#00e5a0",
     classeCor: "bg-pote-lib",
     percentual: 25,
@@ -85,6 +95,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "conforto-lazer",
     nome: "Conforto & Lazer",
     emoji: "🎮",
+    tipo: "gasto",
     hex: "#3d8eff",
     classeCor: "bg-pote-laz",
     percentual: 15,
@@ -101,6 +112,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "metas-sonhos",
     nome: "Metas / Sonhos",
     emoji: "★",
+    tipo: "gasto",
     hex: "#ffc94d",
     classeCor: "bg-pote-met",
     percentual: 15,
@@ -116,6 +128,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "transporte",
     nome: "Transporte",
     emoji: "🚗",
+    tipo: "gasto",
     hex: "#00c8d4",
     classeCor: "bg-pote-tra",
     percentual: 10,
@@ -132,6 +145,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "conhecimento",
     nome: "Conhecimento",
     emoji: "📚",
+    tipo: "gasto",
     hex: "#e040a0",
     classeCor: "bg-pote-con",
     percentual: 5,
@@ -149,6 +163,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "manutencao",
     nome: "Manutenção",
     emoji: "🔧",
+    tipo: "gasto",
     hex: "#26c9a0",
     classeCor: "bg-pote-mec",
     percentual: null,
@@ -164,6 +179,7 @@ export const POTES_PADRAO: PotePadrao[] = [
     slug: "outros-repasses",
     nome: "Outros / Repasses",
     emoji: "·",
+    tipo: "gasto",
     hex: "#5a5a70",
     classeCor: "bg-pote-out",
     percentual: null,
@@ -176,7 +192,40 @@ export const POTES_PADRAO: PotePadrao[] = [
       { slug: "multas", nome: "Multas", emoji: "⚠", tagVisual: "t-out", ordem: 3 },
     ],
   },
+  // ── O nono, e o único que não vem do painel original ──────────────────────
+  //
+  // Entrada não cai em pote de gasto: ela **é** a base sobre a qual os
+  // percentuais dos outros oito são calculados. Sem um lugar para ela, as
+  // metas em reais não têm de onde sair (pendência 2 da spec 03).
+  //
+  // Existe como pote porque `categories.bucket_id` é `not null` — categoria
+  // de renda precisa de um pote para pendurar — e não porque renda seja um
+  // pote de verdade. Daí o `tipo`.
+  //
+  // ⚠ A cor é **escolha minha**, não herdada: o painel não tem renda. Roxo é a
+  // única livre; verde seria o natural para dinheiro entrando e já é
+  // Liberdade Financeira.
+  {
+    slug: "renda",
+    nome: "Renda",
+    emoji: "💰",
+    tipo: "renda",
+    hex: "#a78bfa",
+    classeCor: "bg-pote-ren",
+    percentual: null,
+    metaReferenciaCentavos: null,
+    observacao: "o que entra",
+    ordem: 9,
+    categorias: [
+      { slug: "salario", nome: "Salário", emoji: "💼", tagVisual: "t-out", ordem: 1 },
+      { slug: "renda-extra", nome: "Renda extra", emoji: "💰", tagVisual: "t-out", ordem: 2 },
+      { slug: "repasse-recebido", nome: "Repasse recebido", emoji: "🔁", tagVisual: "t-out", ordem: 3 },
+    ],
+  },
 ];
+
+/** Os oito que repartem o gasto. É o que as telas de meta e rateio mostram. */
+export const POTES_DE_GASTO = POTES_PADRAO.filter((p) => p.tipo === "gasto");
 
 /** Rótulo da meta, para nunca renderizar "0%" nos potes sem percentual. */
 export function rotuloMeta(pote: PotePadrao) {

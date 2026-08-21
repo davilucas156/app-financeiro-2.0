@@ -77,9 +77,8 @@ const idPorChave = new Map<string, string>(
     ),
   ),
 );
-// A C2 ainda não criou o pote de renda; sem esta linha a regra do Pix recebido
-// seria derrubada por falta de categoria e o número mediria outra coisa.
-idPorChave.set("renda/renda-extra", "id:renda/renda-extra");
+// `renda/renda-extra` sai de `POTES_PADRAO` desde a C2. Antes dela, esta
+// tradução precisava de uma linha extra emendando a chave na mão.
 
 function ler(caminho: string) {
   const r = reconhecer(readFileSync(caminho));

@@ -50,6 +50,10 @@
   --color-pote-con: #e040a0; /* 📚 Conhecimento         */
   --color-pote-mec: #26c9a0; /* 🔧 Manutenção           */
   --color-pote-out: #5a5a70; /* ·  Outros / Repasses    */
+  /* Não vem do painel original: lá não existe pote de renda. A cor é
+     escolha minha, e roxo é a única livre — verde seria o natural para
+     dinheiro entrando, e já é Liberdade Financeira. */
+  --color-pote-ren: #a78bfa; /* 💰 Renda                */
 
   /* ── Raios ────────────────────────────────────────────── */
   --radius-pote: 12px;

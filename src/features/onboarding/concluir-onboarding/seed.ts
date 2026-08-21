@@ -19,6 +19,7 @@ export function linhasDePotes(userId: string): NovoPote[] {
     slug: pote.slug,
     nome: pote.nome,
     emoji: pote.emoji,
+    tipo: pote.tipo,
     cor: pote.hex,
     percentualMeta: pote.percentual,
     valorMetaCentavos: pote.metaReferenciaCentavos,

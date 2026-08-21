@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { CATEGORIAS_ESCOLHIVEIS, POTES_PARA_ESCOLHER, chaveDe } from "./categorias";
+import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
+import { CATEGORIAS_ESCOLHIVEIS, chaveDe, potesNaOrdem } from "./categorias";
 
 /**
  * ⚠ **Não é o `normalizarDescricao` do motor**, e não é descuido.
@@ -41,7 +42,7 @@ const comparavel = (texto: string) =>
  * protótipo visual, filtro que não filtra não dá para julgar: o que se está
  * avaliando aqui é justamente quanto polegar custa achar uma categoria.
  */
-export function ListaDeCategorias() {
+export function ListaDeCategorias({ direcao }: { direcao: Direcao }) {
   const [busca, setBusca] = useState("");
 
   const encontradas = useMemo(() => {
@@ -92,7 +93,7 @@ export function ListaDeCategorias() {
         )
       ) : (
         <div className="mt-3 space-y-5">
-          {POTES_PARA_ESCOLHER.map((pote) => (
+          {potesNaOrdem(direcao).map((pote) => (
             <div key={pote.slug}>
               <div className="flex items-center gap-2">
                 <span

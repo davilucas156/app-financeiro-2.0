@@ -95,6 +95,22 @@ export const buckets = pgTable(
     /** Identidade estável: `custos-fixos`. Não muda se o nome mudar. */
     slug: text("slug").notNull(),
 
+    /**
+     * `gasto` ou `renda` (tarefa C2).
+     *
+     * Os 8 potes repartem o que você **gasta**. Entrada não cai em pote de
+     * gasto: ela forma o total do mês, que é a base dos percentuais.
+     *
+     * Existe porque `categories.bucket_id` é `not null` — categoria de renda
+     * precisa de um pote para pendurar — e `percentual_meta` nulo não serve
+     * para escondê-la: Manutenção e Outros já são nulos e aparecem na tela.
+     *
+     * Default `gasto` porque as 8 linhas que já existiam são todas de gasto,
+     * e porque continua sendo a resposta certa depois: um pote é de gasto até
+     * alguém dizer o contrário.
+     */
+    tipo: text("tipo").$type<"gasto" | "renda">().notNull().default("gasto"),
+
     /** Rótulo exibido — editável pelo usuário na fase 2. */
     nome: text("nome").notNull(),
     emoji: text("emoji").notNull(),
@@ -128,6 +144,7 @@ export const buckets = pgTable(
     index("buckets_user_id_idx").on(t.userId),
     unique("buckets_user_id_nome_unq").on(t.userId, t.nome),
     unique("buckets_user_id_slug_unq").on(t.userId, t.slug),
+    check("buckets_tipo_ck", sql`${t.tipo} in ('gasto','renda')`),
   ],
 );
 

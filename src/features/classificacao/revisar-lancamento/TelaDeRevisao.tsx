@@ -80,7 +80,7 @@ export function TelaDeRevisao({ estado }: { estado: NomeDoEstado }) {
       ) : (
         <>
           <Sugestoes sugestoes={dados.lancamento.sugestoes} />
-          <ListaDeCategorias />
+          <ListaDeCategorias direcao={dados.lancamento.direcao} />
         </>
       )}
     </>

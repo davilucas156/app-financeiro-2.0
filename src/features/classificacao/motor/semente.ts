@@ -64,14 +64,15 @@ const COMUM = 30;
 // semeei — foi ele que olhou o lançamento.
 
 /**
- * Chaves que **ainda não existem** em `POTES_PADRAO`. O pote de renda nasce na
- * C2 (pendência 2 da spec: entrada não cai em pote de gasto).
+ * Chaves que **ainda não existem** em `POTES_PADRAO`.
  *
- * O teste exige que esta lista seja **exatamente** o conjunto que falta. Quando
- * a C2 criar o pote, o teste quebra e a lista tem de esvaziar — lembrete que
- * não dá para esquecer.
+ * Nasceu com `renda/renda-extra` dentro, esperando a C2 criar o pote de renda.
+ * O teste exigia que a lista fosse **exatamente** o conjunto que falta, então
+ * quando a C2 chegou o teste quebrou e obrigou a esvaziar — que era o serviço
+ * dele. Ficou vazia, e não removida, porque a próxima categoria que uma regra
+ * precisar antes de existir vai querer o mesmo lembrete.
  */
-export const AGUARDANDO_C2 = ["renda/renda-extra"] as const;
+export const AGUARDANDO_C2: readonly string[] = [];
 
 /*
  * ─── O que o readme manda e eu NÃO semeei, com o motivo ──────────────────────

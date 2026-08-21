@@ -166,39 +166,30 @@ describe("regras de contraparte", () => {
 describe("direção na regra de contraparte", () => {
   const empresa = "Cadillac Monte Carmo Ltda";
 
-  it("Pix recebido dela é renda — quando a C2 existir", () => {
-    // Hoje a regra é derrubada por falta de `renda/renda-extra`, e por isso
-    // este teste usa a tradução com a chave presente. É o comportamento que a
-    // C2 vai destravar, verificado antes dela.
-    const comRenda = new Map(idPorChave).set("renda/renda-extra", "id:renda");
-    const regras = regrasSemente({ idPorChave: comRenda });
-
-    const recebido = casarRegra(
-      regras,
-      alvo({
-        descricao: `Pix recebido: "Cp :00000000-${empresa}"`,
-        pessoa: empresa,
-        direcao: "entrada",
-      }),
-    );
-
-    expect(recebido?.categoriaId).toBe("id:renda");
+  it("Pix recebido dela é renda", () => {
+    // Destravado pela C2: até ela existir, esta regra era derrubada por falta
+    // de `renda/renda-extra` e o teste precisava emendar a chave na mão.
+    expect(
+      chaveEscolhida(
+        alvo({
+          descricao: `Pix recebido: "Cp :00000000-${empresa}"`,
+          pessoa: empresa,
+          direcao: "entrada",
+        }),
+      ),
+    ).toBe("renda/renda-extra");
   });
 
   it("Pix **enviado** para ela não vira renda", () => {
-    const comRenda = new Map(idPorChave).set("renda/renda-extra", "id:renda");
-    const regras = regrasSemente({ idPorChave: comRenda });
-
-    const enviado = casarRegra(
-      regras,
-      alvo({
-        descricao: `Pix enviado: "Cp :00000000-${empresa}"`,
-        pessoa: empresa,
-        direcao: "saida",
-      }),
-    );
-
-    expect(enviado).toBe(null);
+    expect(
+      chaveEscolhida(
+        alvo({
+          descricao: `Pix enviado: "Cp :00000000-${empresa}"`,
+          pessoa: empresa,
+          direcao: "saida",
+        }),
+      ),
+    ).toBe(null);
   });
 
   it("compra no cartão para ela fica pendente, como o readme pede", () => {

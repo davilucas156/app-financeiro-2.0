@@ -1,7 +1,7 @@
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { AcaoComecar } from "@/features/onboarding/concluir-onboarding/AcaoComecar";
 import {
-  POTES_PADRAO,
+  POTES_DE_GASTO,
   rotuloMeta,
 } from "@/features/onboarding/potes-padrao";
 
@@ -35,7 +35,7 @@ export function ConcluirOnboarding({ nome }: { nome?: string }) {
       <SectionTitle>Seus potes</SectionTitle>
 
       <div className="space-y-2">
-        {POTES_PADRAO.map((pote) => (
+        {POTES_DE_GASTO.map((pote) => (
           <div
             key={pote.slug}
             className="flex items-center gap-3 overflow-hidden rounded-pote border border-border bg-card"
