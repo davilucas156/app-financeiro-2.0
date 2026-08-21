@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/04-painel-do-mes.md` (decisões tomadas)
-**Status:** aguardando aprovação do Davi
+**Status:** aprovado pelo Davi; fase A concluída
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -50,7 +50,7 @@ Já existe e **não** deve ser reescrito:
 
 ## Fase A — A conta (sem tela, sem banco)
 
-### A1 · Somar um mês em potes e categorias
+### A1 · Somar um mês em potes e categorias ✅
 **Camada:** BACK
 **Pronto quando:** existe uma função pura que, dados os lançamentos já
 classificados de um mês, devolve por pote e por categoria: quanto saiu, quanto
@@ -67,16 +67,16 @@ Os sinais, explícitos porque é onde o erro silencioso mora:
 | `status = 'excluido'` | Fica de fora inteiro |
 | Sem categoria | Não entra em pote nenhum, mas entra na cobertura da A3 |
 
-### A2 · A cobertura em dinheiro
+### A2 · A cobertura em dinheiro ✅
 **Camada:** BACK
 **Pronto quando:** a mesma passada devolve **quanto do dinheiro do mês está
 classificado**, separado por entrada e saída — não a contagem de lançamentos.
 
 É a descoberta 2 virando número: "32 para decidir" trata uma assinatura de
-R$ 20 e um aporte como iguais. Sem isto, o painel parece completo quando 37% do
+R$ 20 e um aporte como iguais. Sem isto, o painel parece completo quando 45% do
 dinheiro está fora dele.
 
-### A3 · Meta, barra e estouro
+### A3 · Meta, barra e estouro ✅
 **Camada:** BACK
 **Pronto quando:** dada a renda declarada e o percentual do pote, sai a meta em
 centavos, a fração da barra e se estourou. Cobre os quatro casos que a tela
@@ -88,7 +88,7 @@ precisa distinguir e que um `if` solto erraria:
   mostra o negativo;
 - pote **estourado** — passou de 100%.
 
-### A4 · O par de valor idêntico dentro do pote
+### A4 · O par de valor idêntico dentro do pote ✅
 **Camada:** BACK
 **Pronto quando:** entrada e saída de **mesmo valor** no mesmo pote saem
 marcadas para conferência. Os dois continuam visíveis e continuam abatendo — o
@@ -100,17 +100,25 @@ aviso é para o Davi olhar, não para o app decidir.
 > resultados diferentes — e o código vai dizer isso em comentário, porque
 > confundir os dois seria fácil e caro.
 
-### A5 · Medir contra os arquivos reais
+### A5 · Medir contra os arquivos reais ✅
 **Camada:** BACK
 **Pronto quando:** a conta inteira roda contra os dois extratos do Davi e o
-resultado bate com a medição da spec: **63% do que saiu e 10% do que entrou
-classificados**, 1 de 8 potes de gasto vazio, nenhuma entrada em pote de gasto.
+resultado bate com a medição — que a própria tarefa **corrigiu**: são **55% do
+que saiu e 8% do que entrou**, sobre 51 lançamentos. Mais 1 de 8 potes de gasto
+vazio e nenhuma entrada em pote de gasto.
+
+> ⚠ A medição da spec estava no recorte da A6 da spec 03, que joga fora os 4
+> "par que se anula" junto com os pagamentos de fatura. Para a classificação
+> aquele recorte é certo; para o painel, não — par que se anula nasce
+> `revisao_pendente`, é dinheiro de verdade esperando decisão. A queda de 63%
+> para 55% é informação.
 
 Versionado e **se pulando sozinho** onde os arquivos não existem, como a A6 da
 spec 03. Conta; nunca imprime nome nem valor.
 
-Se der diferente, é a A1–A4 que estão erradas — a medição desta vez foi feita
-pelo código, não por mim lendo o arquivo.
+Se der diferente, é a A1–A4 que estão erradas **ou o recorte da medição** — que
+foi o que aconteceu. Daqui para frente a medição é do código, e roda a cada
+`npm test`.
 
 ---
 

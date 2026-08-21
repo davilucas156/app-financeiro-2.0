@@ -31,6 +31,24 @@ que o painel mostraria **hoje**, se existisse. Três números mudaram o desenho.
 | Dinheiro que **saiu** | **63%** |
 | Dinheiro que **entrou** | **10%** |
 
+> ⚠ **Corrigido pela A5.** Os números certos são **55% e 8%**, sobre **51**
+> lançamentos e não 47. Ficam registrados assim para o histórico.
+>
+> Minha medição copiou o recorte da A6 da spec 03, que joga fora tudo que não é
+> `marcacao: "normal"` — os 3 pagamentos de fatura **e os 4 "par que se anula"**.
+> Para a classificação aquele recorte está certo: nenhum dos 7 pede decisão de
+> categoria. Para o **painel**, não: o par que se anula nasce
+> `revisao_pendente`, não `excluido` — é movimento de banco de verdade esperando
+> o Davi decidir.
+>
+> A queda de 63% para 55% é informação, não defeito: são 4 lançamentos de
+> dinheiro real que ainda não estão em pote nenhum, e o painel tem de dizer
+> isso. **A conclusão da descoberta não muda** — 55% contra 8% é a mesma
+> assimetria, e continua sendo o que sustenta a renda declarada.
+>
+> Mesmo erro da A6 e do mesmo jeito: a medição era minha e era otimista. Desta
+> vez ela virou `contraOExtrato.test.ts`, que roda a cada `npm test`.
+
 O motor é um motor de gastos. Renda quase não bate regra, e por decisão
 consciente: a A5 recusou semear "transferência para si mesmo entrando" porque
 pode ser o mesmo dinheiro voltando ou o salário chegando de outro banco, e as
@@ -48,11 +66,11 @@ medição não escolheu a arquitetura; ela mostrou qual das opções era armadil
 O `/dashboard` de hoje diz "32 para decidir". Isso conta lançamentos, e
 lançamento não é dinheiro: uma assinatura de R$ 20 e um aporte contam igual.
 
-Medido: **37% do dinheiro que saiu ainda não tem categoria**, e nesse mês um
+Medido: **45% do dinheiro que saiu ainda não tem categoria**, e nesse mês um
 único lançamento responde por metade de um pote inteiro.
 
 **O painel tem de mostrar a cobertura em dinheiro**, não em contagem. "Estes
-números cobrem 63% do que saiu" é a diferença entre um painel honesto e um
+números cobrem 55% do que saiu" é a diferença entre um painel honesto e um
 painel que parece completo.
 
 ### Descoberta 3 — pote com meta pode ficar vazio por decisão minha
@@ -70,7 +88,7 @@ cobertura em dinheiro da descoberta 2, a distinção sai de graça.
 
 ### O resto da medição, para referência
 
-- 47 lançamentos normais, 7 fora do cálculo (pagamento de fatura + pares).
+- 51 lançamentos na conta do painel; só os 3 pagamentos de fatura ficam fora.
 - 1 de 8 potes de gasto ficou vazio.
 - **Nenhuma entrada caiu em pote de gasto** neste mês — o estorno da decisão 2
   não aconteceu ainda, mas o código decide antes de acontecer.
