@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { diaEMes, emReais } from "@/lib/dinheiro";
-import type { LancamentoFalso } from "./dadosFalsos";
+import type { PendenteParaRevisar } from "./pendentes";
 
 /**
  * O lançamento que você está decidindo (tarefa B1).
@@ -19,7 +19,7 @@ import type { LancamentoFalso } from "./dadosFalsos";
  * Descrição cortada com `…` esconde exatamente a metade que costuma
  * identificar: a maquininha vem na frente, e o nome útil é o segundo campo.
  */
-export function CartaoDoLancamento({ l }: { l: LancamentoFalso }) {
+export function CartaoDoLancamento({ l }: { l: PendenteParaRevisar }) {
   const entrada = l.direcao === "entrada";
 
   return (

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { categoriaPorChave } from "./categorias";
+import type { CategoriaEscolhivel } from "./categorias";
 
 /**
  * "Sempre classificar assim?" (tarefa B3).
@@ -28,22 +28,21 @@ import { categoriaPorChave } from "./categorias";
  * própria. A A6 mediu zero casos assim no primeiro mês, mas ele existe.
  */
 export function PerguntaDeRegra({
-  chaveEscolhida,
+  categoria,
   trecho,
   pegaJunto,
 }: {
-  chaveEscolhida: string;
+  categoria: CategoriaEscolhivel | undefined;
   trecho: string | null;
   pegaJunto: number;
 }) {
-  const categoria = categoriaPorChave(chaveEscolhida);
 
   return (
     <Card className="mt-4 border-gold/20 bg-gold/8">
       <p className="text-xs text-dim">
         Guardado em{" "}
         <strong className="font-bold text-text">
-          {categoria ? `${categoria.emoji} ${categoria.nome}` : chaveEscolhida}
+          {categoria ? `${categoria.emoji} ${categoria.nome}` : "outra categoria"}
         </strong>
         .
       </p>

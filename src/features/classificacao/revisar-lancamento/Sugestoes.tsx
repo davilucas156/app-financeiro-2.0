@@ -3,7 +3,7 @@ import type {
   Sugestao,
 } from "@/features/classificacao/motor/sugestoes";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { categoriaPorChave } from "./categorias";
+import type { CategoriaEscolhivel } from "./categorias";
 
 /**
  * Os até 3 botões de sugestão (tarefa B2).
@@ -30,7 +30,13 @@ const ROTULO: Record<FonteDeSugestao, string> = {
   "pote-do-banco": "banco + histórico",
 };
 
-export function Sugestoes({ sugestoes }: { sugestoes: Sugestao[] }) {
+export function Sugestoes({
+  sugestoes,
+  porId,
+}: {
+  sugestoes: Sugestao[];
+  porId: Map<string, CategoriaEscolhivel>;
+}) {
   if (sugestoes.length === 0) return null;
 
   return (
@@ -41,7 +47,7 @@ export function Sugestoes({ sugestoes }: { sugestoes: Sugestao[] }) {
 
       <ul className="space-y-2">
         {sugestoes.map((s) => {
-          const categoria = categoriaPorChave(s.categoriaId);
+          const categoria = porId.get(s.categoriaId);
           if (!categoria) return null;
 
           return (
@@ -52,7 +58,8 @@ export function Sugestoes({ sugestoes }: { sugestoes: Sugestao[] }) {
               >
                 <span
                   aria-hidden="true"
-                  className={`size-2 shrink-0 rounded-full ${categoria.pote.classeCor}`}
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: categoria.pote.cor }}
                 />
 
                 <span className="min-w-0 flex-1">

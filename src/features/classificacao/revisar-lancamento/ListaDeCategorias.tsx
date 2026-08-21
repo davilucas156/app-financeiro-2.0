@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
-import { CATEGORIAS_ESCOLHIVEIS, chaveDe, potesNaOrdem } from "./categorias";
+import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
 
 /**
  * ⚠ **Não é o `normalizarDescricao` do motor**, e não é descuido.
@@ -18,12 +18,12 @@ import { CATEGORIAS_ESCOLHIVEIS, chaveDe, potesNaOrdem } from "./categorias";
 const comparavel = (texto: string) =>
   texto
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
 
 /**
- * A lista completa, agrupada por pote (tarefa B2).
+ * A lista completa, agrupada por pote (tarefas B2 e D3).
  *
  * ## Ela é o caminho principal, e não o de exceção
  *
@@ -33,28 +33,36 @@ const comparavel = (texto: string) =>
  * Por isso ela nasce **aberta**, e não como um `<details>` no rodapé. A spec
  * dizia "recolhida por padrão"; a medição desmentiu, e quem manda é a medição.
  *
- * A partir do segundo mês a proporção se inverte, porque o histórico passa a
- * existir. Mas é o primeiro mês que decide se o app continua sendo usado.
+ * ## As categorias vêm do banco desde a D3
  *
- * ## A busca filtra de verdade
- *
- * São 22 categorias em 8 potes — a spec pedia busca a partir de ~20. Num
- * protótipo visual, filtro que não filtra não dá para julgar: o que se está
- * avaliando aqui é justamente quanto polegar custa achar uma categoria.
+ * Até então saíam de `POTES_PADRAO`, que serve para um protótipo mas guardaria
+ * o id errado: o seed é o molde, e o que a D4 grava é o `uuid` da linha da
+ * conta. A cor também vem do banco, para a fase 2 poder deixar você mudá-la.
  */
-export function ListaDeCategorias({ direcao }: { direcao: Direcao }) {
+export function ListaDeCategorias({
+  categorias,
+  direcao,
+}: {
+  categorias: CategoriaEscolhivel[];
+  direcao: Direcao;
+}) {
   const [busca, setBusca] = useState("");
+
+  const grupos = useMemo(
+    () => agruparPorPote(categorias, direcao),
+    [categorias, direcao],
+  );
 
   const encontradas = useMemo(() => {
     const alvo = comparavel(busca);
     if (!alvo) return null;
 
-    return CATEGORIAS_ESCOLHIVEIS.filter(
+    return categorias.filter(
       (c) =>
         comparavel(c.nome).includes(alvo) ||
         comparavel(c.pote.nome).includes(alvo),
     );
-  }, [busca]);
+  }, [busca, categorias]);
 
   return (
     <section aria-labelledby="todas-as-categorias">
@@ -74,31 +82,27 @@ export function ListaDeCategorias({ direcao }: { direcao: Direcao }) {
       {encontradas ? (
         encontradas.length === 0 ? (
           <p className="mt-4 text-xs text-dim">
-            Nada com esse nome. Limpe a busca para ver os 8 potes — ou marque
-            como fora do cálculo, ali embaixo.
+            Nada com esse nome. Limpe a busca para ver os potes — ou marque como
+            fora do cálculo, ali em cima.
           </p>
         ) : (
           <ul className="mt-3 space-y-2">
             {encontradas.map((c) => (
-              <li key={c.chave}>
-                <BotaoDeCategoria
-                  emoji={c.emoji}
-                  nome={c.nome}
-                  cor={c.pote.classeCor}
-                  pote={c.pote.nome}
-                />
+              <li key={c.id}>
+                <BotaoDeCategoria categoria={c} mostrarPote />
               </li>
             ))}
           </ul>
         )
       ) : (
         <div className="mt-3 space-y-5">
-          {potesNaOrdem(direcao).map((pote) => (
-            <div key={pote.slug}>
+          {grupos.map(({ pote, categorias: doPote }) => (
+            <div key={pote.id}>
               <div className="flex items-center gap-2">
                 <span
                   aria-hidden="true"
-                  className={`size-2 rounded-full ${pote.classeCor}`}
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: pote.cor }}
                 />
                 <h3 className="font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
                   {pote.emoji} {pote.nome}
@@ -106,13 +110,9 @@ export function ListaDeCategorias({ direcao }: { direcao: Direcao }) {
               </div>
 
               <ul className="mt-2 space-y-2">
-                {pote.categorias.map((c) => (
-                  <li key={chaveDe(pote, c)}>
-                    <BotaoDeCategoria
-                      emoji={c.emoji}
-                      nome={c.nome}
-                      cor={pote.classeCor}
-                    />
+                {doPote.map((c) => (
+                  <li key={c.id}>
+                    <BotaoDeCategoria categoria={c} />
                   </li>
                 ))}
               </ul>
@@ -126,28 +126,28 @@ export function ListaDeCategorias({ direcao }: { direcao: Direcao }) {
 
 /** Uma coluna só, 44px de altura: em 360px dois por linha viram alvo de agulha. */
 function BotaoDeCategoria({
-  emoji,
-  nome,
-  cor,
-  pote,
+  categoria,
+  mostrarPote = false,
 }: {
-  emoji: string;
-  nome: string;
-  cor: string;
-  pote?: string;
+  categoria: CategoriaEscolhivel;
+  mostrarPote?: boolean;
 }) {
   return (
     <button
       type="button"
       className="flex min-h-11 w-full items-center gap-3 rounded-pote border border-border bg-card px-4 py-2.5 text-left transition-colors hover:border-border2 hover:bg-card2"
     >
-      <span aria-hidden="true" className={`h-6 w-0.5 shrink-0 rounded-full ${cor}`} />
+      <span
+        aria-hidden="true"
+        className="h-6 w-0.5 shrink-0 rounded-full"
+        style={{ backgroundColor: categoria.pote.cor }}
+      />
       <span className="min-w-0 flex-1 truncate text-sm text-text">
-        {emoji} {nome}
+        {categoria.emoji} {categoria.nome}
       </span>
-      {pote && (
+      {mostrarPote && (
         <span className="shrink-0 font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
-          {pote}
+          {categoria.pote.nome}
         </span>
       )}
     </button>

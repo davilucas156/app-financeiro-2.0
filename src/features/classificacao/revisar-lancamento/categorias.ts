@@ -1,32 +1,36 @@
-import {
-  POTES_PADRAO,
-  type CategoriaPadrao,
-  type PotePadrao,
-} from "@/features/onboarding/potes-padrao";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
- * A lista de categorias para escolher, montada a partir de `POTES_PADRAO`.
+ * As categorias que a tela de revisão oferece (tarefas B2 e D3).
  *
- * Não invento nada aqui: os potes, as categorias, os emojis e as cores saem do
- * mesmo lugar que a tela `/bem-vindo` e o seed do banco usam. Uma segunda
- * lista divergiria da primeira em algumas semanas.
+ * ⚠ **Vêm do banco, não de `POTES_PADRAO`.** Até a D3 esta lista saía do
+ * módulo do seed, o que servia para um protótipo mas guardaria o id errado: o
+ * seed é o molde, e o que a D4 grava é o `uuid` da linha da conta do usuário.
  *
- * ⚠ A chave é `pote/categoria`, composta, pela mesma razão da A4:
- * `assinaturas` existe em Custos Fixos **e** em Conforto & Lazer, e a
- * unicidade no banco é `(bucket_id, slug)`.
+ * A cor também vem do banco (`buckets.cor`), e não do token do Tailwind, para
+ * a fase 2 poder deixar o usuário mudá-la sem que a tela pare de refletir.
  */
 
+export type PoteEscolhivel = {
+  id: string;
+  slug: string;
+  nome: string;
+  emoji: string;
+  /** Hex, direto de `buckets.cor`. */
+  cor: string;
+  tipo: "gasto" | "renda";
+  ordem: number;
+};
+
 export type CategoriaEscolhivel = {
+  id: string;
+  /** `conforto-lazer/alimentacao-fora` — a chave composta da A4. */
   chave: string;
   nome: string;
   emoji: string;
-  pote: PotePadrao;
+  ordem: number;
+  pote: PoteEscolhivel;
 };
-
-export function chaveDe(pote: PotePadrao, categoria: CategoriaPadrao): string {
-  return `${pote.slug}/${categoria.slug}`;
-}
 
 /**
  * ⚠ **Aqui entram os nove potes, renda inclusive** — e essa é a decisão que
@@ -39,43 +43,50 @@ export function chaveDe(pote: PotePadrao, categoria: CategoriaPadrao): string {
  * entrada impossível de classificar à mão — e entrada é justamente o que forma
  * a base sobre a qual os outros oito potes são calculados.
  */
-export const POTES_PARA_ESCOLHER = POTES_PADRAO;
+export function agruparPorPote(
+  categorias: CategoriaEscolhivel[],
+  direcao: Direcao,
+): { pote: PoteEscolhivel; categorias: CategoriaEscolhivel[] }[] {
+  const porPote = new Map<
+    string,
+    { pote: PoteEscolhivel; categorias: CategoriaEscolhivel[] }
+  >();
 
-/**
- * A ordem muda com a direção do lançamento.
- *
- * Numa lista de 9 potes e 25 categorias, quem acabou de receber um Pix não
- * devia rolar até o fim para achar "Renda extra". Entrada põe renda na frente;
- * saída a manda para o fim.
- *
- * Não é regra de negócio, é ordem de exibição — e a fase B existe para acertar
- * isso antes de ligar os fios.
- */
-export function potesNaOrdem(direcao: Direcao): PotePadrao[] {
-  const renda = direcao === "entrada";
+  for (const c of categorias) {
+    const grupo = porPote.get(c.pote.id) ?? { pote: c.pote, categorias: [] };
+    grupo.categorias.push(c);
+    porPote.set(c.pote.id, grupo);
+  }
 
-  return [...POTES_PARA_ESCOLHER].sort((a, b) => {
-    const ehRendaA = a.tipo === "renda" ? 1 : 0;
-    const ehRendaB = b.tipo === "renda" ? 1 : 0;
-    if (ehRendaA !== ehRendaB) return renda ? ehRendaB - ehRendaA : ehRendaA - ehRendaB;
-    return a.ordem - b.ordem;
+  for (const g of porPote.values()) {
+    g.categorias.sort((a, b) => a.ordem - b.ordem);
+  }
+
+  /**
+   * A ordem muda com a direção do lançamento.
+   *
+   * Numa lista de 9 potes e 25 categorias, quem acabou de receber um Pix não
+   * devia rolar até o fim para achar "Renda extra". Entrada põe renda na
+   * frente; saída a manda para o fim.
+   *
+   * Não é regra de negócio, é ordem de exibição.
+   */
+  const rendaPrimeiro = direcao === "entrada";
+
+  return [...porPote.values()].sort((a, b) => {
+    const rendaA = a.pote.tipo === "renda" ? 1 : 0;
+    const rendaB = b.pote.tipo === "renda" ? 1 : 0;
+
+    if (rendaA !== rendaB) {
+      return rendaPrimeiro ? rendaB - rendaA : rendaA - rendaB;
+    }
+
+    return a.pote.ordem - b.pote.ordem;
   });
 }
 
-export const CATEGORIAS_ESCOLHIVEIS: CategoriaEscolhivel[] =
-  POTES_PARA_ESCOLHER.flatMap((pote) =>
-    pote.categorias.map((c) => ({
-      chave: chaveDe(pote, c),
-      nome: c.nome,
-      emoji: c.emoji,
-      pote,
-    })),
-  );
-
-const POR_CHAVE = new Map(CATEGORIAS_ESCOLHIVEIS.map((c) => [c.chave, c]));
-
-export function categoriaPorChave(
-  chave: string,
-): CategoriaEscolhivel | undefined {
-  return POR_CHAVE.get(chave);
+export function porId(
+  categorias: CategoriaEscolhivel[],
+): Map<string, CategoriaEscolhivel> {
+  return new Map(categorias.map((c) => [c.id, c]));
 }
