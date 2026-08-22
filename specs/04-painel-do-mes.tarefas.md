@@ -124,7 +124,7 @@ foi o que aconteceu. Daqui para frente a medição é do código, e roda a cada
 
 ## Fase B — Protótipo visual (dados falsos, sem banco)
 
-### B1 · O topo honesto
+### B1 · O topo honesto ✅
 **Camada:** FRONT-VISUAL
 **Pronto quando:** com dados falsos, o painel mostra seletor de mês, **o que
 entrou / o que saiu / a diferença**, e a cobertura em dinheiro com caminho para
@@ -133,7 +133,7 @@ a `/revisao`. Legível em 360px, alvos ≥44px.
 A ordem é a da confiança: o que entrou e saiu não depende de classificação
 nenhuma — só de `direcao`. É o número mais sólido da tela e vem primeiro.
 
-### B2 · Os potes
+### B2 · Os potes ✅
 **Camada:** FRONT-VISUAL
 **Pronto quando:** os nove potes aparecem com valor, meta, barra e contagem. Os
 quatro casos da A3 têm aparência própria e distinguível **sem ler o número**:
@@ -143,7 +143,7 @@ número**.
 Mais a renda declarada do mês, visível e editável ali — ela é a régua de tudo
 que está acima dela.
 
-### B3 · Dentro do pote
+### B3 · Dentro do pote ✅
 **Camada:** FRONT-VISUAL
 **Pronto quando:** tocar num pote abre as categorias dele com valores, e a lista
 dos lançamentos daquele pote, cada um com um caminho para trocar a categoria.
