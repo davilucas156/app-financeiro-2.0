@@ -7,17 +7,13 @@ import {
   transactions,
 } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { VALOR_ALTO_CENTAVOS } from "@/features/classificacao/classificar-importacao/classificarImportacao";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import { casarRegra, type Criterio } from "@/features/classificacao/motor/regras";
 import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
 import { criterioDaCorrecao } from "./criterioDaCorrecao";
-
-/** A transação do Drizzle, para as funções auxiliares no fim do arquivo. */
-type Transacao = Parameters<
-  Parameters<ReturnType<typeof getDb>["transaction"]>[0]
->[0];
 
 /**
  * Gravar a decisão da revisão (tarefa D4).
@@ -77,12 +73,34 @@ const MOTIVO_VALOR_ALTO = "valor alto — confira se a categoria está certa";
  */
 const PRIORIDADE_DE_CORRECAO = 10;
 
+/**
+ * O invólucro que abre a transação.
+ *
+ * A D2 da spec 05 partiu esta função em duas: criar categoria e classificar o
+ * lançamento que motivou a criação precisam acontecer juntas ou não acontecer,
+ * e as duas metades moram em módulos diferentes. Quem já tem uma transação
+ * aberta chama `decidirNaTransacao` direto.
+ */
 export async function decidirLancamento(
   userId: string,
   decisao: Decisao,
 ): Promise<ResultadoDaDecisao> {
-  const db = getDb();
+  return getDb().transaction((tx) => decidirNaTransacao(tx, userId, decisao));
+}
 
+/**
+ * A decisão inteira, dentro da transação de quem chama.
+ *
+ * ⚠ **A conferência de dono da categoria mora aqui dentro**, e não antes de
+ * abrir a transação como até a D1. Ela sempre pertenceu ao mesmo instante da
+ * gravação, e de dentro ela também enxerga uma categoria criada agora mesmo no
+ * mesmo `tx` — que é exatamente o que a D2 precisa.
+ */
+export async function decidirNaTransacao(
+  tx: TransacaoDoBanco,
+  userId: string,
+  decisao: Decisao,
+): Promise<ResultadoDaDecisao> {
   if (decisao.tipo === "categoria") {
     /*
      * ⚠ A categoria **também** vem do cliente, e precisa ser conferida.
@@ -92,7 +110,7 @@ export async function decidirLancamento(
      * mas não o destino dele. O vazamento seria de leitura: o painel de outra
      * pessoa passaria a somar um gasto que não é dela.
      */
-    const [categoria] = await db
+    const [categoria] = await tx
       .select({ id: categories.id })
       .from(categories)
       .where(
@@ -152,87 +170,85 @@ export async function decidirLancamento(
             classificadoEm: agora,
           };
 
-  return db.transaction(async (tx) => {
-    /*
-     * ⚠ **O estado anterior é lido antes, e não depois.**
-     *
-     * `UPDATE ... RETURNING` devolve o valor **novo**. Sem este `select`, o
-     * "antes" deixa de existir no instante da gravação — e o "Voltar" da D6
-     * não teria como desfazer, só como chutar.
-     *
-     * `for update` porque dois toques quase simultâneos no celular acontecem:
-     * sem o lock, os dois leriam o mesmo "antes" e a sombra do desfazer
-     * apontaria para um estado intermediário que ninguém escolheu.
-     */
-    const [antes] = await tx
-      .select({
-        id: transactions.id,
-        descricao: transactions.descricaoOriginal,
-        origem: transactions.origem,
-        mesReferencia: transactions.mesReferencia,
-        categoriaId: transactions.categoriaId,
-        classificadoPor: transactions.classificadoPor,
-        regraId: transactions.regraId,
-        regraChave: transactions.regraChave,
-        fonteDaSugestao: transactions.fonteDaSugestao,
-        classificadoEm: transactions.classificadoEm,
-        status: transactions.status,
-        motivo: transactions.motivo,
-      })
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.id, decisao.lancamentoId),
-          eq(transactions.userId, userId),
-        ),
-      )
-      .for("update")
-      .limit(1);
+  /*
+   * ⚠ **O estado anterior é lido antes, e não depois.**
+   *
+   * `UPDATE ... RETURNING` devolve o valor **novo**. Sem este `select`, o
+   * "antes" deixa de existir no instante da gravação — e o "Voltar" da D6
+   * não teria como desfazer, só como chutar.
+   *
+   * `for update` porque dois toques quase simultâneos no celular acontecem:
+   * sem o lock, os dois leriam o mesmo "antes" e a sombra do desfazer
+   * apontaria para um estado intermediário que ninguém escolheu.
+   */
+  const [antes] = await tx
+    .select({
+      id: transactions.id,
+      descricao: transactions.descricaoOriginal,
+      origem: transactions.origem,
+      mesReferencia: transactions.mesReferencia,
+      categoriaId: transactions.categoriaId,
+      classificadoPor: transactions.classificadoPor,
+      regraId: transactions.regraId,
+      regraChave: transactions.regraChave,
+      fonteDaSugestao: transactions.fonteDaSugestao,
+      classificadoEm: transactions.classificadoEm,
+      status: transactions.status,
+      motivo: transactions.motivo,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.id, decisao.lancamentoId),
+        eq(transactions.userId, userId),
+      ),
+    )
+    .for("update")
+    .limit(1);
 
-    if (!antes) return { ok: false, erro: NAO_ENCONTRADO };
+  if (!antes) return { ok: false, erro: NAO_ENCONTRADO };
 
-    await tx
-      .update(transactions)
-      .set(alteracao)
-      .where(
-        and(
-          eq(transactions.id, decisao.lancamentoId),
-          eq(transactions.userId, userId),
-        ),
-      );
+  await tx
+    .update(transactions)
+    .set(alteracao)
+    .where(
+      and(
+        eq(transactions.id, decisao.lancamentoId),
+        eq(transactions.userId, userId),
+      ),
+    );
 
-    let regraCriada = false;
-    let irmaos = 0;
+  let regraCriada = false;
+  let irmaos = 0;
 
-    if (decisao.tipo === "categoria" && decisao.sempre) {
-      const criterio = criterioDaCorrecao(antes.descricao, antes.origem);
+  if (decisao.tipo === "categoria" && decisao.sempre) {
+    const criterio = criterioDaCorrecao(antes.descricao, antes.origem);
 
-      // Sem trecho estável não há o que virar regra. A tela nem oferece a
-      // pergunta nesse caso; aqui é a mesma decisão, do outro lado.
-      if (criterio) {
-        const regraId = await gravarRegra(tx, {
-          userId,
-          criterio,
-          categoriaId: decisao.categoriaId,
-        });
+    // Sem trecho estável não há o que virar regra. A tela nem oferece a
+    // pergunta nesse caso; aqui é a mesma decisão, do outro lado.
+    if (criterio) {
+      const regraId = await gravarRegra(tx, {
+        userId,
+        criterio,
+        categoriaId: decisao.categoriaId,
+      });
 
-        irmaos = await aplicarAosIrmaos(tx, {
-          userId,
-          mesReferencia: antes.mesReferencia,
-          exceto: antes.id,
-          regraId,
-          criterio,
-          categoriaId: decisao.categoriaId,
-        });
+      irmaos = await aplicarAosIrmaos(tx, {
+        userId,
+        mesReferencia: antes.mesReferencia,
+        exceto: antes.id,
+        regraId,
+        criterio,
+        categoriaId: decisao.categoriaId,
+      });
 
-        regraCriada = true;
-      }
+      regraCriada = true;
     }
+  }
 
-    await guardarODesfazer(tx, userId, antes, { regraCriada, irmaos });
+  await guardarODesfazer(tx, userId, antes, { regraCriada, irmaos });
 
-    return regraCriada ? { ok: true, regraCriada: true, irmaos } : { ok: true };
-  });
+  return regraCriada ? { ok: true, regraCriada: true, irmaos } : { ok: true };
 }
 
 /**
@@ -248,7 +264,7 @@ export async function decidirLancamento(
  * aconteceu.
  */
 async function guardarODesfazer(
-  tx: Transacao,
+  tx: TransacaoDoBanco,
   userId: string,
   antes: {
     id: string;
@@ -294,7 +310,7 @@ async function guardarODesfazer(
  * antes de dizer de novo o que acabou de dizer.
  */
 async function gravarRegra(
-  tx: Transacao,
+  tx: TransacaoDoBanco,
   dados: { userId: string; criterio: Criterio; categoriaId: string },
 ): Promise<string> {
   const [regra] = await tx
@@ -341,7 +357,7 @@ async function gravarRegra(
  * **e** com a categoria do lançamento original.
  */
 async function aplicarAosIrmaos(
-  tx: Transacao,
+  tx: TransacaoDoBanco,
   dados: {
     userId: string;
     mesReferencia: string;

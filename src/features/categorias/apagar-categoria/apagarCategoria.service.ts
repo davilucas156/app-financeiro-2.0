@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, ne, type SQL } from "drizzle-orm";
 import { categories, classificationRules, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 
 /**
  * Apagar uma categoria, com destino para o que estava dentro (tarefa B4).
@@ -112,10 +113,6 @@ export async function apagarCategoria(
   });
 }
 
-type Transacao = Parameters<
-  Parameters<ReturnType<typeof getDb>["transaction"]>[0]
->[0];
-
 /**
  * Mover é escolha sua, então a procedência passa a ser sua.
  *
@@ -133,7 +130,7 @@ type Transacao = Parameters<
  * updates derrubaria a transação **entre um e outro**.
  */
 async function mover(
-  tx: Transacao,
+  tx: TransacaoDoBanco,
   daCategoria: SQL,
   paraId: string,
 ): Promise<number> {
@@ -164,7 +161,7 @@ async function mover(
  * de categoria nenhuma. Ele perde a classificação, mantém `status` e `motivo`.
  */
 async function devolver(
-  tx: Transacao,
+  tx: TransacaoDoBanco,
   daCategoria: SQL,
   nomeDaCategoria: string,
 ): Promise<number> {
@@ -211,7 +208,7 @@ async function devolver(
  * vez de depender de um efeito colateral três tabelas adiante.
  */
 async function mexerNasRegras(
-  tx: Transacao,
+  tx: TransacaoDoBanco,
   userId: string,
   categoriaId: string,
   destino: DestinoEscolhido,

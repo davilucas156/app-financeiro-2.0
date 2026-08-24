@@ -1,6 +1,7 @@
 import "server-only";
 import { eq, isNull, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
+import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { buckets, categories, classificationRules, users } from "@/db/schema";
 import { linhasDeRegras } from "@/features/classificacao/semear-regras/linhasDeRegras";
 import {
@@ -69,11 +70,6 @@ export async function concluirOnboarding(
   });
 }
 
-/** A transação do Drizzle, como em `decidirLancamento.service.ts`. */
-type Transacao = Parameters<
-  Parameters<ReturnType<typeof getDb>["transaction"]>[0]
->[0];
-
 /**
  * As regras-base da A5 na conta de quem tem direito a elas (tarefa D7).
  *
@@ -91,7 +87,7 @@ type Transacao = Parameters<
  * onboarding de novo não pode devolvê-la ao que eu escrevi. Seed é ponto de
  * partida, não autoridade: quem olhou o lançamento foi ele.
  */
-async function semearRegras(tx: Transacao, userId: string): Promise<void> {
+async function semearRegras(tx: TransacaoDoBanco, userId: string): Promise<void> {
   const [dono] = await tx
     .select({ email: users.email, nome: users.nome })
     .from(users)

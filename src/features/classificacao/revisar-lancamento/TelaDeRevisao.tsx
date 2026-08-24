@@ -87,6 +87,8 @@ export function TelaDeRevisao({
             <AvisoDoVoltar voltar={voltar} />
           </div>
         )}
+
+        <CaminhoParaCategorias />
       </>
     );
   }
@@ -239,7 +241,9 @@ function Revisando({
             categorias={categorias}
             direcao={atual.direcao}
             aoEscolher={(categoria) => setEscolhida({ categoria })}
-            rodape={<NovaCategoriaNaRevisao potes={potes} />}
+            rodape={
+              <NovaCategoriaNaRevisao potes={potes} lancamentoId={atual.id} />
+            }
           />
         </>
       ) : (
@@ -253,10 +257,36 @@ function Revisando({
             categorias={categorias}
             direcao={atual.direcao}
             aoEscolher={(categoria) => setEscolhida({ categoria })}
-            rodape={<NovaCategoriaNaRevisao potes={potes} />}
+            rodape={
+              <NovaCategoriaNaRevisao potes={potes} lancamentoId={atual.id} />
+            }
           />
         </>
       )}
+
+      <CaminhoParaCategorias />
     </>
   );
 }
+
+/**
+ * O caminho até a `/categorias`, que fica fora da barra de navegação
+ * (pendência 3 da spec 05).
+ *
+ * ⚠ **No rodapé da tela, e não no rodapé da lista.** O rodapé da lista é do
+ * "+ Nova categoria", que resolve o lançamento aberto sem sair do lugar. Um
+ * link para outra tela ao lado dele convidaria a abandonar a revisão no meio —
+ * e as duas coisas se pareceriam, sendo opostas.
+ */
+function CaminhoParaCategorias() {
+  return (
+    <p className="mt-8 text-[11px] leading-relaxed text-dim">
+      Duas categorias dizendo a mesma coisa, ou uma que você nunca usa?{" "}
+      <Link href="/categorias" className="underline underline-offset-4">
+        Arrumar categorias
+      </Link>
+      .
+    </p>
+  );
+}
+

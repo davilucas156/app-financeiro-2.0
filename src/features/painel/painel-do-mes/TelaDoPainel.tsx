@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
@@ -95,6 +96,20 @@ export function TelaDoPainel({
           </div>
         </>
       )}
+
+      {/*
+        O caminho até a `/categorias`, que fica fora da barra de navegação
+        (pendência 3). Aqui embaixo porque é olhando os potes que se vê um nome
+        errado ou uma categoria no pote errado — a vontade de arrumar nasce
+        deste lado, não de um item de menu.
+      */}
+      <p className="mt-8 text-[11px] leading-relaxed text-dim">
+        Categoria com nome errado, repetida ou no pote errado?{" "}
+        <Link href="/categorias" className="underline underline-offset-4">
+          Arrumar categorias
+        </Link>
+        .
+      </p>
     </>
   );
 }

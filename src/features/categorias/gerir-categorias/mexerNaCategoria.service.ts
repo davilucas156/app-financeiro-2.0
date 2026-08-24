@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { ehUnicidadeViolada, restricaoViolada } from "@/lib/erroDoPostgres";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { slugUnico } from "@/features/categorias/nomear-categoria/slug";
@@ -50,7 +51,28 @@ const SLUG_REPETIDO =
 // B1 — criar
 // ──────────────────────────────────────────────────────────────────────────
 
+/**
+ * O invólucro que abre a transação.
+ *
+ * A D2 da spec 05 partiu esta função em duas: criar a categoria e classificar o
+ * lançamento que motivou a criação precisam acontecer juntas ou não acontecer.
+ * Quem já tem uma transação aberta chama `criarCategoriaNaTransacao` direto.
+ *
+ * O caminho normal — o "+ Nova categoria" da `/categorias` — passa por aqui e
+ * ganha de brinde o que antes não tinha: as três consultas (conferir o pote,
+ * ler as irmãs, inserir) num instante só.
+ */
 export async function criarCategoria(
+  userId: string,
+  entrada: { nome: string; emoji: string; poteId: string },
+): Promise<ResultadoDeCriar> {
+  return getDb().transaction((tx) =>
+    criarCategoriaNaTransacao(tx, userId, entrada),
+  );
+}
+
+export async function criarCategoriaNaTransacao(
+  tx: TransacaoDoBanco,
   userId: string,
   entrada: { nome: string; emoji: string; poteId: string },
 ): Promise<ResultadoDeCriar> {
@@ -59,8 +81,6 @@ export async function criarCategoria(
     return { ok: false, erro: valida.mensagem, campo: valida.campo };
   }
 
-  const db = getDb();
-
   /*
    * ⚠ **O pote também vem do cliente, e também precisa ser conferido.**
    *
@@ -68,7 +88,7 @@ export async function criarCategoria(
    * o destino dela. Uma categoria criada dentro do pote de outra conta vazaria
    * por leitura — apareceria no painel de quem não pediu.
    */
-  const [pote] = await db
+  const [pote] = await tx
     .select({
       id: buckets.id,
       slug: buckets.slug,
@@ -84,7 +104,7 @@ export async function criarCategoria(
 
   if (!pote) return { ok: false, erro: POTE_NAO_ENCONTRADO };
 
-  const irmas = await db
+  const irmas = await tx
     .select({ slug: categories.slug, ordem: categories.ordem })
     .from(categories)
     .where(
@@ -108,7 +128,7 @@ export async function criarCategoria(
   const ordem = irmas.reduce((maior, c) => Math.max(maior, c.ordem), 0) + 1;
 
   try {
-    const [criada] = await db
+    const [criada] = await tx
       .insert(categories)
       .values({
         userId,

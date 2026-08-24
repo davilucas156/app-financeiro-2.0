@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aprovado pelo Davi; fases A, B e C concluídas; fase D em andamento
+**Status:** aprovado pelo Davi; fases A, B, C e D concluídas; falta a E1 (o Davi criar uma categoria de verdade pelo celular)
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -260,7 +260,7 @@ faz você passar por todas as que já existem primeiro.
 **Pronto quando:** criar, renomear, mover-se-vazia e apagar funcionam contra o
 banco, do celular, com os números do raio-X vindos da B3.
 
-### D2 · Criar na revisão resolve o lançamento ali
+### D2 · Criar na revisão resolve o lançamento ali ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** criar a categoria a partir da revisão **classifica o
 lançamento que motivou a criação**, numa transação só.
@@ -279,7 +279,7 @@ classificar e criar regra em um toque são três decisões, e a terceira é a qu
 tem consequência no mês inteiro. A regra continua nascendo de onde nasce hoje:
 uma correção sobre descrição real.
 
-### D3 · A rota nova protegida, e os caminhos até ela
+### D3 · A rota nova protegida, e os caminhos até ela ✅
 **Camada:** INFRA + FRONT-INTEGRADO
 **Pronto quando:** `/categorias` está em `proxy.ts` e é alcançável da `/revisao`
 e do painel.

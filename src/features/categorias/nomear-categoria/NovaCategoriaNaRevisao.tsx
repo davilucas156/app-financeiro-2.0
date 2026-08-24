@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
+import { criarEUsarAqui } from "./criarEClassificar.action";
 import { FormularioDeCategoria } from "./FormularioDeCategoria";
 
 /**
- * "+ Nova categoria" no fim da lista da revisão (tarefa C2).
+ * "+ Nova categoria" no fim da lista da revisão (tarefas C2 e D2).
  *
  * ## Está aqui porque é aqui que a falta aparece
  *
@@ -21,13 +22,23 @@ import { FormularioDeCategoria } from "./FormularioDeCategoria";
  * que não diz nada — o método dos potes funciona porque a lista cabe na cabeça.
  * A tela não impede; ela faz você passar por todas as que já existem primeiro.
  *
- * ⛔ **O "Criar" nasce apagado.** Mesma decisão do "Voltar" na D4 da spec 03 e
- * do "Trocar categoria" na B3 da spec 04: o formulário mostra a forma inteira e
- * o botão que gravaria fica apagado com uma linha dizendo quem o liga. Fingir
- * que funciona seria pior do que estar apagado.
+ * ## A assimetria do "Voltar", dita antes e não depois
+ *
+ * O "Voltar" desfaz a classificação e **não** apaga a categoria criada — a
+ * mesma régua da D6, em que desfazer uma classificação não desfaz o
+ * aprendizado. Quem lê antes decide sabendo; quem lê depois só descobre.
  */
-export function NovaCategoriaNaRevisao({ potes }: { potes: PoteNaGestao[] }) {
+export function NovaCategoriaNaRevisao({
+  potes,
+  lancamentoId,
+}: {
+  potes: PoteNaGestao[];
+  /** O lançamento que motivou a criação — ele é classificado no mesmo toque. */
+  lancamentoId: string;
+}) {
   const [aberto, setAberto] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [criando, comecar] = useTransition();
 
   if (!aberto) {
     return (
@@ -45,15 +56,34 @@ export function NovaCategoriaNaRevisao({ potes }: { potes: PoteNaGestao[] }) {
     <Card>
       <p className="text-xs leading-relaxed text-dim">
         Para quando este lançamento não cabe em nenhuma das de cima. Ela nasce no
-        pote que você escolher e já pode receber este lançamento.
+        pote que você escolher e já recebe este lançamento.
+      </p>
+
+      <p className="mt-2 text-[11px] leading-relaxed text-dim2">
+        O &ldquo;Voltar&rdquo; depois desfaz a classificação, mas não apaga a
+        categoria — ela fica, como ficam as regras.
       </p>
 
       <FormularioDeCategoria
         potes={potes}
-        aoSalvar={() => setAberto(false)}
-        aoCancelar={() => setAberto(false)}
+        aoSalvar={(v) =>
+          comecar(async () => {
+            const r = await criarEUsarAqui({ ...v, lancamentoId });
+            if (r.ok) {
+              setErro(null);
+              setAberto(false);
+            } else {
+              setErro(r.erro);
+            }
+          })
+        }
+        aoCancelar={() => {
+          setErro(null);
+          setAberto(false);
+        }}
+        salvando={criando}
+        erro={erro}
         rotuloDoBotao="Criar e usar aqui"
-        aindaNaoLigado="A D2 liga isto: criar a categoria e classificar este lançamento com ela, numa transação só."
       />
     </Card>
   );

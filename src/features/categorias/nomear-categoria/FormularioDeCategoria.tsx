@@ -42,14 +42,6 @@ export function FormularioDeCategoria({
   salvando = false,
   erro = null,
   rotuloDoBotao,
-  /**
-   * O botão que gravaria, apagado com o motivo.
-   *
-   * Mesma decisão do "Voltar" na D4 da spec 03 e do "Trocar categoria" na B3
-   * da spec 04: no portão visual dá para ver a forma inteira, e fingir que
-   * funciona seria pior do que estar apagado.
-   */
-  aindaNaoLigado = null,
 }: {
   inicial?: Partial<ValoresDaCategoria>;
   /** Ausente = o pote não se escolhe aqui (renomear não muda de pote). */
@@ -59,7 +51,6 @@ export function FormularioDeCategoria({
   salvando?: boolean;
   erro?: string | null;
   rotuloDoBotao: string;
-  aindaNaoLigado?: string | null;
 }) {
   const [nome, setNome] = useState(inicial?.nome ?? "");
   const [emoji, setEmoji] = useState(inicial?.emoji ?? "");
@@ -76,7 +67,6 @@ export function FormularioDeCategoria({
       : null;
 
   const pronto = valida.ok && (potes === undefined || poteId !== "");
-  const travado = salvando || aindaNaoLigado !== null;
 
   return (
     <div className="mt-4 border-t border-border pt-4">
@@ -162,7 +152,7 @@ export function FormularioDeCategoria({
         <button
           type="button"
           onClick={() => valida.ok && aoSalvar({ nome: valida.nome, emoji: valida.emoji, poteId })}
-          disabled={!pronto || travado}
+          disabled={!pronto || salvando}
           aria-busy={salvando || undefined}
           className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-4 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"
         >
@@ -177,12 +167,6 @@ export function FormularioDeCategoria({
           Cancelar
         </button>
       </div>
-
-      {aindaNaoLigado && (
-        <p className="mt-2 text-[11px] leading-relaxed text-dim2">
-          {aindaNaoLigado}
-        </p>
-      )}
 
       {erro && (
         <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
