@@ -2,7 +2,8 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/06-veredito-e-insights.md` (pendências decididas)
-**Status:** aguardando o "ok" do Davi para a fase A
+**Status:** fase A concluída (A1, A2 e A3 com teste). Próxima: fase B, que
+termina no portão visual do Davi.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -51,7 +52,7 @@ Esticar a legenda faria um texto servir a dois donos.
 
 ## Fase A — As decisões puras (sem banco, sem tela)
 
-### A1 · O veredito, em ordem de gravidade
+### A1 ✅ · O veredito, em ordem de gravidade
 **Camada:** BACK (puro)
 **Arquivo:** `features/painel/veredito-do-mes/veredito.ts` + teste
 **Pronto quando:** dada a cobertura, a renda declarada, o total que saiu e os
@@ -73,7 +74,7 @@ já tem o `CampoDeRenda` para esse caso e não precisa de duas cobranças.
 não números soltos no meio do `if`. Eles vão ser ajustados quando houver mais
 meses, e quem ajusta precisa achá-los.
 
-### A2 · O insight de um pote
+### A2 ✅ · O insight de um pote
 **Camada:** BACK (puro)
 **Arquivo:** `features/painel/veredito-do-mes/insightDoPote.ts` + teste
 **Pronto quando:** dado um pote e a meta dele, devolve a linha do cartão — ou
@@ -89,7 +90,7 @@ Duas metades, e as duas podem faltar:
 ⚠ **`"sem-meta"` devolve `null`.** Não é um pote que fechou dentro; é um pote
 que não tem dentro. É a descoberta 3, e `estadoDoPote` já sabe distingui-la.
 
-### A3 · O comparativo, e o que ele faz com um mês só
+### A3 ✅ · O comparativo, e o que ele faz com um mês só
 **Camada:** BACK (puro)
 **Arquivo:** `features/painel/comparar-meses/comparativo.ts` + teste
 **Pronto quando:** dada uma lista de meses com gasto por pote e cobertura,
@@ -181,7 +182,7 @@ certa a dizer sobre aquele mês.
 
 | Fase | Tarefas | Depende de |
 |---|---|---|
-| A — As decisões puras | A1–A3 | nada |
+| A — As decisões puras ✅ | A1–A3 | nada |
 | B — As telas | B1–B3 | A (a tela mostra o que a função já decide) |
 | C — O servidor | C1 | aprovação visual de B |
 | D — Integração | D1–D2 | C |

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { coberturaDoMes } from "./cobertura";
+import {
+  coberturaConfiavel,
+  coberturaDoMes,
+  COBERTURA_CONFIAVEL_PCT,
+  type Cobertura,
+} from "./cobertura";
 import type { SomaDoMes } from "./somarOMes";
 
 const soma = (p: Partial<SomaDoMes>): SomaDoMes => ({
@@ -98,5 +103,45 @@ describe("mês sem dinheiro numa direção", () => {
     const c = coberturaDoMes(soma({}));
 
     expect(c).toEqual({ saiuPct: null, entrouPct: null, completa: true });
+  });
+});
+
+describe("dá para dizer alguma coisa sobre este mês? (A1)", () => {
+  const com = (saiuPct: number | null): Cobertura => ({
+    saiuPct,
+    entrouPct: null,
+    completa: false,
+  });
+
+  it("no limiar exato, confia", () => {
+    expect(coberturaConfiavel(com(COBERTURA_CONFIAVEL_PCT))).toBe(true);
+  });
+
+  it("um ponto abaixo, não confia", () => {
+    expect(coberturaConfiavel(com(COBERTURA_CONFIAVEL_PCT - 1))).toBe(false);
+  });
+
+  it("nada saiu não é confiável — e não quer dizer mal classificado", () => {
+    /*
+     * Quem interpreta este `false` é quem chamou: o `vereditoDoMes` se cala
+     * antes de chegar aqui, porque um mês sem gasto não é um mês para mandar
+     * revisar.
+     */
+    expect(coberturaConfiavel(com(null))).toBe(false);
+  });
+
+  it("ignora a cobertura de entrada", () => {
+    /*
+     * A medição da spec 04 achou cobertura muito menor no que entra do que no
+     * que sai, e a assimetria é estrutural: renda quase não é classificada.
+     * Exigir os dois lados travaria todo mês no degrau 1, para sempre.
+     */
+    const rendaCrua: Cobertura = {
+      saiuPct: 100,
+      entrouPct: 10,
+      completa: false,
+    };
+
+    expect(coberturaConfiavel(rendaCrua)).toBe(true);
   });
 });

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
-import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
+import { rotuloDeMes } from "@/lib/mes";
 import { informarRenda } from "./declararRenda.action";
 import { emCentavos, paraOCampo } from "./emCentavos";
 import type { RendaDeclarada } from "./rendaDeclarada";

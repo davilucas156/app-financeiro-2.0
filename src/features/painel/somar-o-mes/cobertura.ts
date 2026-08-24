@@ -63,3 +63,40 @@ function porcentagem(parte: number, todo: number): number | null {
 
   return Math.max(1, Math.floor((parte / todo) * 100));
 }
+
+/**
+ * A partir de quanto os números do mês sustentam uma frase (tarefa A1).
+ *
+ * ⚠ **Chute honesto, e nomeado para ser corrigido.** Não saiu de dados: há um
+ * mês fechado no banco. Quando houver mais, é aqui que se mexe — e mexer aqui
+ * muda o veredito e o comparativo ao mesmo tempo, que é exatamente o ponto.
+ */
+export const COBERTURA_CONFIAVEL_PCT = 90;
+
+/**
+ * Dá para dizer alguma coisa sobre este mês?
+ *
+ * ## Mora aqui, e não no veredito, de propósito
+ *
+ * Duas perguntas do projeto são esta mesma pergunta: o degrau 1 do
+ * `vereditoDoMes` ("mande revisar antes de opinar") e o corte da média do
+ * `compararMeses` ("mês mal classificado não entra na média"). Escritas em dois
+ * arquivos, elas divergiriam no primeiro ajuste — e o app passaria a mandar
+ * revisar um mês que ele próprio aceitou como régua.
+ *
+ * ⚠ **Só `saiuPct`.** A entrada é outro assunto: a medição da spec 04 achou
+ * cobertura muito menor no que entra do que no que sai, e a assimetria é
+ * estrutural — renda quase não é classificada. O veredito não fala de renda
+ * classificada; fala de renda **declarada**. Exigir cobertura de entrada
+ * travaria todo mês no degrau 1, para sempre.
+ *
+ * ⚠ **`saiuPct === null` devolve `false`, e isso não quer dizer "ruim".**
+ * Quer dizer que não saiu dinheiro nenhum — um mês sem gasto não é um mês mal
+ * classificado. Quem sabe o que fazer com ele é quem chamou: o `vereditoDoMes`
+ * se cala antes de chegar aqui.
+ */
+export function coberturaConfiavel(cobertura: Cobertura): boolean {
+  return (
+    cobertura.saiuPct !== null && cobertura.saiuPct >= COBERTURA_CONFIAVEL_PCT
+  );
+}

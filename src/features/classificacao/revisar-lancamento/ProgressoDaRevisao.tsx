@@ -1,4 +1,4 @@
-import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
+import { rotuloDeMes } from "@/lib/mes";
 
 /**
  * "3 de 17" e a barra (tarefa B1).

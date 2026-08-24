@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { rotuloDeMes } from "@/lib/mes";
 
 /**
  * Mês de referência da importação (tarefa B1) — **protótipo visual**.
@@ -7,28 +8,6 @@ import { cn } from "@/lib/cn";
  * sistema, que é maior, rolável e acessível de graça. Um dropdown nosso seria
  * mais bonito e pior de usar com o polegar.
  */
-
-const MESES = [
-  "janeiro",
-  "fevereiro",
-  "março",
-  "abril",
-  "maio",
-  "junho",
-  "julho",
-  "agosto",
-  "setembro",
-  "outubro",
-  "novembro",
-  "dezembro",
-];
-
-/** Rótulo "Junho / 2026" a partir de "2026-06". */
-export function rotuloDeMes(mes: string): string {
-  const [ano, m] = mes.split("-");
-  const nome = MESES[Number(m) - 1] ?? m;
-  return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} / ${ano}`;
-}
 
 /**
  * Os últimos meses até o atual. **Futuro fica de fora**: extrato de mês que

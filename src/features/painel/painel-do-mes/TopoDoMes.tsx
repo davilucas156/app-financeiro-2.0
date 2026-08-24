@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
-import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
+import { rotuloDeMes } from "@/lib/mes";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 
 /**

@@ -9,7 +9,7 @@ import {
   LinhasIgnoradas,
   rotuloDeIgnoradas,
 } from "@/features/upload/enviar-extrato/LinhasIgnoradas";
-import { rotuloDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
+import { rotuloDeMes } from "@/lib/mes";
 
 /**
  * Uma linha do histórico, com o desfazer ligado (tarefas B3 e D5).
