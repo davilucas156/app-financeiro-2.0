@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
+import type { Comparativo } from "@/features/painel/comparar-meses/comparativo";
+import { SecaoDoComparativo } from "@/features/painel/comparar-meses/SecaoDoComparativo";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
@@ -40,6 +42,7 @@ export function TelaDoPainel({
   renda,
   potes,
   categorias,
+  comparativo,
 }: {
   mes: string;
   meses: string[];
@@ -51,6 +54,7 @@ export function TelaDoPainel({
   renda: RendaDeclarada | null;
   potes: PoteNoPainel[];
   categorias: CategoriaEscolhivel[];
+  comparativo: Comparativo;
 }) {
   /*
    * O veredito (tarefa B1) sai daqui e não do servidor, e não é atalho: tudo o
@@ -127,6 +131,23 @@ export function TelaDoPainel({
           </div>
         </>
       )}
+
+      {/*
+        O comparativo (tarefa D2), **depois** dos potes e não antes.
+
+        A ordem da tela continua sendo a ordem da confiança: primeiro o mês
+        que você veio ver, depois como ele se compara. Um comparativo no topo
+        faria a primeira leitura do painel ser sobre outro mês.
+      */}
+      <SecaoDoComparativo
+        comparativo={comparativo}
+        potes={deGasto.map((p) => ({
+          id: p.id,
+          nome: p.nome,
+          emoji: p.emoji,
+          cor: p.cor,
+        }))}
+      />
 
       {/*
         O caminho até a `/categorias`, que fica fora da barra de navegação

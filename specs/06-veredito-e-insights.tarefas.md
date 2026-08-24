@@ -2,8 +2,8 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/06-veredito-e-insights.md` (pendências decididas)
-**Status:** fases A e B concluídas. ⛔ **Parado no portão visual do Davi.**
-A B1 e a B2 entraram ligadas em dados reais — ver a nota da fase B.
+**Status:** ✅ portão visual aprovado pelo Davi. Fases A, B, C e D concluídas.
+Falta a E1 — que aqui não é confirmação de que funcionou, é revisão de texto.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -148,7 +148,7 @@ inventado.
 
 ## Fase C — O servidor
 
-### C1 · O histórico por mês e por pote
+### C1 ✅ · O histórico por mês e por pote
 **Camada:** BACK
 **Arquivo:** `features/painel/comparar-meses/historicoDosMeses.service.ts`
 **Pronto quando:** devolve, para cada `mes_referencia` da conta, o gasto por
@@ -160,13 +160,25 @@ banco numa página que já faz cinco.
 ⚠ **Os potes vêm da tabela de potes**, como na B5 da spec 05 — um pote sem
 gasto em nenhum mês tem de aparecer com zero, não sumir da comparação.
 
-Medido e verificado contra o Neon com conta descartável, com um mês e com dois.
+✅ **Verificado contra o Neon** com conta descartável, dez conferências, todas
+passando e a conta apagada no `finally`:
+
+- dois meses, em ordem;
+- cobertura de 100% num mês e 50% no outro — e a renda crua **não** conta
+  contra, porque a cobertura aqui é só do que sai;
+- reembolso dentro do pote abate o gasto dele (600 de gasolina menos 100 de
+  estorno viram 500), como o `orientar` do `somarOMes`;
+- pagamento de fatura (`excluido`) não conta em lugar nenhum;
+- **pote sem gasto em mês nenhum aparece com zero** — a lição da B5;
+- pote de renda fica fora do histórico;
+- e o comparativo em cima disso: junho comparado com maio, e maio sozinho
+  devolvendo `primeiro-mes` sem enxergar junho na série.
 
 ---
 
 ## Fase D — Integração
 
-### D1 · Apagar o protótipo
+### D1 ✅ · Apagar o protótipo
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** `PrototipoDasFrases.tsx` e o `?estado=frases` da
 `dashboard/page.tsx` deixam de existir.
@@ -174,7 +186,7 @@ Medido e verificado contra o Neon com conta descartável, com um mês e com dois
 ⚠ **Encolheu na fase B**, que já entregou o veredito e o insight ligados no mês
 de verdade. O que sobrou aqui é a limpeza do andaime.
 
-### D2 · O comparativo ligado
+### D2 ✅ · O comparativo ligado
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** a seção lê o histórico de verdade e, com um mês, mostra a
 linha honesta e o caminho para subir outro extrato.
@@ -199,9 +211,9 @@ certa a dizer sobre aquele mês.
 | Fase | Tarefas | Depende de |
 |---|---|---|
 | A — As decisões puras ✅ | A1–A3 | nada |
-| B — As telas | B1–B3 | A (a tela mostra o que a função já decide) |
-| C — O servidor | C1 | aprovação visual de B |
-| D — Integração | D1–D2 | C |
+| B — As telas ✅ | B1–B3 | A (a tela mostra o que a função já decide) |
+| C — O servidor ✅ | C1 | aprovação visual de B |
+| D — Integração ✅ | D1–D2 | C |
 | E — Deploy | E1 | D |
 
 A Etapa 3 (Plan) é feita **tarefa por tarefa**, não tudo de uma vez.

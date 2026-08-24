@@ -29,8 +29,14 @@ export type Cobertura = {
 
 export function coberturaDoMes(soma: SomaDoMes): Cobertura {
   return {
-    saiuPct: porcentagem(soma.saiuClassificadoCentavos, soma.saiuCentavos),
-    entrouPct: porcentagem(soma.entrouClassificadoCentavos, soma.entrouCentavos),
+    saiuPct: porcentagemDaCobertura(
+      soma.saiuClassificadoCentavos,
+      soma.saiuCentavos,
+    ),
+    entrouPct: porcentagemDaCobertura(
+      soma.entrouClassificadoCentavos,
+      soma.entrouCentavos,
+    ),
     /*
      * ⚠ **Vem da comparação crua, nunca da porcentagem.**
      *
@@ -53,8 +59,16 @@ export function coberturaDoMes(soma: SomaDoMes): Cobertura {
  * E o outro lado: com 0,4% classificado mostra **1**, não 0. Dizer "0%" quando
  * já existe algo classificado é a mesma mentira invertida — e "1%" é feio o
  * suficiente para ser honesto.
+ *
+ * ⚠ **Exportada por causa da C1 da spec 06.** O histórico calcula a cobertura de
+ * cada mês fora do `coberturaDoMes`, e um segundo arredondamento faria um mês em
+ * 89,6% entrar na média do comparativo e ser mandado para revisão pelo painel —
+ * a mesma tela discordando de si mesma sobre o mesmo mês.
  */
-function porcentagem(parte: number, todo: number): number | null {
+export function porcentagemDaCobertura(
+  parte: number,
+  todo: number,
+): number | null {
   if (todo === 0) return null;
   if (parte >= todo) return 100;
   // Nada classificado é 0 de verdade. A trava abaixo é só contra o

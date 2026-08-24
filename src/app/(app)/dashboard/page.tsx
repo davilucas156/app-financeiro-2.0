@@ -3,9 +3,10 @@ import Link from "next/link";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { compararMeses } from "@/features/painel/comparar-meses/comparativo";
+import { historicoDosMeses } from "@/features/painel/comparar-meses/historicoDosMeses.service";
 import { dadosDoPainel } from "@/features/painel/painel-do-mes/painelDoMes.service";
 import { TelaDoPainel } from "@/features/painel/painel-do-mes/TelaDoPainel";
-import { PrototipoDasFrases } from "@/features/painel/veredito-do-mes/PrototipoDasFrases";
 
 export const metadata: Metadata = {
   title: "Painel · Painel Financeiro 6 Potes",
@@ -31,21 +32,22 @@ export const metadata: Metadata = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; estado?: string }>;
+  searchParams: Promise<{ mes?: string }>;
 }) {
   const usuario = await garantirUsuario();
-  const { mes, estado } = await searchParams;
+  const { mes } = await searchParams;
 
   /*
-   * ⚠ **Portão visual da fase B da spec 06, e morre na D1/D2.**
+   * ⚠ **As duas leituras em paralelo, e o histórico não depende do mês.**
    *
-   * O mês de verdade produz um dos quatro vereditos e nenhum comparativo.
-   * `?estado=frases` troca a tela pelo protótipo com dados inventados, para o
-   * Davi julgar o texto inteiro de uma vez. Sem o parâmetro, nada muda.
+   * `historicoDosMeses` devolve a conta inteira, e quem recorta é a
+   * `compararMeses` com o mês escolhido. Fazer o servidor filtrar por mês daria
+   * uma consulta nova a cada troca no seletor para devolver as mesmas linhas.
    */
-  if (estado === "frases") return <PrototipoDasFrases />;
-
-  const dados = await dadosDoPainel(usuario.id, mes);
+  const [dados, historico] = await Promise.all([
+    dadosDoPainel(usuario.id, mes),
+    historicoDosMeses(usuario.id),
+  ]);
 
   if (!dados) {
     return (
@@ -68,5 +70,10 @@ export default async function DashboardPage({
     );
   }
 
-  return <TelaDoPainel {...dados} />;
+  return (
+    <TelaDoPainel
+      {...dados}
+      comparativo={compararMeses(historico, dados.mes)}
+    />
+  );
 }
