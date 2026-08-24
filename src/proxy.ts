@@ -27,6 +27,9 @@ const ehRotaProtegida = createRouteMatcher([
   "/upload(.*)",
   "/revisao(.*)",
   "/regras(.*)",
+  // A C1 da spec 05 trouxe `/categorias`. Ela fica **fora** da barra de
+  // navegação (pendência 3), mas rota fora do menu continua sendo rota.
+  "/categorias(.*)",
   // Onboarding: já exige usuário autenticado, mas não aparece no menu.
   "/bem-vindo(.*)",
 ]);

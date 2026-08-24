@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aprovado pelo Davi; fases A e B concluídas
+**Status:** aprovado pelo Davi; fases A e B concluídas; fase C no portão do Davi
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -228,7 +228,7 @@ dos dados funciona até o dia em que os dados acabam.
 
 ## Fase C — As telas (dados falsos, sem banco)
 
-### C1 · A tela de arrumação
+### C1 · A tela de arrumação ✅
 **Camada:** FRONT-VISUAL
 **Pronto quando:** com dados falsos, `/categorias` mostra os nove potes com suas
 categorias, e os caminhos para criar, renomear e apagar. Legível em 360px, alvos
@@ -239,7 +239,7 @@ com "mover para outra categoria" pré-selecionado — decisão do Davi na pendê
 2: devolver 12 lançamentos para a fila é trabalho real, e quem escolhe isso deve
 estar escolhendo de propósito, não por ser o caminho de menor resistência.
 
-### C2 · "+ Nova categoria" no fim da lista da revisão
+### C2 · "+ Nova categoria" no fim da lista da revisão ✅
 **Camada:** FRONT-VISUAL
 **Pronto quando:** a lista da revisão ganha, **no fim**, o caminho para criar uma
 categoria sem sair da fila.

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { NovaCategoriaNaRevisao } from "@/features/categorias/nomear-categoria/NovaCategoriaNaRevisao";
+import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import { AcaoDeDecidir } from "./AcaoDeDecidir";
 import { AcaoDeVoltar } from "./AcaoDeVoltar";
 import { CartaoDoLancamento } from "./CartaoDoLancamento";
@@ -40,11 +42,14 @@ import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 export function TelaDeRevisao({
   pendentes,
   categorias,
+  potes,
   mes,
   voltar,
 }: {
   pendentes: PendenteParaRevisar[];
   categorias: CategoriaEscolhivel[];
+  /** Os nove potes, para o "+ Nova categoria" da C2 da spec 05. */
+  potes: PoteNaGestao[];
   mes: string;
   voltar: PodeVoltar | null;
 }) {
@@ -92,6 +97,7 @@ export function TelaDeRevisao({
       atual={pendentes[0]}
       total={pendentes.length}
       categorias={categorias}
+      potes={potes}
       mes={mes}
       voltar={voltar}
     />
@@ -127,12 +133,14 @@ function Revisando({
   atual,
   total,
   categorias,
+  potes,
   mes,
   voltar,
 }: {
   atual: PendenteParaRevisar;
   total: number;
   categorias: CategoriaEscolhivel[];
+  potes: PoteNaGestao[];
   mes: string;
   voltar: PodeVoltar | null;
 }) {
@@ -231,6 +239,7 @@ function Revisando({
             categorias={categorias}
             direcao={atual.direcao}
             aoEscolher={(categoria) => setEscolhida({ categoria })}
+            rodape={<NovaCategoriaNaRevisao potes={potes} />}
           />
         </>
       ) : (
@@ -244,6 +253,7 @@ function Revisando({
             categorias={categorias}
             direcao={atual.direcao}
             aoEscolher={(categoria) => setEscolhida({ categoria })}
+            rodape={<NovaCategoriaNaRevisao potes={potes} />}
           />
         </>
       )}

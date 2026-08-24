@@ -4,6 +4,7 @@ import { buckets, categories, decisionUndo, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import type { Classificado } from "@/features/classificacao/motor/sugestoes";
+import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import type { CategoriaEscolhivel } from "./categorias";
 import type { PodeVoltar } from "./desfazer";
 import { naFilaDeRevisao } from "./filaDeRevisao";
@@ -24,6 +25,14 @@ import {
 export type DadosDaRevisao = {
   pendentes: PendenteParaRevisar[];
   categorias: CategoriaEscolhivel[];
+  /**
+   * Os nove potes, para o "+ Nova categoria" da C2 da spec 05.
+   *
+   * ⚠ **Da tabela de potes, e não derivados das categorias** — a mesma lição da
+   * B5: um pote sem categoria nenhuma sumiria da lista, e sumiria exatamente do
+   * lugar onde daria para criar a primeira categoria dentro dele.
+   */
+  potes: PoteNaGestao[];
   /** A sombra da última decisão, ou nada — é o que acende o "Voltar" (D6). */
   voltar: PodeVoltar | null;
 };
@@ -43,7 +52,7 @@ export async function listarPendentes(
 ): Promise<DadosDaRevisao> {
   const db = getDb();
 
-  const [linhas, categoriasDoBanco, historico, sombra] = await Promise.all([
+  const [linhas, potesDoBanco, categoriasDoBanco, historico, sombra] = await Promise.all([
     db
       .select({
         id: transactions.id,
@@ -66,6 +75,20 @@ export async function listarPendentes(
         and(eq(transactions.userId, userId), naFilaDeRevisao()),
       )
       .orderBy(asc(transactions.data), asc(transactions.id)),
+
+    db
+      .select({
+        id: buckets.id,
+        slug: buckets.slug,
+        nome: buckets.nome,
+        emoji: buckets.emoji,
+        cor: buckets.cor,
+        tipo: buckets.tipo,
+        ordem: buckets.ordem,
+      })
+      .from(buckets)
+      .where(eq(buckets.userId, userId))
+      .orderBy(asc(buckets.ordem)),
 
     db
       .select({
@@ -146,6 +169,7 @@ export async function listarPendentes(
 
   return {
     categorias: categoriasEscolhiveis,
+    potes: potesDoBanco,
     voltar: sombra[0] ?? null,
     pendentes: prepararRevisao(linhas as LancamentoPendente[], {
       idPorChave,

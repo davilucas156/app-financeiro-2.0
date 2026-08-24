@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
@@ -46,6 +46,7 @@ export function ListaDeCategorias({
   aoEscolher,
   atualId,
   titulo = "Escolher categoria",
+  rodape,
 }: {
   categorias: CategoriaEscolhivel[];
   direcao: Direcao;
@@ -63,6 +64,16 @@ export function ListaDeCategorias({
    */
   atualId?: string;
   titulo?: string;
+  /**
+   * O que vem **depois** de todas as categorias (C2 da spec 05).
+   *
+   * Nomeado, e não um `children` genérico: `children` convidaria qualquer
+   * coisa a morar ali, e o lugar tem propósito. O "+ Nova categoria" fica no
+   * fim porque criar categoria é fácil e barato, e uma conta com 60 tem um
+   * painel que não diz nada — a tela não impede, mas faz você passar por todas
+   * as que já existem primeiro.
+   */
+  rodape?: ReactNode;
 }) {
   const [busca, setBusca] = useState("");
   /*
@@ -153,6 +164,10 @@ export function ListaDeCategorias({
           ))}
         </div>
       )}
+
+      {/* Depois da busca também: quem procurou e não achou é justamente quem
+          precisa criar. */}
+      {rodape && <div className="mt-4">{rodape}</div>}
     </section>
   );
 }
