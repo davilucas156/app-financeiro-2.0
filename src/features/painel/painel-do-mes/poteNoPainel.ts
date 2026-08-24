@@ -22,8 +22,16 @@ export type LancamentoNoPainel = {
   descricao: string;
   valorCentavos: number;
   direcao: Direcao;
+  categoriaId: string;
   categoriaNome: string;
   categoriaEmoji: string;
+  /**
+   * A frase que responde "por que isso caiu aqui?" (C3).
+   *
+   * Seis meses depois, a resposta tem de estar na tela — e não num `join` que
+   * ninguém vai escrever.
+   */
+  procedencia: string;
   /** Par de valor idêntico dentro do pote (A4). */
   conferir: boolean;
 };

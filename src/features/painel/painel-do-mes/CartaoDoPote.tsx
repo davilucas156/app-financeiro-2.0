@@ -178,8 +178,16 @@ function DentroDoPote({ pote }: { pote: PoteNoPainel }) {
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-[10px] text-dim">
+              <span className="min-w-0 font-mono text-[10px] break-words text-dim">
                 {diaEMes(l.data)} · {l.categoriaEmoji} {l.categoriaNome}
+                {/*
+                  ⚠ **A procedência da C3, na tela** (D3).
+                  "Por que isso caiu em Lazer?" ganha resposta aqui, seis meses
+                  depois — que é a única razão de `classificado_por`,
+                  `regra_chave` e `fonte_da_sugestao` existirem. Guardar a
+                  resposta num banco que ninguém consulta não responde nada.
+                */}
+                <span className="block text-dim2">↳ {l.procedencia}</span>
               </span>
 
               {/* A D4 é quem liga isto. Mesma decisão do "Voltar" na D4 da spec

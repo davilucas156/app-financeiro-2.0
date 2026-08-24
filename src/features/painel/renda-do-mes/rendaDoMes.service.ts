@@ -2,6 +2,7 @@ import "server-only";
 import { and, desc, eq, lte } from "drizzle-orm";
 import { monthlyIncome } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import type { RendaDeclarada } from "./rendaDeclarada";
 
 /**
  * Ler e gravar a renda declarada de um mês (tarefa C1).
@@ -10,13 +11,7 @@ import { getDb } from "@/lib/db";
  * (`references/architecture.md`, Thin Client / Fat Server).
  */
 
-export type RendaDeclarada = {
-  centavos: number;
-  /** O mês em que ela foi de fato informada. */
-  mesDeOrigem: string;
-  /** Veio de um mês anterior, não deste. */
-  herdada: boolean;
-};
+export type { RendaDeclarada };
 
 /**
  * A renda que vale para `mes` — a dele, ou a do mês declarado mais recente

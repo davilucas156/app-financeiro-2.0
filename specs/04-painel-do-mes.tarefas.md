@@ -178,12 +178,12 @@ percentual.
 
 ## Fase D — Integração
 
-### D1 · O painel lê o mês de verdade
+### D1 · O painel lê o mês de verdade ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** `/dashboard` mostra o mês mais recente **com lançamentos**,
 lido do banco por `user_id`, com a conta da fase A. O seletor troca de mês.
 
-### D2 · Declarar e editar a renda do mês
+### D2 · Declarar e editar a renda do mês ✅
 **Camada:** BACK + FRONT-INTEGRADO
 **Pronto quando:** o Davi informa a renda do mês e as metas recalculam. O valor
 sugerido é **R$ 1.200** — a base do painel HTML dele, que produz exatamente os
@@ -193,7 +193,7 @@ silêncio.
 Mês sem renda declarada mostra os valores gastos e **não** mostra meta nem
 barra. Inventar uma base seria inventar a renda dele.
 
-### D3 · A lista do pote lê do banco
+### D3 · A lista do pote lê do banco ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** a lista da B3 mostra os lançamentos reais daquele pote, com
 descrição, data, valor e de onde veio a classificação (a procedência da C3).
@@ -210,7 +210,7 @@ lista, reusando `decidirLancamento` — inclusive a sombra do desfazer da D6.
 assim que um lançamento é classificado ele some, e a decisão vira permanente.
 Corrigir a regra sem poder corrigir o que ela já pegou é meia correção.
 
-### D5 · O `/dashboard` vira o painel
+### D5 · O `/dashboard` vira o painel ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** `ResumoDoQueEntrou` sai e o painel entra. O aviso da D8 **não
 some** — vira a cobertura em dinheiro da A2, que é a mesma promessa medida

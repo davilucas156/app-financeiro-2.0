@@ -27,8 +27,6 @@ const ehRotaProtegida = createRouteMatcher([
   "/upload(.*)",
   "/revisao(.*)",
   "/regras(.*)",
-  // ⚠ Andaime da fase B da spec 04. Sai na D5, junto com a rota.
-  "/painel(.*)",
   // Onboarding: já exige usuário autenticado, mas não aparece no menu.
   "/bem-vindo(.*)",
 ]);

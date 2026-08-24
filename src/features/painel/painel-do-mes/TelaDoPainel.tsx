@@ -1,7 +1,7 @@
-import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { emReais } from "@/lib/dinheiro";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
+import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
+import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
 import { CartaoDoPote } from "./CartaoDoPote";
 import { TopoDoMes } from "./TopoDoMes";
 import type { PoteNoPainel } from "./poteNoPainel";
@@ -32,7 +32,7 @@ export function TelaDoPainel({
   diferencaCentavos,
   cobertura,
   faltamDecidir,
-  rendaDeclaradaCentavos,
+  renda,
   potes,
 }: {
   mes: string;
@@ -42,7 +42,7 @@ export function TelaDoPainel({
   diferencaCentavos: number;
   cobertura: Cobertura;
   faltamDecidir: number;
-  rendaDeclaradaCentavos: number | null;
+  renda: RendaDeclarada | null;
   potes: PoteNoPainel[];
 }) {
   const deGasto = potes.filter((p) => p.tipo === "gasto");
@@ -62,7 +62,7 @@ export function TelaDoPainel({
         faltamDecidir={faltamDecidir}
       />
 
-      <RendaDeclarada centavos={rendaDeclaradaCentavos} />
+      <CampoDeRenda mes={mes} renda={renda} />
 
       <SectionTitle>Os potes</SectionTitle>
 
@@ -71,7 +71,7 @@ export function TelaDoPainel({
           <CartaoDoPote
             key={pote.id}
             pote={pote}
-            rendaDeclaradaCentavos={rendaDeclaradaCentavos}
+            rendaDeclaradaCentavos={renda?.centavos ?? null}
           />
         ))}
       </div>
@@ -84,56 +84,12 @@ export function TelaDoPainel({
               <CartaoDoPote
                 key={pote.id}
                 pote={pote}
-                rendaDeclaradaCentavos={rendaDeclaradaCentavos}
+                rendaDeclaradaCentavos={renda?.centavos ?? null}
               />
             ))}
           </div>
         </>
       )}
     </>
-  );
-}
-
-/**
- * A régua das metas, na tela.
- *
- * ⚠ **É um número declarado, não medido.** O motor classifica 55% do dinheiro
- * que sai e só 8% do que entra — uma meta calculada sobre a renda *medida*
- * seria uma fração de uma fração da verdade, e sairia errada com aparência de
- * certa. Foi essa medição que fez a base virar um valor que o Davi informa.
- *
- * E é por isso que ela fica visível: herdar do mês anterior é conveniente e tem
- * um custo — seis meses depois de um aumento, as metas continuariam calculadas
- * sobre o salário antigo. Mostrar o número é a defesa mais barata que existe.
- */
-function RendaDeclarada({ centavos }: { centavos: number | null }) {
-  return (
-    <Card className="mt-3 border-border2">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
-            Renda do mês
-          </p>
-          <p className="mt-1 font-mono text-lg font-medium text-text">
-            {centavos === null ? "não informada" : emReais(centavos)}
-          </p>
-        </div>
-
-        {/* A D2 liga este botão. */}
-        <button
-          type="button"
-          disabled
-          className="inline-flex min-h-11 items-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text disabled:opacity-40"
-        >
-          {centavos === null ? "Informar" : "Editar"}
-        </button>
-      </div>
-
-      <p className="mt-2 text-[11px] leading-relaxed text-dim">
-        {centavos === null
-          ? "Sem ela não dá para calcular meta nenhuma — e inventar uma base seria inventar a sua renda. Os potes abaixo mostram o gasto sem barra."
-          : "As metas dos potes são fatias deste valor. Você informa; o app não adivinha."}
-      </p>
-    </Card>
   );
 }
