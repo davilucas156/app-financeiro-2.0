@@ -4,6 +4,13 @@
 **Destino:** repassar para Claude Code executar a implementação
 **Origem:** derivado do painel HTML atual (`planejamento_anual_davi.html`) e das regras de classificação já validadas ao longo de Dez/2025–Jun/2026
 
+> ⚠ **Este documento é o pedido original, de antes de existir código, e está
+> preservado como tal.** Seis specs depois, várias decisões daqui foram
+> revistas de propósito — o Blob saiu, o Recharts não entrou, `accounts` e
+> `monthly_snapshots` nunca foram criadas, o cadastro virou por convite.
+> **O que o app é hoje, e onde cada divergência foi decidida, está em**
+> `references/estado-do-projeto.md`.
+
 ---
 
 ## 1. Visão Geral
