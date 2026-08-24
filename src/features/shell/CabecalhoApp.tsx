@@ -15,7 +15,17 @@ import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
  */
 export function CabecalhoApp({ mesReferencia }: { mesReferencia: string }) {
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-bg/92 backdrop-blur-md">
+    /*
+      ⚠ **`padding-top` da área segura (spec 07).**
+
+      Instalado, o app roda com a barra de status transparente por cima da
+      tela. Sem esta linha, o mês e o botão do usuário ficam embaixo do
+      relógio do iPhone. No navegador o valor é zero e nada muda.
+    */
+    <header
+      className="sticky top-0 z-10 border-b border-border bg-bg/92 backdrop-blur-md"
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+    >
       <div className="mx-auto flex h-[62px] w-full max-w-5xl items-center gap-4 px-5">
         <div className="min-w-0">
           <p className="font-mono text-[9px] font-bold tracking-[2px] text-primary uppercase">

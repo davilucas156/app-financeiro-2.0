@@ -43,9 +43,17 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         {children}
       </main>
 
+      {/*
+        ⚠ **A barra de navegação sobe acima da barra de gestos (spec 07).**
+
+        Instalado no iPhone, os 34px da barra de gestos ficam por cima do
+        conteúdo: sem isto, o item "Revisar" fica embaixo dela e o toque
+        acerta o sistema em vez do app.
+      */}
       <NavegacaoPrincipal
         variante="inferior"
         className="fixed inset-x-0 bottom-0 z-10 md:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       />
     </div>
   );

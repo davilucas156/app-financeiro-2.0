@@ -39,7 +39,23 @@ export function TelaDeCategorias({
 
   return (
     <>
-      <SectionTitle>Categorias</SectionTitle>
+      {/*
+        ⚠ **A volta explícita (spec 07).**
+
+        Esta rota fica fora da barra de navegação, e no navegador quem trazia
+        de volta era o botão do próprio navegador. Instalado, esse botão não
+        existe: sobra o gesto de borda, que funciona e **não aparece**. Quem
+        entra aqui pelo rodapé do painel precisa de um caminho visível de
+        volta, e não de saber que existe um gesto.
+      */}
+      <Link
+        href="/dashboard"
+        className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
+      >
+        ← Painel
+      </Link>
+
+      <SectionTitle className="mt-2">Categorias</SectionTitle>
 
       <Card className="mt-3 border-blue/20 bg-blue/8">
         <p className="text-xs leading-relaxed text-dim">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { ROTAS_INTERNAS, type RotaInterna } from "@/features/shell/rotas";
@@ -20,15 +21,19 @@ import { ROTAS_INTERNAS, type RotaInterna } from "@/features/shell/rotas";
 export function NavegacaoPrincipal({
   variante,
   className,
+  style,
 }: {
   variante: "inferior" | "topo";
   className?: string;
+  /** Só para a área segura do rodapé instalado (spec 07). */
+  style?: CSSProperties;
 }) {
   const pathname = usePathname();
 
   return (
     <nav
       aria-label="Navegação principal"
+      style={style}
       className={cn(
         variante === "inferior"
           ? "border-t border-border bg-surface"

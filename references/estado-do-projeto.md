@@ -1,6 +1,6 @@
 # Estado do projeto — o que o app é hoje
 
-**Atualizado em:** 24/08/2026, com a spec 06 no ar
+**Atualizado em:** 24/08/2026, com as specs 06 e 07 no ar
 **Contra:** `readme.md`, o pedido original
 **Para quê:** o `readme.md` é de antes de existir código. Seis specs depois,
 várias decisões dele foram revistas **de propósito** e com motivo registrado.
@@ -95,10 +95,6 @@ pessoas.
 
 ### Não está em spec nenhuma, e talvez devesse
 
-- **PWA instalável.** O `readme.md` §13 diz "será PWA/responsivo primeiro". O
-  responsivo está feito; o **instalável** não: não há `manifest`, nem ícone de
-  tela inicial, nem `theme-color`. O Davi usa o app pelo celular, e hoje ele
-  entra pelo navegador como um site qualquer.
 - **Os 6 cartões de topo do Comparativo Anual** — investido acumulado, metas
   acumuladas, médias de gasolina/custos fixos/lazer, total de manutenção. São
   agregados por **categoria** e por **ano**; o histórico da spec 06 é por pote.
@@ -117,3 +113,13 @@ pessoas.
 | `/regras` | Ver, corrigir e apagar o que o motor aprendeu | 03 |
 | `/dashboard` | Veredito, potes com insight, comparativo | 04 e 06 |
 | `/categorias` | Criar, renomear, mover e apagar categoria | 05 |
+
+## Instalável no celular
+
+✅ **spec 07.** Manifesto, ícone de seis potes na tela inicial, barra de status
+escura e área segura tratada. **Sem service worker, de propósito**: cachear tela
+autenticada de app financeiro troca um problema pequeno (abrir sem internet) por
+um grande (número velho com cara de novo).
+
+Isso destrava a **notificação push** da fase 2 — no iPhone ela exige o app
+instalado.

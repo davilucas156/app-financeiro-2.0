@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Syne, DM_Mono } from "next/font/google";
 import "./globals.css";
@@ -19,6 +19,50 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: "Painel Financeiro 6 Potes",
   description: "Controle financeiro pessoal pelo método dos 6 potes.",
+
+  /*
+   * O que muda quando o app é aberto pelo ícone da tela inicial (spec 07).
+   *
+   * O `<link rel="manifest">` o Next emite sozinho a partir de `manifest.ts`;
+   * o `apple-touch-icon`, a partir de `app/apple-icon.png`. O que **não** sai
+   * de nenhum dos dois é o bloco abaixo: o iOS ignora o manifesto inteiro e lê
+   * estas metas antigas.
+   */
+  applicationName: "6 Potes",
+  appleWebApp: {
+    capable: true,
+    title: "6 Potes",
+    /*
+     * ⚠ **`black-translucent` e não `default`.** O app é escuro; com
+     * `default`, o iOS pinta a barra de status de branco e sobra uma faixa
+     * clara em cima de uma tela `#060608`.
+     */
+    statusBarStyle: "black-translucent",
+  },
+
+  /*
+   * ⚠ **`format-detection` desligado.** O Safari transforma sequências de
+   * dígitos em links de telefone, e esta é uma tela cheia de números com
+   * ponto e vírgula. Um valor virando botão de ligação no meio do painel
+   * seria engraçado uma vez e irritante todo mês.
+   */
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  /*
+   * A cor da barra do sistema quando instalado. A mesma `--color-bg`, para a
+   * moldura do sistema desaparecer dentro do app em vez de emoldurá-lo.
+   */
+  themeColor: "#060608",
+
+  /*
+   * ⚠ **`viewportFit: "cover"` por causa do `black-translucent`.** Com a barra
+   * de status transparente, o conteúdo passa a começar embaixo do entalhe do
+   * iPhone — o `cover` é o que libera as `safe-area-inset-*` do CSS para o
+   * cabeçalho se afastar dele.
+   */
+  viewportFit: "cover",
 };
 
 /**
