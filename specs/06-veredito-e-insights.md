@@ -164,7 +164,7 @@ faltou fazer.
 |---|---|
 | **Prever o mês que vem** | Descoberta acima. Errar previsão sobre o dinheiro do Davi custa a confiança que o número certo construiu. |
 | **Chamar um gasto de "atípico"** | O app não sabe. Ele sabe que a categoria apareceu uma vez; se isso se repete é o Davi quem sabe. |
-| **Gráfico** | O painel estático não tinha. Uma linha de texto com o número cabe em 360px; um gráfico de doze meses, não. |
+| **Biblioteca de gráfico (Recharts)** | ⚠ **Corrigido depois de reler o `planejamento_anual_davi.html`:** o painel estático **tinha** comparação em barras — só que feitas de `div` com `width` em porcentagem, exatamente como as barras dos potes que o app já desenha. O que fica de fora é a **biblioteca**, não a barra. |
 | **Notificação / e-mail mensal** | Precisa de agendamento e de um endereço. Fase 2. |
 | **Insight sobre renda por fonte** | A spec 04 já tirou o banner de fontes pelo mesmo motivo: depende de a renda estar classificada. |
 
@@ -207,6 +207,19 @@ não pode saber.
 ➡️ **No cartão.** Ali ele fica ao lado do número que o explica. No topo brigaria
 com o veredito pelo mesmo espaço, e o veredito é uma frase só justamente para
 não ter com quem brigar.
+
+**5. O “comparativo” é o Comparativo Anual do painel estático?**
+➡️ **Agora é.** O Davi perguntou isto e respondeu “continue” sem decidir o
+escopo — decidi eu. Relendo o `planejamento_anual_davi.html`, o Comparativo
+Anual dele tem **uma barra por período dentro de cada pote**, e o desenho
+original desta spec tinha reduzido isso a “este mês contra a média”, que
+responde outra pergunta, menor. As barras e a série voltaram.
+
+**Ficaram de fora os 6 cartões de topo** do comparativo estático — investido
+acumulado, metas acumuladas, médias de gasolina/custos fixos/lazer, total de
+manutenção. Eles são agregados **por categoria e por ano**, e o histórico desta
+spec é por pote: seriam outra consulta. Se ele quiser os seis, é tarefa nova em
+cima do mesmo histórico.
 
 **4. Esta spec vem antes ou depois de subir mais extratos?**
 ➡️ **Agora, com o comparativo nascendo com um mês.** Deixá-lo de fora seria eu

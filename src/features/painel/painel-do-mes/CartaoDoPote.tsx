@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { emReais, diaEMes } from "@/lib/dinheiro";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
-import { metaDoPote } from "@/features/painel/somar-o-mes/meta";
+import { metaDoPote, type MetaDoPote } from "@/features/painel/somar-o-mes/meta";
+import { insightDoPote } from "@/features/painel/veredito-do-mes/insightDoPote";
 import { TrocarCategoria } from "@/features/painel/trocar-categoria/TrocarCategoria";
 import {
   estadoDoPote,
@@ -89,7 +90,9 @@ export function CartaoDoPote({
         </span>
       </button>
 
-      {aberto && <DentroDoPote pote={pote} categorias={categorias} />}
+      {aberto && (
+        <DentroDoPote pote={pote} meta={meta} categorias={categorias} />
+      )}
     </div>
   );
 }
@@ -139,13 +142,31 @@ function Barra({
 /** As categorias e os lançamentos daquele pote (tarefa B3). */
 function DentroDoPote({
   pote,
+  meta,
   categorias,
 }: {
   pote: PoteNoPainel;
+  meta: MetaDoPote;
   categorias: CategoriaEscolhivel[];
 }) {
+  const insight = insightDoPote(pote, meta);
+
   return (
     <div className="border-t border-border bg-bg/40 px-4 pb-4">
+      {/*
+        A linha do insight (tarefa B2), antes de tudo o que ela resume.
+
+        ⚠ **Depois de trinta lançamentos ela seria um post-scriptum**, e o
+        insight existe justamente para poupar a leitura da lista.
+
+        ⚠ **Pote sem meta não ganha linha nenhuma** — `insightDoPote` devolve
+        `null`, e nem o espaço fica. É a descoberta 3 chegando até o pixel:
+        silêncio é melhor do que uma frase que divide por zero.
+      */}
+      {insight !== null && (
+        <p className="mt-4 text-xs leading-relaxed text-text">{insight}</p>
+      )}
+
       <p className="mt-4 font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
         Por categoria
       </p>

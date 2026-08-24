@@ -4,6 +4,9 @@ import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lanca
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
+import { metaDoPote } from "@/features/painel/somar-o-mes/meta";
+import { FaixaDoVeredito } from "@/features/painel/veredito-do-mes/FaixaDoVeredito";
+import { vereditoDoMes } from "@/features/painel/veredito-do-mes/veredito";
 import { CartaoDoPote } from "./CartaoDoPote";
 import { TopoDoMes } from "./TopoDoMes";
 import type { PoteNoPainel } from "./poteNoPainel";
@@ -49,6 +52,32 @@ export function TelaDoPainel({
   potes: PoteNoPainel[];
   categorias: CategoriaEscolhivel[];
 }) {
+  /*
+   * O veredito (tarefa B1) sai daqui e não do servidor, e não é atalho: tudo o
+   * que `vereditoDoMes` precisa já chegou nesta tela, e a meta de cada pote é a
+   * mesma conta que o `CartaoDoPote` faz para desenhar a barra. Uma segunda
+   * consulta produziria os mesmos números com uma segunda chance de divergir.
+   */
+  const veredito = vereditoDoMes({
+    cobertura,
+    rendaDeclaradaCentavos: renda?.centavos ?? null,
+    saiuCentavos,
+    potes: potes
+      .filter((p) => p.tipo === "gasto")
+      .map((pote) => ({
+        nome: pote.nome,
+        emoji: pote.emoji,
+        totalCentavos: pote.totalCentavos,
+        lancamentos: pote.lancamentos,
+        metaCentavos: metaDoPote({
+          percentual: pote.percentual,
+          rendaDeclaradaCentavos: renda?.centavos ?? null,
+          totalCentavos: pote.totalCentavos,
+          lancamentos: pote.lancamentos,
+        }).metaCentavos,
+      })),
+  });
+
   const deGasto = potes.filter((p) => p.tipo === "gasto");
   const deRenda = potes.filter((p) => p.tipo === "renda");
 
@@ -65,6 +94,8 @@ export function TelaDoPainel({
         cobertura={cobertura}
         faltamDecidir={faltamDecidir}
       />
+
+      <FaixaDoVeredito veredito={veredito} />
 
       <CampoDeRenda mes={mes} renda={renda} />
 

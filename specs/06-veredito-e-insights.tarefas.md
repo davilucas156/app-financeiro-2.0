@@ -2,8 +2,8 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/06-veredito-e-insights.md` (pendências decididas)
-**Status:** fase A concluída (A1, A2 e A3 com teste). Próxima: fase B, que
-termina no portão visual do Davi.
+**Status:** fases A e B concluídas. ⛔ **Parado no portão visual do Davi.**
+A B1 e a B2 entraram ligadas em dados reais — ver a nota da fase B.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -109,7 +109,20 @@ peso estatístico a uma amostra de um.
 
 ## Fase B — As telas, com os quatro estados à mostra
 
-### B1 · O veredito no topo, e os quatro juntos numa tela de protótipo
+⚠ **A B1 e a B2 saíram ligadas em dados reais, e não em protótipo.** Montando
+os componentes apareceu que `vereditoDoMes` e `insightDoPote` não precisam de
+nada que a tela já não receba: cobertura, renda e potes já são props do
+`TelaDoPainel`, e a meta de cada pote é a mesma conta que o `CartaoDoPote` faz
+para desenhar a barra. Não há consulta nova.
+
+Desenhar com número inventado uma frase que o mês de verdade já produz daria
+ao Davi uma aprovação sobre texto que ele nunca viu no mês dele — o oposto do
+que este portão existe para fazer. **A D1 encolheu para "apagar o protótipo".**
+
+O protótipo continua existindo por outro motivo: o mês real produz **um** dos
+quatro vereditos.
+
+### B1 ✅ · O veredito no topo, e os quatro juntos numa tela de protótipo
 **Camada:** FRONT-VISUAL
 **Pronto quando:** o Davi vê **os quatro vereditos ao mesmo tempo**, com dados
 inventados, atrás de `?estado=` — a mesma mecânica da B1 da spec 04.
@@ -118,12 +131,12 @@ inventados, atrás de `?estado=` — a mesma mecânica da B1 da spec 04.
 quatro aparece (o degrau 2, pela descoberta 2), e aprovar um texto que se lê
 uma vez por mês olhando só para um quarto dele seria aprovar no escuro.
 
-### B2 · A linha do insight dentro do `CartaoDoPote`
+### B2 ✅ · A linha do insight dentro do `CartaoDoPote`
 **Camada:** FRONT-VISUAL
 **Pronto quando:** a linha aparece no cartão aberto, e o pote sem meta continua
 sem linha nenhuma.
 
-### B3 · O comparativo, nos dois estados
+### B3 ✅ · O comparativo, nos três estados
 **Camada:** FRONT-VISUAL
 **Pronto quando:** com um mês e com vários, os dois desenhados com dado
 inventado.
@@ -153,10 +166,13 @@ Medido e verificado contra o Neon com conta descartável, com um mês e com dois
 
 ## Fase D — Integração
 
-### D1 · O veredito e os insights com os números de verdade
+### D1 · Apagar o protótipo
 **Camada:** FRONT-INTEGRADO
-**Pronto quando:** o `/dashboard` mostra o veredito do mês escolhido e a linha
-de insight em cada pote com meta, e o protótipo da B1 morre junto.
+**Pronto quando:** `PrototipoDasFrases.tsx` e o `?estado=frases` da
+`dashboard/page.tsx` deixam de existir.
+
+⚠ **Encolheu na fase B**, que já entregou o veredito e o insight ligados no mês
+de verdade. O que sobrou aqui é a limpeza do andaime.
 
 ### D2 · O comparativo ligado
 **Camada:** FRONT-INTEGRADO
