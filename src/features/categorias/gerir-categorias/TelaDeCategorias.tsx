@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
 import { CartaoDaCategoria } from "./CartaoDaCategoria";
+import { criar } from "./gerirCategorias.action";
 import {
   agruparParaGerir,
   type CategoriaNaGestao,
@@ -13,7 +14,7 @@ import {
 } from "./categoriasNaTela";
 
 /**
- * `/categorias` — a tela de arrumação (tarefa C1).
+ * `/categorias` — a tela de arrumação (tarefas C1 e D1).
  *
  * ## Os nove potes aparecem, inclusive os vazios
  *
@@ -30,30 +31,15 @@ import {
 export function TelaDeCategorias({
   potes,
   categorias,
-  prototipo = false,
 }: {
   potes: PoteNaGestao[];
   categorias: CategoriaNaGestao[];
-  /** Enquanto a fase D não liga a gravação. */
-  prototipo?: boolean;
 }) {
   const grupos = agruparParaGerir(potes, categorias);
 
   return (
     <>
       <SectionTitle>Categorias</SectionTitle>
-
-      {prototipo && (
-        <Card className="border-gold/30 bg-gold/8">
-          <p className="text-xs leading-relaxed text-dim">
-            <strong className="font-bold text-gold">
-              Protótipo — estas categorias são inventadas.
-            </strong>{" "}
-            Nada aqui grava, e os números não são os da sua conta. É para você
-            olhar a forma antes de eu ligar os botões.
-          </p>
-        </Card>
-      )}
 
       <Card className="mt-3 border-blue/20 bg-blue/8">
         <p className="text-xs leading-relaxed text-dim">
@@ -90,7 +76,7 @@ export function TelaDeCategorias({
               key={categoria.id}
               categoria={categoria}
               pote={pote}
-              grupos={grupos}
+              potes={potes}
             />
           ))}
 
@@ -111,6 +97,13 @@ export function TelaDeCategorias({
   );
 }
 
+/**
+ * Criar no fim do pote, já com o pote preenchido.
+ *
+ * O seletor de pote continua aparecendo mesmo assim: quem tocou no botão errado
+ * conserta sem fechar e reabrir, e o formulário é o mesmo componente das duas
+ * telas.
+ */
 function NovaCategoria({
   pote,
   potes,
@@ -119,6 +112,8 @@ function NovaCategoria({
   potes: PoteNaGestao[];
 }) {
   const [aberto, setAberto] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [criando, comecar] = useTransition();
 
   if (!aberto) {
     return (
@@ -137,10 +132,24 @@ function NovaCategoria({
       <FormularioDeCategoria
         inicial={{ poteId: pote.id }}
         potes={potes}
-        aoSalvar={() => setAberto(false)}
-        aoCancelar={() => setAberto(false)}
+        aoSalvar={(v) =>
+          comecar(async () => {
+            const r = await criar(v);
+            if (r.ok) {
+              setErro(null);
+              setAberto(false);
+            } else {
+              setErro(r.erro);
+            }
+          })
+        }
+        aoCancelar={() => {
+          setErro(null);
+          setAberto(false);
+        }}
+        salvando={criando}
+        erro={erro}
         rotuloDoBotao="Criar"
-        aindaNaoLigado="A fase D liga isto. Por enquanto o botão só mostra a forma."
       />
     </Card>
   );

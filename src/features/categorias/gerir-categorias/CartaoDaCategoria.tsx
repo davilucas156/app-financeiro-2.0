@@ -1,42 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import {
   avisoDeApagar,
   type DestinoDoApagar,
 } from "@/features/categorias/apagar-categoria/aviso";
+import type { RaioXDaCategoria } from "@/features/categorias/apagar-categoria/raioX.service";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
+import {
+  apagar,
+  mover,
+  renomear,
+  verOQueVaiJunto,
+} from "./gerirCategorias.action";
 import {
   oQueDependeDela,
   podeMover,
   type CategoriaNaGestao,
-  type GrupoDeGestao,
   type PoteNaGestao,
 } from "./categoriasNaTela";
 
 /**
- * Uma categoria, em quatro modos (tarefa C1).
+ * Uma categoria, em quatro modos (tarefas C1 e D1).
  *
  * Vendo, renomeando, movendo, apagando — a forma do `CartaoDaRegra` da D9, que
  * já provou caber em 360px.
  *
- * ⛔ **Protótipo: nada aqui grava.** A fase D liga cada botão.
+ * A D1 ligou os três botões nas operações da fase B. Cada modo fecha sozinho
+ * quando dá certo: quem revalida é a action, e a lista chega nova de cima.
  */
 
 type Modo = "vendo" | "renomeando" | "movendo" | "apagando";
 
-const NAO_LIGADO = "A fase D liga isto. Por enquanto o botão só mostra a forma.";
-
 export function CartaoDaCategoria({
   categoria,
   pote,
-  grupos,
+  potes,
 }: {
   categoria: CategoriaNaGestao;
   pote: PoteNaGestao;
-  /** Todos os potes e categorias — para os destinos de mover e de apagar. */
-  grupos: GrupoDeGestao[];
+  /** Todos os potes — o destino de mover. */
+  potes: PoteNaGestao[];
 }) {
   const [modo, setModo] = useState<Modo>("vendo");
   const nunca = categoria.lancamentos === 0 && categoria.regras === 0;
@@ -81,20 +86,15 @@ export function CartaoDaCategoria({
       )}
 
       {modo === "renomeando" && (
-        <FormularioDeCategoria
-          inicial={{ nome: categoria.nome, emoji: categoria.emoji }}
-          aoSalvar={() => setModo("vendo")}
-          aoCancelar={() => setModo("vendo")}
-          rotuloDoBotao="Salvar"
-          aindaNaoLigado={NAO_LIGADO}
-        />
+        <Renome categoria={categoria} aoFechar={() => setModo("vendo")} />
       )}
 
       {modo === "movendo" && (
         <Mudanca
+          categoria={categoria}
           pote={pote}
-          grupos={grupos}
-          aoCancelar={() => setModo("vendo")}
+          potes={potes}
+          aoFechar={() => setModo("vendo")}
         />
       )}
 
@@ -102,25 +102,66 @@ export function CartaoDaCategoria({
         <Exclusao
           categoria={categoria}
           pote={pote}
-          grupos={grupos}
-          aoCancelar={() => setModo("vendo")}
+          aoFechar={() => setModo("vendo")}
         />
       )}
     </Card>
   );
 }
 
+/**
+ * Renomear — o slug fica onde está (B2).
+ *
+ * O servidor devolve `campo` junto com o erro e a tela não o usa: o formulário
+ * tem um lugar só para erro, embaixo. Pintar o campo culpado exigiria a mesma
+ * frase em dois lugares.
+ */
+function Renome({
+  categoria,
+  aoFechar,
+}: {
+  categoria: CategoriaNaGestao;
+  aoFechar: () => void;
+}) {
+  const [erro, setErro] = useState<string | null>(null);
+  const [salvando, comecar] = useTransition();
+
+  return (
+    <FormularioDeCategoria
+      inicial={{ nome: categoria.nome, emoji: categoria.emoji }}
+      aoSalvar={(v) =>
+        comecar(async () => {
+          const r = await renomear(categoria.id, {
+            nome: v.nome,
+            emoji: v.emoji,
+          });
+          if (r.ok) aoFechar();
+          else setErro(r.erro);
+        })
+      }
+      aoCancelar={aoFechar}
+      salvando={salvando}
+      erro={erro}
+      rotuloDoBotao="Salvar"
+    />
+  );
+}
+
 /** Mover de pote — só chega aqui quem está vazia. */
 function Mudanca({
+  categoria,
   pote,
-  grupos,
-  aoCancelar,
+  potes,
+  aoFechar,
 }: {
+  categoria: CategoriaNaGestao;
   pote: PoteNaGestao;
-  grupos: GrupoDeGestao[];
-  aoCancelar: () => void;
+  potes: PoteNaGestao[];
+  aoFechar: () => void;
 }) {
   const [destino, setDestino] = useState(pote.id);
+  const [erro, setErro] = useState<string | null>(null);
+  const [movendo, comecar] = useTransition();
 
   return (
     <div className="mt-4 border-t border-border pt-4">
@@ -131,12 +172,13 @@ function Mudanca({
         <select
           value={destino}
           onChange={(e) => setDestino(e.target.value)}
-          className="mt-1.5 min-h-11 w-full rounded-card border border-border2 bg-bg px-3 text-sm text-text"
+          disabled={movendo}
+          className="mt-1.5 min-h-11 w-full rounded-card border border-border2 bg-bg px-3 text-sm text-text disabled:opacity-40"
         >
-          {grupos.map((g) => (
-            <option key={g.pote.id} value={g.pote.id}>
-              {g.pote.emoji} {g.pote.nome}
-              {g.pote.id === pote.id ? " (atual)" : ""}
+          {potes.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.emoji} {p.nome}
+              {p.id === pote.id ? " (atual)" : ""}
             </option>
           ))}
         </select>
@@ -149,11 +191,26 @@ function Mudanca({
       </p>
 
       <div className="mt-4 flex gap-2">
-        <Primario desabilitado>Mover</Primario>
-        <Secundario onClick={aoCancelar}>Cancelar</Secundario>
+        <Primario
+          desabilitado={movendo}
+          onClick={() =>
+            comecar(async () => {
+              const r = await mover(categoria.id, destino);
+              if (r.ok) aoFechar();
+              else setErro(r.erro);
+            })
+          }
+        >
+          {movendo ? "Movendo…" : "Mover"}
+        </Primario>
+        <Secundario onClick={aoFechar}>Cancelar</Secundario>
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-dim2">{NAO_LIGADO}</p>
+      {erro && (
+        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+          {erro}
+        </p>
+      )}
     </div>
   );
 }
@@ -161,57 +218,101 @@ function Mudanca({
 /**
  * Apagar: o raio-X, o destino e o alerta — antes do segundo toque.
  *
- * "Mover para outra categoria" vem pré-selecionado. Decisão do Davi na
- * pendência 2: devolver 12 lançamentos para a fila é trabalho real, e quem
- * escolhe isso deve estar escolhendo de propósito — não por ser o caminho de
- * menor resistência.
+ * ## Os números são relidos aqui, e não herdados da listagem
+ *
+ * Seria de graça reusar o que o cartão já mostra. Só que a listagem foi
+ * renderizada quando a página abriu, e apagar acontece depois e não tem volta:
+ * se um extrato entrou nesse meio-tempo, a tela diria "nunca foi usada" e o
+ * toque desclassificaria trinta lançamentos em silêncio. A transação da B4
+ * ainda faria a coisa certa com eles — mas o **aviso** teria mentido, e o aviso
+ * é a única defesa que esta operação tem.
+ *
+ * Um round-trip a mais num toque que a pessoa dá de propósito. Ele traz junto
+ * os destinos já ordenados pelo servidor: duas listas com a mesma regra de
+ * ordenação divergiriam.
+ *
+ * ## "Mover para outra categoria" vem pré-selecionado
+ *
+ * Decisão do Davi na pendência 2: devolver 12 lançamentos para a fila é
+ * trabalho real, e quem escolhe isso deve estar escolhendo de propósito — não
+ * por ser o caminho de menor resistência.
  */
 function Exclusao({
   categoria,
   pote,
-  grupos,
-  aoCancelar,
+  aoFechar,
 }: {
   categoria: CategoriaNaGestao;
   pote: PoteNaGestao;
-  grupos: GrupoDeGestao[];
-  aoCancelar: () => void;
+  aoFechar: () => void;
 }) {
-  // As do mesmo pote primeiro — a mesma ordem que o raio-X da B3 devolve.
-  const candidatas = [
-    ...grupos.filter((g) => g.pote.id === pote.id),
-    ...grupos.filter((g) => g.pote.id !== pote.id),
-  ].flatMap((g) =>
-    g.categorias
-      .filter((c) => c.id !== categoria.id)
-      .map((c) => ({ categoria: c, pote: g.pote })),
-  );
-
+  const [raioX, setRaioX] = useState<RaioXDaCategoria | null>(null);
+  const [sumiu, setSumiu] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const [modo, setModo] = useState<"mover" | "revisao">("mover");
-  const [paraId, setParaId] = useState(candidatas[0]?.categoria.id ?? "");
+  const [paraId, setParaId] = useState("");
+  const [apagando, comecar] = useTransition();
 
-  const escolhida = candidatas.find((c) => c.categoria.id === paraId);
+  useEffect(() => {
+    let vivo = true;
 
-  const destino: DestinoDoApagar =
-    modo === "mover" && escolhida
-      ? {
-          tipo: "mover",
-          categoria: `${escolhida.categoria.emoji} ${escolhida.categoria.nome}`,
-          outroPote: escolhida.pote.id !== pote.id,
-        }
-      : { tipo: "revisao" };
+    verOQueVaiJunto(categoria.id).then((r) => {
+      if (!vivo) return;
+      if (!r) {
+        setSumiu(true);
+        return;
+      }
+      setRaioX(r);
+      setParaId(r.destinos[0]?.id ?? "");
+    });
+
+    return () => {
+      vivo = false;
+    };
+  }, [categoria.id]);
+
+  if (sumiu) {
+    return (
+      <Moldura>
+        <p className="text-xs leading-relaxed text-dim">
+          Essa categoria não existe mais. Recarregue a tela.
+        </p>
+      </Moldura>
+    );
+  }
+
+  if (!raioX) {
+    return (
+      <Moldura>
+        <p className="text-xs leading-relaxed text-dim">
+          Conferindo o que está dentro dela…
+        </p>
+      </Moldura>
+    );
+  }
+
+  const escolhida = raioX.destinos.find((d) => d.id === paraId);
+  const movendoPara = modo === "mover" && escolhida ? escolhida : null;
+
+  const destino: DestinoDoApagar = movendoPara
+    ? {
+        tipo: "mover",
+        categoria: `${movendoPara.emoji} ${movendoPara.nome}`,
+        outroPote: movendoPara.pote.id !== pote.id,
+      }
+    : { tipo: "revisao" };
 
   // ⚠ A tela não escreve texto de consequência à mão: a frase e o alerta vêm
   // da A3, que é pura e testada.
-  const aviso = avisoDeApagar(categoria, destino);
+  const aviso = avisoDeApagar(raioX.dentro, destino);
 
   return (
-    <div className="mt-4 rounded-card border border-red/20 bg-red/8 p-4">
+    <Moldura>
       <p className="text-xs font-bold text-red">
         Apagar {categoria.emoji} {categoria.nome}?
       </p>
 
-      {candidatas.length > 0 && (
+      {raioX.destinos.length > 0 && (
         <div className="mt-3 space-y-2">
           <Escolha
             marcada={modo === "mover"}
@@ -222,12 +323,13 @@ function Exclusao({
             <select
               value={paraId}
               onChange={(e) => setParaId(e.target.value)}
+              disabled={apagando}
               aria-label="Categoria de destino"
-              className="min-h-11 w-full rounded-card border border-border2 bg-bg px-3 text-sm text-text"
+              className="min-h-11 w-full rounded-card border border-border2 bg-bg px-3 text-sm text-text disabled:opacity-40"
             >
-              {candidatas.map(({ categoria: c, pote: p }) => (
-                <option key={c.id} value={c.id}>
-                  {c.emoji} {c.nome} · {p.nome}
+              {raioX.destinos.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.emoji} {d.nome} · {d.pote.nome}
                 </option>
               ))}
             </select>
@@ -250,11 +352,39 @@ function Exclusao({
       )}
 
       <div className="mt-4 flex gap-2">
-        <Primario desabilitado>Apagar</Primario>
-        <Secundario onClick={aoCancelar}>Manter</Secundario>
+        <Primario
+          desabilitado={apagando}
+          onClick={() =>
+            comecar(async () => {
+              const r = await apagar(
+                categoria.id,
+                movendoPara
+                  ? { tipo: "mover", categoriaId: movendoPara.id }
+                  : { tipo: "revisao" },
+              );
+              if (r.ok) aoFechar();
+              else setErro(r.erro);
+            })
+          }
+        >
+          {apagando ? "Apagando…" : "Apagar"}
+        </Primario>
+        <Secundario onClick={aoFechar}>Manter</Secundario>
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-dim2">{NAO_LIGADO}</p>
+      {erro && (
+        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+          {erro}
+        </p>
+      )}
+    </Moldura>
+  );
+}
+
+function Moldura({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 rounded-card border border-red/20 bg-red/8 p-4">
+      {children}
     </div>
   );
 }
@@ -304,6 +434,7 @@ function Primario({
       type="button"
       onClick={onClick}
       disabled={desabilitado}
+      aria-busy={desabilitado || undefined}
       className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-4 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}

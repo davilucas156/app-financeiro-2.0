@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aprovado pelo Davi; fases A e B concluídas; fase C no portão do Davi
+**Status:** aprovado pelo Davi; fases A, B e C concluídas; fase D em andamento
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -255,7 +255,7 @@ faz você passar por todas as que já existem primeiro.
 
 ## Fase D — Integração
 
-### D1 · A tela de arrumação lê e grava de verdade
+### D1 · A tela de arrumação lê e grava de verdade ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** criar, renomear, mover-se-vazia e apagar funcionam contra o
 banco, do celular, com os números do raio-X vindos da B3.
