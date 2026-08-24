@@ -7,6 +7,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -689,3 +690,76 @@ export const decisionUndo = pgTable("decision_undo", {
 
 export type DesfazerSalvo = typeof decisionUndo.$inferSelect;
 export type NovoDesfazerSalvo = typeof decisionUndo.$inferInsert;
+
+/**
+ * A renda que o usuário **declara** para cada mês (tarefa C1 da spec 04).
+ *
+ * É a régua de todas as metas: `meta = percentual_meta% × renda declarada`.
+ *
+ * ## Por que declarada, e não medida
+ *
+ * A medição da spec 04 contra o extrato real: o motor classifica **55%** do
+ * dinheiro que sai e só **8%** do que entra. Renda quase não bate regra, e por
+ * decisão consciente da A5 — "transferência para si mesmo entrando" pode ser o
+ * mesmo dinheiro voltando ou o salário chegando de outro banco.
+ *
+ * Uma meta calculada sobre a renda medida seria 30% de 8% da verdade, e sairia
+ * errada com aparência de certa.
+ *
+ * ## Uma linha por mês, e não uma na conta
+ *
+ * A regra que já valeu três vezes nesta base: não reescrever o passado. Uma
+ * renda única em `users` faria um aumento em dezembro mudar as metas de julho
+ * retroativamente — julho aconteceu com a renda de julho. É também o que torna
+ * o comparativo anual possível: sem base por mês, comparar dois meses seria
+ * comparar o mesmo número consigo mesmo.
+ *
+ * ⚠ **Herdar é leitura, não escrita.** O mês que não tem linha mostra a do
+ * anterior, por consulta. Gravar a herança seria mais fácil de consultar e
+ * criaria uma mentira: doze linhas dizendo "informou R$ 1.200 em dezembro"
+ * quando ele informou uma vez, em janeiro — e corrigir janeiro depois não
+ * consertaria nenhuma das outras onze.
+ */
+export const monthlyIncome = pgTable(
+  "monthly_income",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    /** `YYYY-MM`. A ordenação alfabética **é** a cronológica neste formato. */
+    mesReferencia: text("mes_referencia").notNull(),
+
+    /**
+     * ⚠ **Sem `default`, de propósito.**
+     *
+     * Linha ausente e linha com zero são estados diferentes: "nunca informou"
+     * pede o número e não mostra meta nenhuma; "informou zero" dá meta zero e
+     * faz qualquer gasto estourar. Um default apagaria a diferença e faria toda
+     * conta nova nascer com metas zeradas.
+     */
+    rendaCentavos: integer("renda_centavos").notNull(),
+
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    /**
+     * A idempotência mora aqui, como em `transactions.impressao` e
+     * `classification_rules.chave`: informar duas vezes o mesmo mês atualiza,
+     * nunca duplica.
+     */
+    primaryKey({ columns: [t.userId, t.mesReferencia] }),
+
+    check("monthly_income_mes_ck", sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`),
+    // Renda negativa não é um mês ruim, é erro de digitação.
+    check("monthly_income_valor_ck", sql`${t.rendaCentavos} >= 0`),
+  ],
+);
+
+export type RendaDoMes = typeof monthlyIncome.$inferSelect;
+export type NovaRendaDoMes = typeof monthlyIncome.$inferInsert;

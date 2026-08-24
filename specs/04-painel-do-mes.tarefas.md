@@ -160,7 +160,7 @@ rota — e aí haverá motivo.
 
 ## Fase C — Banco
 
-### C1 · A renda mensal declarada
+### C1 · A renda mensal declarada ✅
 **Camada:** BANCO
 **Pronto quando:** existe onde guardar a renda **por mês** (`user_id` +
 `mes_referencia` + valor), com o mês novo herdando a do anterior na leitura.

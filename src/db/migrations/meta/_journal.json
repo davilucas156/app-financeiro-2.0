@@ -71,6 +71,13 @@
       "when": 1787324453505,
       "tag": "0009_useful_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787537239455,
+      "tag": "0010_lonely_human_torch",
+      "breakpoints": true
     }
   ]
 }
