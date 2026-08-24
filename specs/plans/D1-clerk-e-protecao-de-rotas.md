@@ -64,7 +64,7 @@ A lista de proteção é escrita explicitamente no middleware, e inclui
 3. Copiar `CLERK_SECRET_KEY` e `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` para o
    `.env.local`.
 4. Allowlist: se o plano do Clerk oferecer Restrictions → Allowlist, ligue com
-   `davilucascarmo@gmail.com`. **Se não oferecer, não tem problema** — a
+   `davilucascarmo156@gmail.com`. **Se não oferecer, não tem problema** — a
    recusa por convite é implementada por nós no servidor, na D3, que é a
    barreira que vale de qualquer forma.
 

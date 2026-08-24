@@ -226,4 +226,6 @@ Detalhamento de tipos fica na Etapa 3 (Plan). Aqui só o que é tocado:
    com `percentual_meta = null`.
 2. ~~`planejamento_anual_davi.html` fora do repositório.~~ ✅ Adicionado pelo
    Davi; design system extraído para `references/design-system.md`.
-3. ~~Allowlist inicial.~~ ✅ `davilucascarmo@gmail.com`.
+3. ~~Allowlist inicial.~~ ✅ `davilucascarmo156@gmail.com`. ⚠ Registrado aqui
+   sem o `156` por engano, e o engano foi copiado para `contato.ts` — onde
+   ficou mudo até alguém tentar pedir acesso em agosto de 2026.

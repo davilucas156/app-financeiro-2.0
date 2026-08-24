@@ -131,7 +131,7 @@ desta funcionalidade — é a única tarefa aqui cujo consumidor ainda não exis
 **Spec:** "Proteção de rotas"
 **Camada:** INFRA + BACK
 **Pronto quando:** app do Clerk criado com **só** Google habilitado; allowlist
-(Restrictions) com `davilucascarmo@gmail.com`; chaves em variável de ambiente
+(Restrictions) com `davilucascarmo156@gmail.com`; chaves em variável de ambiente
 (a secreta **nunca** `NEXT_PUBLIC_*`); middleware bloqueando `/dashboard`,
 `/upload`, `/revisao` e `/bem-vindo` para quem não tem sessão.
 
