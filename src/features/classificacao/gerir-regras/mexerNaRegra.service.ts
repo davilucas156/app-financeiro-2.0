@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { categories, classificationRules } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { ehUnicidadeViolada } from "@/lib/erroDoPostgres";
 import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
 import { regraValida } from "@/features/classificacao/motor/regras";
 import { comTextoNovo } from "./regrasNaTela";
@@ -127,7 +128,12 @@ export async function editarRegra(
 
     return { ok: true };
   } catch (erro) {
-    if (ehChaveDuplicada(erro)) return { ok: false, erro: TEXTO_REPETIDO };
+    /*
+     * ⚠ **Um único só nesta tabela**, então o código do erro já diz qual foi.
+     * `categories` tem dois e precisa saber qual — é por isso que
+     * `erroDoPostgres.ts` também exporta `restricaoViolada`.
+     */
+    if (ehUnicidadeViolada(erro)) return { ok: false, erro: TEXTO_REPETIDO };
     throw erro;
   }
 }
@@ -149,21 +155,3 @@ export async function apagarRegra(
   return apagada ? { ok: true } : { ok: false, erro: NAO_ENCONTRADA };
 }
 
-/**
- * `23505` — violação de unicidade no Postgres.
- *
- * O driver do Neon embrulha o erro, então o código pode estar no erro ou na
- * causa dele. Conferir os dois é mais barato do que descobrir na produção que
- * a tradução não pegou e o Davi levou um 500 ao renomear uma regra.
- */
-function ehChaveDuplicada(erro: unknown): boolean {
-  const codigo = (e: unknown) =>
-    typeof e === "object" && e !== null && "code" in e
-      ? String((e as { code: unknown }).code)
-      : null;
-
-  if (codigo(erro) === "23505") return true;
-  if (erro instanceof Error && codigo(erro.cause) === "23505") return true;
-
-  return String(erro).includes("classification_rules_user_id_chave_unq");
-}

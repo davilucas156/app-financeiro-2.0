@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aprovado pelo Davi; fase A concluída
+**Status:** aprovado pelo Davi; fases A e B1–B2 concluídas
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -123,7 +123,7 @@ mas dito em voz alta.
 
 ## Fase B — O servidor (cada operação medida contra o Neon)
 
-### B1 · Criar categoria
+### B1 · Criar categoria ✅
 **Camada:** BACK
 **Pronto quando:** `criarCategoria(userId, { nome, emoji, poteId })` grava, com
 `ordem` = a última do pote mais um, e devolve a categoria pronta para ser
@@ -137,7 +137,7 @@ leitura, no painel de quem não pediu.
 Nome repetido no mesmo pote vira frase, não erro de banco. A tradução do `23505`
 já existe na D9.
 
-### B2 · Renomear, e mover só quando vazia
+### B2 · Renomear, e mover só quando vazia ✅
 **Camada:** BACK
 **Pronto quando:** dá para trocar nome e emoji sem tocar no slug, e mover de
 pote **apenas** enquanto a categoria não tiver nenhum lançamento.
