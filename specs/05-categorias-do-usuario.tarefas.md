@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aguardando aprovação do Davi
+**Status:** aprovado pelo Davi; fase A concluída
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -64,7 +64,7 @@ lição da D3 da spec 03, que guardava o id errado. Tudo aqui lê do banco.
 
 ## Fase A — As decisões puras (sem banco, sem tela)
 
-### A1 · O slug nasce do nome e congela ali
+### A1 · O slug nasce do nome e congela ali ✅
 **Camada:** BACK
 **Pronto quando:** existe uma função pura que transforma um nome em slug e
 resolve colisão dentro do pote. Não sabe de banco, sessão nem tela.
@@ -85,7 +85,7 @@ O último é o que justifica a função existir. Recusar "Café" porque existe "
 seria incompreensível na tela — os nomes são diferentes, e a pessoa está olhando
 para os dois. O sufixo resolve sem explicação nenhuma, porque ninguém vê o slug.
 
-### A2 · Nome e emoji que valem
+### A2 · Nome e emoji que valem ✅
 **Camada:** BACK
 **Pronto quando:** nome e emoji são validados por função pura, com a mensagem
 que a tela vai mostrar.
@@ -99,7 +99,7 @@ mesma regra.
 `.length` conta errado — 👨‍👩‍👧 tem 8 unidades de código e é um símbolo só. A
 spec já decidiu que não há seletor: campo de texto, uns poucos sugeridos.
 
-### A3 · O que a tela diz antes de apagar
+### A3 · O que a tela diz antes de apagar ✅
 **Camada:** BACK
 **Pronto quando:** dada a contagem de lançamentos e de regras e o destino
 escolhido, sai a frase do aviso. Puro e testado, no formato de `avisoDoVoltar`.
