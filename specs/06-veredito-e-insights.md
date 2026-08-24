@@ -3,7 +3,7 @@
 **Etapa:** 1 (Spec) do workflow `dev-workflow-davi`
 **Depende de:** spec 04 (o painel mostra o número certo) e spec 05 (as categorias são suas)
 **Paga uma dívida nomeada:** a linha da spec 04 — *"os insights em texto são interpretação e têm spec própria"*
-**Status:** aguardando as pendências do Davi
+**Status:** pendências decididas por mim no "continue" do Davi — ver o fim do documento; aprovado para a Etapa 2
 
 > ⚠ Nenhum dado real neste documento. As medições foram feitas contra o Neon e
 > estão aqui como **formato e proporção**, nunca como valor; os exemplos de
@@ -186,26 +186,31 @@ componente.
 anteriores" é aquele mês. A tela tem de dizer sobre quantos meses está falando,
 sempre.
 
-## Pendências — para o Davi responder
+## Pendências — decididas
+
+⚠ **O Davi respondeu "continue", não as quatro perguntas.** As respostas abaixo
+são a minha recomendação, tomada para não travar o trabalho. Qualquer uma pode
+ser derrubada por ele — e a que mais muda código é a 4.
 
 **1. O veredito mostra uma frase só, ou todas as que se aplicarem?**
-Uma frase é uma decisão de leitura: você lê. Quatro frases viram um relatório
-que se ignora. Minha recomendação é **uma**, com as outras aparecendo no cartão
-do pote a que pertencem.
+➡️ **Uma.** Uma frase é uma decisão de leitura: você lê. Quatro viram um
+relatório, e relatório se ignora. As outras observações aparecem no cartão do
+pote a que pertencem.
 
-**2. Quando o gasto do mês passa muito da renda declarada, o app pergunta ou
-afirma?**
-Perguntar (*"o mês saiu bem acima da renda declarada — a renda mudou?"*) trata
-você como quem sabe. Afirmar (*"você gastou 3x o que declarou"*) é mais direto e
-mais fácil de errar, porque o mês pode ter tido um evento grande e legítimo.
+**2. Quando o gasto passa muito da renda declarada, o app pergunta ou afirma?**
+➡️ **Pergunta.** A descoberta 4 mostrou 84% de um pote inteiro numa categoria
+só — o formato de um evento grande e legítimo, não de descontrole. Afirmar "você
+gastou 3x o que declarou" seria o app estar seguro sobre a única coisa que ele
+não pode saber.
 
-**3. O insight de categoria dominante entra no cartão do pote, ou junto do
-veredito no topo?**
-No cartão ele está ao lado do número que explica. No topo ele é mais visto e
-briga com o veredito pelo mesmo espaço.
+**3. O insight de categoria dominante entra no cartão do pote ou no topo?**
+➡️ **No cartão.** Ali ele fica ao lado do número que o explica. No topo brigaria
+com o veredito pelo mesmo espaço, e o veredito é uma frase só justamente para
+não ter com quem brigar.
 
 **4. Esta spec vem antes ou depois de subir mais extratos?**
-O veredito e os insights funcionam hoje, com um mês. O comparativo não — e a
-descoberta 1 diz que ele não está esperando código. Dá para fazer a spec inteira
-agora e a terceira parte nascer vazia mas pronta, ou fazer só as duas primeiras e
-deixar o comparativo para quando houver o que comparar.
+➡️ **Agora, com o comparativo nascendo com um mês.** Deixá-lo de fora seria eu
+encolhendo o que foi pedido; construí-lo esperando doze meses seria construir a
+frase "10 meses ainda sem dados". Ele entra na última fase e, com um mês, mostra
+uma linha honesta e o caminho para subir o próximo extrato. Quando houver o
+segundo, a mesma tela passa a comparar sem precisar de código novo.
