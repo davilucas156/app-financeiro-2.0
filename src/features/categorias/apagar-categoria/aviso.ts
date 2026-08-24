@@ -14,7 +14,19 @@
 
 /** O que está pendurado na categoria — contado pela B3, não aqui. */
 export type OQueVaiJunto = {
+  /** Todos os lançamentos com esta categoria, **inclusive os excluídos**. */
   lancamentos: number;
+  /**
+   * Quantos daqueles estão fora do cálculo.
+   *
+   * ⚠ Existe porque "os 12 voltam para a revisão" seria **falso** quando um
+   * deles está excluído: sair do cálculo foi decisão sua e não depende de
+   * categoria nenhuma. Ele perde a classificação e continua fora.
+   *
+   * Falso na tela de confirmação de uma operação destrutiva é o pior lugar
+   * possível para um número quase certo.
+   */
+  foraDoCalculo?: number;
   regras: number;
 };
 
@@ -101,12 +113,40 @@ function voltamParaAFila(o: OQueVaiJunto): string {
     return apagadas(o.regras);
   }
 
-  const volta =
-    o.lancamentos === 1
-      ? "Ele volta para a revisão, sem categoria."
-      : "Eles voltam para a revisão, sem categoria.";
+  const partes = [volta(o)];
+  if (o.regras > 0) partes.push(apagadas(o.regras));
 
-  return o.regras === 0 ? volta : `${volta} ${apagadas(o.regras)}`;
+  return partes.join(" ");
+}
+
+/**
+ * ⚠ Os excluídos entram na frase **só quando existem**.
+ *
+ * Mesma régua do "nada dentro": um "(0 deles estão fora do cálculo)" gastaria a
+ * atenção que a ressalva de verdade vai precisar no dia em que houver um.
+ */
+function volta(o: OQueVaiJunto): string {
+  const fora = o.foraDoCalculo ?? 0;
+  const voltam = o.lancamentos - fora;
+
+  if (voltam === 0) {
+    return o.lancamentos === 1
+      ? "Ele está fora do cálculo: perde a categoria e continua fora."
+      : "Todos estão fora do cálculo: perdem a categoria e continuam fora.";
+  }
+
+  const frase =
+    voltam === 1
+      ? "1 volta para a revisão, sem categoria."
+      : `${voltam} voltam para a revisão, sem categoria.`;
+
+  if (fora === 0) return frase;
+
+  return `${frase} ${
+    fora === 1
+      ? "O outro está fora do cálculo e continua fora."
+      : `Os outros ${fora} estão fora do cálculo e continuam fora.`
+  }`;
 }
 
 /** Regra sem destino não tem para onde apontar — então some. */

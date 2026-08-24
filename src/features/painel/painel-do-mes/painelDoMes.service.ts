@@ -95,7 +95,7 @@ export async function dadosDoPainel(
    */
   const mes = mesPedido && meses.includes(mesPedido) ? mesPedido : padrao;
 
-  const [linhas, categoriasDoBanco, renda, [pendencia]] = await Promise.all([
+  const [linhas, potesDoBanco, categoriasDoBanco, renda, [pendencia]] = await Promise.all([
     db
       .select({
         id: transactions.id,
@@ -118,6 +118,38 @@ export async function dadosDoPainel(
       )
       .orderBy(asc(transactions.data), asc(transactions.id)),
 
+    /*
+     * ⚠ **Os potes vêm da tabela de potes** (tarefa B5 da spec 05).
+     *
+     * Até aqui eles saíam do `innerJoin` com `categories`, e com o seed isso
+     * nunca apareceu: todo pote tinha categoria. A B4 da spec 05 tornou o
+     * defeito alcançável — apagar a última categoria de um pote faria o join
+     * não devolver linha nenhuma para ele, e o pote sumiria da tela.
+     *
+     * A A3 desta spec é explícita em sentido contrário: **pote ausente da tela
+     * não é o mesmo que pote vazio.**
+     *
+     * Duas consultas e não um `leftJoin` porque uma seleção plana de duas
+     * tabelas num `leftJoin` não carrega a nulidade no tipo — o TypeScript
+     * prometeria colunas que viriam nulas. Estas duas já cabem no
+     * `Promise.all` que existe.
+     */
+    db
+      .select({
+        id: buckets.id,
+        slug: buckets.slug,
+        nome: buckets.nome,
+        emoji: buckets.emoji,
+        cor: buckets.cor,
+        tipo: buckets.tipo,
+        ordem: buckets.ordem,
+        percentual: buckets.percentualMeta,
+        observacao: buckets.observacao,
+      })
+      .from(buckets)
+      .where(eq(buckets.userId, userId))
+      .orderBy(asc(buckets.ordem)),
+
     db
       .select({
         id: categories.id,
@@ -132,8 +164,6 @@ export async function dadosDoPainel(
         poteCor: buckets.cor,
         poteTipo: buckets.tipo,
         poteOrdem: buckets.ordem,
-        potePercentual: buckets.percentualMeta,
-        poteObservacao: buckets.observacao,
       })
       .from(categories)
       .innerJoin(buckets, eq(buckets.id, categories.bucketId))
@@ -180,25 +210,22 @@ export async function dadosDoPainel(
   const somaPorPote = new Map(soma.potes.map((p) => [p.poteId, p]));
   const categoriaPorId = new Map(categoriasDoBanco.map((c) => [c.id, c]));
 
-  // Um pote por vez, na ordem do banco — inclusive os que não receberam nada.
-  // Pote ausente da tela não é o mesmo que pote vazio, e a A3 distingue os dois.
-  const potesUnicos = new Map(
-    categoriasDoBanco.map((c) => [c.poteId, c] as [string, typeof c]),
-  );
-
-  const potes: PoteNoPainel[] = [...potesUnicos.values()].map((p) => {
-    const somaDele = somaPorPote.get(p.poteId);
-    const lista = listaDoPote(linhas, categoriaPorId, p.poteId);
+  // Um pote por vez, na ordem do banco — inclusive os que não receberam nada
+  // **e os que não têm categoria nenhuma**. Pote ausente da tela não é o mesmo
+  // que pote vazio, e a A3 distingue os dois.
+  const potes: PoteNoPainel[] = potesDoBanco.map((p) => {
+    const somaDele = somaPorPote.get(p.id);
+    const lista = listaDoPote(linhas, categoriaPorId, p.id);
 
     return {
-      id: p.poteId,
-      slug: p.poteSlug,
-      nome: p.poteNome,
-      emoji: p.poteEmoji,
-      cor: p.poteCor,
-      tipo: p.poteTipo,
-      percentual: p.potePercentual,
-      observacao: p.poteObservacao,
+      id: p.id,
+      slug: p.slug,
+      nome: p.nome,
+      emoji: p.emoji,
+      cor: p.cor,
+      tipo: p.tipo,
+      percentual: p.percentual,
+      observacao: p.observacao,
       totalCentavos: somaDele?.totalCentavos ?? 0,
       lancamentos: somaDele?.lancamentos ?? 0,
       categorias: (somaDele?.categorias ?? []).map((c) => ({

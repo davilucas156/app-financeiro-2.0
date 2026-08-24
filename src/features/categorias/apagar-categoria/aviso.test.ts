@@ -129,3 +129,55 @@ describe("avisoDeApagar — singular e plural", () => {
     expect(a.alerta).toContain("este lançamento");
   });
 });
+
+describe("avisoDeApagar — os que estão fora do cálculo", () => {
+  it("não conta como quem volta para a fila", () => {
+    // "12 voltam" seria falso: sair do cálculo foi decisão do Davi e não
+    // depende de categoria nenhuma. Falso na confirmação de uma operação
+    // destrutiva é o pior lugar possível.
+    const a = avisoDeApagar(
+      { lancamentos: 12, foraDoCalculo: 1, regras: 0 },
+      revisao,
+    );
+
+    expect(a.frase).toContain("12 lançamentos estão nesta categoria");
+    expect(a.frase).toContain("11 voltam");
+    expect(a.frase).toContain("O outro está fora do cálculo");
+  });
+
+  it("fala no plural quando há mais de um fora", () => {
+    const a = avisoDeApagar(
+      { lancamentos: 12, foraDoCalculo: 3, regras: 0 },
+      revisao,
+    );
+
+    expect(a.frase).toContain("9 voltam");
+    expect(a.frase).toContain("Os outros 3 estão fora do cálculo");
+  });
+
+  it("não menciona exclusão quando não há nenhuma", () => {
+    const a = avisoDeApagar(
+      { lancamentos: 12, foraDoCalculo: 0, regras: 0 },
+      revisao,
+    );
+
+    expect(a.frase).not.toContain("fora do cálculo");
+  });
+
+  it("diz a verdade quando todos estão fora", () => {
+    const a = avisoDeApagar(
+      { lancamentos: 2, foraDoCalculo: 2, regras: 0 },
+      revisao,
+    );
+
+    expect(a.frase).not.toContain("voltam para a revisão");
+    expect(a.frase).toContain("continuam fora");
+  });
+
+  it("não muda nada no mover — o excluído vai junto e continua excluído", () => {
+    const com = avisoDeApagar({ lancamentos: 12, foraDoCalculo: 3, regras: 0 }, mover);
+    const sem = avisoDeApagar({ lancamentos: 12, regras: 0 }, mover);
+
+    expect(com).toEqual(sem);
+  });
+});

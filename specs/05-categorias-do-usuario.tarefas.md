@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aprovado pelo Davi; fases A e B1–B2 concluídas
+**Status:** aprovado pelo Davi; fases A e B concluídas
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -152,7 +152,7 @@ outra frase — não é nome repetido, é slug. A tela precisa distinguir as dua
 senão o Davi lê "já existe uma com esse nome" olhando para dois nomes
 diferentes.
 
-### B3 · O raio-X do que apagar leva junto
+### B3 · O raio-X do que apagar leva junto ✅
 **Camada:** BACK
 **Pronto quando:** uma consulta devolve, para uma categoria: quantos lançamentos
 tem dentro, quantas regras apontam para ela, e as categorias que podem receber.
@@ -165,7 +165,7 @@ As candidatas a destino são **todas as outras da conta**, com o pote na frente,
 e a do mesmo pote vem primeiro. Restringir ao pote seria decidir por ele; não
 ordenar seria fingir que tanto faz.
 
-### B4 · Apagar em uma transação, com destino
+### B4 · Apagar em uma transação, com destino ✅
 **Camada:** BACK
 **Pronto quando:** apagar move ou devolve o que estava dentro e remove a
 categoria — tudo ou nada.
@@ -203,7 +203,7 @@ sombra por conta, desenhada para uma decisão de revisão; guardar 12 lançament
 e 2 regras nela seria outra tabela e outra promessa. A defesa é a B3 na tela
 antes do segundo toque — a mesma escolha que a D9 fez para apagar regra.
 
-### B5 · O painel passa a ler os potes da tabela de potes
+### B5 · O painel passa a ler os potes da tabela de potes ✅
 **Camada:** BACK
 **Pronto quando:** um pote sem nenhuma categoria continua aparecendo no painel e
 em `/categorias`.
