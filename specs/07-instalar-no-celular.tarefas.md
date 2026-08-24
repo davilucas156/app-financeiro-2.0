@@ -91,6 +91,26 @@ aparece.
 estivesse, o celular pediria login para ler o manifesto e a instalação falharia
 sem mensagem nenhuma.
 
+### Conferido em produção
+
+| URL | |
+|---|---|
+| `/manifest.webmanifest` | 200 `application/manifest+json`, sem pedir login |
+| `/icone-192.png`, `/icone-512.png`, `/icone-maskable-512.png` | 200 `image/png` |
+| `/apple-icon.png` | 200, com `<link rel="apple-touch-icon" sizes="180x180">` |
+
+E no `<head>`: `theme-color`, `viewport-fit=cover`, `application-name`,
+`apple-mobile-web-app-title`, `apple-mobile-web-app-status-bar-style` e
+`format-detection`.
+
+⚠ **Uma meta não sai, e é de propósito do Next:** `apple-mobile-web-app-capable`
+foi substituída pela padronizada `mobile-web-app-capable`, que é a que aparece.
+Do iOS 16.4 em diante o Safari lê o `display: standalone` do próprio manifesto,
+então não faz falta. **Num iPhone mais antigo faria**: o app abriria com a barra
+de endereço, que é justamente o que esta spec veio tirar. Se acontecer, a
+correção é uma linha em `metadata.other` — e é a única razão para pôr de volta
+uma meta que o framework tirou.
+
 ---
 
 ## O que só o Davi pode fechar
