@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { emReais, diaEMes } from "@/lib/dinheiro";
+import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { metaDoPote } from "@/features/painel/somar-o-mes/meta";
+import { TrocarCategoria } from "@/features/painel/trocar-categoria/TrocarCategoria";
 import {
   estadoDoPote,
   legendaDoPote,
@@ -28,9 +30,12 @@ import {
 export function CartaoDoPote({
   pote,
   rendaDeclaradaCentavos,
+  categorias,
 }: {
   pote: PoteNoPainel;
   rendaDeclaradaCentavos: number | null;
+  /** Para a troca de categoria da D4, dentro da lista. */
+  categorias: CategoriaEscolhivel[];
 }) {
   const [aberto, setAberto] = useState(false);
 
@@ -84,7 +89,7 @@ export function CartaoDoPote({
         </span>
       </button>
 
-      {aberto && <DentroDoPote pote={pote} />}
+      {aberto && <DentroDoPote pote={pote} categorias={categorias} />}
     </div>
   );
 }
@@ -132,7 +137,13 @@ function Barra({
 }
 
 /** As categorias e os lançamentos daquele pote (tarefa B3). */
-function DentroDoPote({ pote }: { pote: PoteNoPainel }) {
+function DentroDoPote({
+  pote,
+  categorias,
+}: {
+  pote: PoteNoPainel;
+  categorias: CategoriaEscolhivel[];
+}) {
   return (
     <div className="border-t border-border bg-bg/40 px-4 pb-4">
       <p className="mt-4 font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
@@ -190,16 +201,9 @@ function DentroDoPote({ pote }: { pote: PoteNoPainel }) {
                 <span className="block text-dim2">↳ {l.procedencia}</span>
               </span>
 
-              {/* A D4 é quem liga isto. Mesma decisão do "Voltar" na D4 da spec
-                  03: fingir que funciona seria pior do que estar apagado — e no
-                  portão o Davi precisa ver onde ele vai ficar. */}
-              <button
-                type="button"
-                disabled
-                className="inline-flex min-h-11 items-center rounded-card border border-border2 px-3 text-[10px] font-bold text-text disabled:opacity-40"
-              >
-                Trocar categoria
-              </button>
+              {/* Ligado na D4: o botão esteve apagado desde a B3 porque
+                  trocar não existia, e fingir que funcionava seria pior. */}
+              <TrocarCategoria lancamento={l} categorias={categorias} />
             </div>
 
             {l.conferir && (

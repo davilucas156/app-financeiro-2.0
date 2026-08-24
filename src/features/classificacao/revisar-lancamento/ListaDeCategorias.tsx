@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
@@ -44,12 +44,33 @@ export function ListaDeCategorias({
   categorias,
   direcao,
   aoEscolher,
+  atualId,
+  titulo = "Escolher categoria",
 }: {
   categorias: CategoriaEscolhivel[];
   direcao: Direcao;
   aoEscolher: (c: CategoriaEscolhivel) => void;
+  /**
+   * A categoria que o lançamento **já tem** (D4 da spec 04).
+   *
+   * ⚠ Ela aparece marcada e **não é tocável**. Sem isto, abrir a lista para
+   * conferir onde o lançamento está e tocar no que já está marcado gravaria
+   * uma decisão: `classificado_por` viraria `manual`, `regra_chave` seria
+   * apagada e a sombra do desfazer seria sobrescrita — sem nada mudar de
+   * lugar na tela.
+   *
+   * Opcional: na revisão o lançamento não tem categoria escolhida ainda.
+   */
+  atualId?: string;
+  titulo?: string;
 }) {
   const [busca, setBusca] = useState("");
+  /*
+   * ⚠ **O id do título é gerado, e não fixo.** Desde a D4 da spec 04 o painel
+   * pode ter mais de uma lista aberta ao mesmo tempo — uma por pote expandido.
+   * Um id repetido faria `aria-labelledby` apontar para a lista errada.
+   */
+  const idDoTitulo = useId();
 
   const grupos = useMemo(
     () => agruparPorPote(categorias, direcao),
@@ -68,9 +89,9 @@ export function ListaDeCategorias({
   }, [busca, categorias]);
 
   return (
-    <section aria-labelledby="todas-as-categorias">
+    <section aria-labelledby={idDoTitulo}>
       <SectionTitle>
-        <span id="todas-as-categorias">Escolher categoria</span>
+        <span id={idDoTitulo}>{titulo}</span>
       </SectionTitle>
 
       <input
@@ -92,7 +113,12 @@ export function ListaDeCategorias({
           <ul className="mt-3 space-y-2">
             {encontradas.map((c) => (
               <li key={c.id}>
-                <BotaoDeCategoria categoria={c} aoEscolher={aoEscolher} mostrarPote />
+                <BotaoDeCategoria
+                  categoria={c}
+                  aoEscolher={aoEscolher}
+                  atual={c.id === atualId}
+                  mostrarPote
+                />
               </li>
             ))}
           </ul>
@@ -115,7 +141,11 @@ export function ListaDeCategorias({
               <ul className="mt-2 space-y-2">
                 {doPote.map((c) => (
                   <li key={c.id}>
-                    <BotaoDeCategoria categoria={c} aoEscolher={aoEscolher} />
+                    <BotaoDeCategoria
+                      categoria={c}
+                      aoEscolher={aoEscolher}
+                      atual={c.id === atualId}
+                    />
                   </li>
                 ))}
               </ul>
@@ -131,17 +161,21 @@ export function ListaDeCategorias({
 function BotaoDeCategoria({
   categoria,
   aoEscolher,
+  atual = false,
   mostrarPote = false,
 }: {
   categoria: CategoriaEscolhivel;
   aoEscolher: (c: CategoriaEscolhivel) => void;
+  atual?: boolean;
   mostrarPote?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={() => aoEscolher(categoria)}
-      className="flex min-h-11 w-full items-center gap-3 rounded-pote border border-border bg-card px-4 py-2.5 text-left transition-colors hover:border-border2 hover:bg-card2"
+      disabled={atual}
+      aria-current={atual || undefined}
+      className="flex min-h-11 w-full items-center gap-3 rounded-pote border border-border bg-card px-4 py-2.5 text-left transition-colors enabled:hover:border-border2 enabled:hover:bg-card2 disabled:cursor-default disabled:border-border2 disabled:bg-card2"
     >
       <span
         aria-hidden="true"
@@ -151,10 +185,16 @@ function BotaoDeCategoria({
       <span className="min-w-0 flex-1 truncate text-sm text-text">
         {categoria.emoji} {categoria.nome}
       </span>
-      {mostrarPote && (
-        <span className="shrink-0 font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
-          {categoria.pote.nome}
+      {atual ? (
+        <span className="shrink-0 font-mono text-[9px] font-bold tracking-[1px] text-primary uppercase">
+          atual
         </span>
+      ) : (
+        mostrarPote && (
+          <span className="shrink-0 font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
+            {categoria.pote.nome}
+          </span>
+        )
       )}
     </button>
   );

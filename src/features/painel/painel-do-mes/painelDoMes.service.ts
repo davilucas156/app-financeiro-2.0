@@ -3,6 +3,7 @@ import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { naFilaDeRevisao } from "@/features/classificacao/revisar-lancamento/filaDeRevisao";
+import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { coberturaDoMes, type Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { paresDeValorIdentico } from "@/features/painel/somar-o-mes/paresDeValorIdentico";
 import { somarOMes, type CategoriaComPote } from "@/features/painel/somar-o-mes/somarOMes";
@@ -39,6 +40,15 @@ export type DadosDoPainel = {
   faltamDecidir: number;
   renda: RendaDeclarada | null;
   potes: PoteNoPainel[];
+  /**
+   * As categorias que a troca da D4 oferece.
+   *
+   * ⚠ Saem da **mesma** consulta que monta os potes, com uma coluna a mais
+   * (`categories.slug`). Uma segunda consulta seria uma segunda verdade sobre
+   * as mesmas categorias — a mesma razão pela qual uma passada de lançamentos
+   * serve a tudo aqui.
+   */
+  categorias: CategoriaEscolhivel[];
 };
 
 export async function dadosDoPainel(
@@ -111,6 +121,7 @@ export async function dadosDoPainel(
     db
       .select({
         id: categories.id,
+        slug: categories.slug,
         nome: categories.nome,
         emoji: categories.emoji,
         ordem: categories.ordem,
@@ -146,6 +157,23 @@ export async function dadosDoPainel(
   const paraSomar: CategoriaComPote[] = categoriasDoBanco.map((c) => ({
     id: c.id,
     pote: { id: c.poteId, tipo: c.poteTipo },
+  }));
+
+  const escolhiveis: CategoriaEscolhivel[] = categoriasDoBanco.map((c) => ({
+    id: c.id,
+    chave: `${c.poteSlug}/${c.slug}`,
+    nome: c.nome,
+    emoji: c.emoji,
+    ordem: c.ordem,
+    pote: {
+      id: c.poteId,
+      slug: c.poteSlug,
+      nome: c.poteNome,
+      emoji: c.poteEmoji,
+      cor: c.poteCor,
+      tipo: c.poteTipo,
+      ordem: c.poteOrdem,
+    },
   }));
 
   const soma = somarOMes(linhas, paraSomar);
@@ -194,6 +222,7 @@ export async function dadosDoPainel(
     faltamDecidir: pendencia?.n ?? 0,
     renda,
     potes,
+    categorias: escolhiveis,
   };
 }
 
@@ -244,6 +273,7 @@ function listaDoPote(
       categoriaNome: categoria?.nome ?? "categoria removida",
       categoriaEmoji: categoria?.emoji ?? "❓",
       procedencia: procedencia(l),
+      veioDeRegra: l.classificadoPor === "regra",
       conferir: conferir.has(l.id),
     };
   });

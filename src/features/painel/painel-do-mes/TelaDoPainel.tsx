@@ -1,4 +1,5 @@
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
@@ -34,6 +35,7 @@ export function TelaDoPainel({
   faltamDecidir,
   renda,
   potes,
+  categorias,
 }: {
   mes: string;
   meses: string[];
@@ -44,6 +46,7 @@ export function TelaDoPainel({
   faltamDecidir: number;
   renda: RendaDeclarada | null;
   potes: PoteNoPainel[];
+  categorias: CategoriaEscolhivel[];
 }) {
   const deGasto = potes.filter((p) => p.tipo === "gasto");
   const deRenda = potes.filter((p) => p.tipo === "renda");
@@ -72,6 +75,7 @@ export function TelaDoPainel({
             key={pote.id}
             pote={pote}
             rendaDeclaradaCentavos={renda?.centavos ?? null}
+            categorias={categorias}
           />
         ))}
       </div>
@@ -85,6 +89,7 @@ export function TelaDoPainel({
                 key={pote.id}
                 pote={pote}
                 rendaDeclaradaCentavos={renda?.centavos ?? null}
+                categorias={categorias}
               />
             ))}
           </div>

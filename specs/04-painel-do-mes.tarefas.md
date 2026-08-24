@@ -201,7 +201,7 @@ descrição, data, valor e de onde veio a classificação (a procedência da C3)
 "Por que isso caiu em Lazer?" passa a ter resposta na tela, seis meses depois —
 que é a única razão de a C3 existir.
 
-### D4 · Trocar a categoria de um lançamento já classificado
+### D4 · Trocar a categoria de um lançamento já classificado ✅
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** dá para corrigir a categoria de um lançamento a partir da
 lista, reusando `decidirLancamento` — inclusive a sombra do desfazer da D6.

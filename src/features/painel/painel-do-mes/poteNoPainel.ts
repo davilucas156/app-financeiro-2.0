@@ -32,6 +32,15 @@ export type LancamentoNoPainel = {
    * ninguém vai escrever.
    */
   procedencia: string;
+  /**
+   * A classificação veio de uma regra? (D4 da spec 04)
+   *
+   * A procedência acima é frase para ler; esta é o sinal para decidir. Trocar
+   * a categoria de um lançamento que veio de regra precisa avisar que **a
+   * regra continua valendo** — e "a frase começa com 'uma regra'" seria uma
+   * condição de tela apoiada em texto.
+   */
+  veioDeRegra: boolean;
   /** Par de valor idêntico dentro do pote (A4). */
   conferir: boolean;
 };
