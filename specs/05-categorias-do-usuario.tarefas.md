@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/05-categorias-do-usuario.md` (pendências resolvidas)
-**Status:** aprovado pelo Davi; fases A, B, C e D concluídas; falta a E1 (o Davi criar uma categoria de verdade pelo celular)
+**Status:** ✅ **concluída.** Todas as fases entregues; a E1 confirmada pelo Davi no celular.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -295,7 +295,7 @@ que nasce olhando para uma lista de categorias, não item de menu.
 
 ## Fase E — Deploy
 
-### E1 · Publicar e criar uma categoria de verdade
+### E1 · Publicar e criar uma categoria de verdade ✅
 **Camada:** INFRA
 **Pronto quando:** deploy por `npx vercel deploy --prod --yes` e o Davi cria uma
 categoria pelo celular, classifica um lançamento com ela e a vê somando no
