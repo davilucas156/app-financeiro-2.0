@@ -30,6 +30,11 @@ const ehRotaProtegida = createRouteMatcher([
   // A C1 da spec 05 trouxe `/categorias`. Ela fica **fora** da barra de
   // navegação (pendência 3), mas rota fora do menu continua sendo rota.
   "/categorias(.*)",
+  // A spec 08 trouxe `/configuracoes`, também fora do menu. Ela não lê dado
+  // nenhum do usuário — a preferência é do aparelho, num cookie — e mesmo
+  // assim entra: rota interna desprotegida é buraco por hábito, não por
+  // consequência. E a tela de amanhã que cair aqui vai herdar a proteção.
+  "/configuracoes(.*)",
   // Onboarding: já exige usuário autenticado, mas não aparece no menu.
   "/bem-vindo(.*)",
 ]);

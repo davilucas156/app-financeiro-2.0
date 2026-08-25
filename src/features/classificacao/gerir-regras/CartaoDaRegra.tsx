@@ -3,9 +3,17 @@
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { agruparPorPote, type CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
+import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
+import {
+  agruparPorPote,
+  type CategoriaEscolhivel,
+} from "@/features/classificacao/revisar-lancamento/categorias";
 import { apagar, editar } from "./mexerNaRegra.action";
-import { rotuloDoTipo, textoEhEditavel, type RegraNaTela } from "./regrasNaTela";
+import {
+  rotuloDoTipo,
+  textoEhEditavel,
+  type RegraNaTela,
+} from "./regrasNaTela";
 
 /**
  * Uma regra, em três estados: vendo, editando, confirmando a exclusão
@@ -51,7 +59,7 @@ export function CartaoDaRegra({
         <span aria-hidden="true">→</span>
         <span
           className="inline-block size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: regra.poteCor }}
+          style={estiloDoPote(regra.poteCor)}
           aria-hidden="true"
         />
         <strong className="font-bold text-text">

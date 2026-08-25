@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { destinoInicial } from "@/features/autenticacao/destino-inicial";
+import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 import { CadastrarUsuario } from "@/features/autenticacao/cadastrar-usuario/CadastrarUsuario";
 
 export const metadata: Metadata = {
@@ -28,5 +29,5 @@ export default async function CadastrarPage({
     if (!ficar) redirect(destino);
   }
 
-  return <CadastrarUsuario naoConvidado={recusado} />;
+  return <CadastrarUsuario naoConvidado={recusado} tema={await temaAtual()} />;
 }

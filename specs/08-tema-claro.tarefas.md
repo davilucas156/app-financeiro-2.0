@@ -2,7 +2,8 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/08-tema-claro.md` (pendências decididas)
-**Status:** fase A concluída. Aguardando o Davi no portão visual da fase B.
+**Status:** A, B, C e D entregues e no ar. Falta a **B4**, que é o Davi
+olhando as telas no claro — e ela é o portão.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -120,7 +121,7 @@ outro depois de escurecidos — e há teste afirmando isso.
 
 ## Fase B — A tela, e todas as outras
 
-### B1 · A paleta clara em CSS
+### B1 ✅ · A paleta clara em CSS
 **Camada:** FRONT-VISUAL
 **Arquivo:** `app/globals.css`
 **Pronto quando:** com `data-tema="claro"` no `<html>` a tela inteira muda, e
@@ -130,9 +131,16 @@ O mecanismo é redefinir as mesmas variáveis do `@theme` dentro de um seletor. 
 utilitários do Tailwind 4 compilam para `var(--color-*)`, então a cascata os
 alcança.
 
-⚠ **Verificar isto antes de escrever a paleta inteira**, com uma variável só. Se
-o Tailwind estiver inlinando o valor em vez de referenciar a variável, o desenho
-desta spec muda, e é melhor descobrir no primeiro token que no décimo segundo.
+✅ **Conferido no CSS gerado, antes de escrever a paleta inteira.**
+`.bg-bg` compila para `background-color: var(--color-bg)`, e `bg-green/8` para
+um `color-mix` sobre `var(--color-green)` — os dois seguem a cascata. **Os
+utilitários de opacidade se curam sozinhos**, e a varredura da B4 é menor do que
+esta spec temia: 8% de um verde escuro sobre branco é exatamente o lavado que um
+tema claro quer.
+
+⚠ **`light-dark()` foi medida e recusada**, e não por não funcionar — o motivo
+está no comentário do `globals.css`. Em resumo: com ela um token de cor deixa de
+valer uma cor.
 
 ⚠ **`@media (prefers-color-scheme: light)` só vale quando o atributo diz
 `sistema`** — senão a escolha explícita de quem pediu escuro num celular claro
@@ -142,7 +150,7 @@ seria atropelada pelo próprio celular.
 cada uma entra com o número da régua da A1 ao lado, em comentário. Um hex sem
 justificativa neste arquivo é uma cor que ninguém vai saber ajustar depois.
 
-### B2 · A tela `/configuracoes`
+### B2 ✅ · A tela `/configuracoes`
 **Camada:** FRONT-VISUAL
 **Arquivos:** `app/(app)/configuracoes/page.tsx`,
 `features/aparencia/escolher-tema/TelaDeConfiguracoes.tsx`
@@ -156,13 +164,13 @@ onde pôr "seguir o sistema", e é a opção que a maioria quer.
 é uma opção que não dá retorno nenhum ao ser tocada — quem está num celular
 escuro escolhe "sistema" e não vê nada acontecer.
 
-### B3 · A engrenagem no cabeçalho
+### B3 ✅ · A engrenagem no cabeçalho
 **Camada:** FRONT-VISUAL
 **Arquivo:** `shell/CabecalhoApp.tsx`
 **Pronto quando:** existe um caminho até `/configuracoes` em qualquer tela
 interna, com alvo de toque de 44px, sem gastar item da barra de navegação.
 
-### B4 · A varredura
+### B4 ⏳ · A varredura
 **Camada:** FRONT-VISUAL
 **Pronto quando:** as **oito telas** foram abertas no claro e conferidas:
 `/entrar`, `/cadastrar`, `/bem-vindo`, `/dashboard`, `/upload`, `/revisao`,
@@ -176,6 +184,14 @@ interna, com alvo de toque de 44px, sem gastar item da barra de navegação.
 - o `bg-bg/92` com `backdrop-blur` do cabeçalho;
 - a barra de rolagem fina de `globals.css`, que é desenhada em `--color-border2`.
 
+✅ **A metade que dá para fazer sem olhos já foi.** Varrido o `src` inteiro:
+nenhuma sombra, nenhum gradiente, nenhum `mix-blend`, nenhuma cor da paleta do
+Tailwind, nenhum `white`/`black` literal. As três opacidades fixas que existem
+(`opacity-40` do botão desabilitado, `opacity-60` do campo de arquivo, o 0.3 do
+mês mal classificado) não dependem do fundo.
+
+⏳ **A outra metade é dele.** Nenhuma análise estática diz se a tela está boa.
+
 > ⛔ **Portão de aprovação do Davi.** Não seguir para a fase C sem o "ok" visual.
 > Esta spec inteira é gosto: se a paleta não agradar, o resto não importa.
 
@@ -183,7 +199,7 @@ interna, com alvo de toque de 44px, sem gastar item da barra de navegação.
 
 ## Fase C — O servidor
 
-### C1 · O cookie: ler antes de pintar, gravar ao escolher
+### C1 ✅ · O cookie: ler antes de pintar, gravar ao escolher
 **Camada:** BACK
 **Arquivos:** `features/aparencia/escolher-tema/escolherTema.action.ts`,
 `app/layout.tsx`
@@ -201,7 +217,7 @@ perde toda vez.
 
 ## Fase D — Integração
 
-### D1 · O Clerk nos dois temas
+### D1 ✅ · O Clerk nos dois temas
 **Camada:** FRONT-INTEGRADO
 **Arquivo:** `features/autenticacao/aparencia-clerk.ts`
 **Pronto quando:** o `<UserButton />` e as telas de acesso acompanham o tema.
@@ -211,7 +227,7 @@ descoberta 4, e ela não mudou: o Clerk faz cálculo de cor e `var(...)` sai
 transparente. O que muda é que agora são dois objetos, e o motivo da duplicação
 precisa ficar ainda mais explícito — porque agora ela dobrou.
 
-### D2 · A cor do pote ligada
+### D2 ✅ · A cor do pote ligada
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `painel/painel-do-mes/CartaoDoPote.tsx`,
 `painel/comparar-meses/SecaoDoComparativo.tsx`
@@ -219,7 +235,7 @@ precisa ficar ainda mais explícito — porque agora ela dobrou.
 
 A A3 já decide; aqui é só entregar o tema até o ponto onde o `style` é montado.
 
-### D3 · A moldura do sistema
+### D3 ✅ · A moldura do sistema
 **Camada:** FRONT-INTEGRADO
 **Arquivo:** `app/layout.tsx`
 **Pronto quando:** instalado no celular, a barra de status combina com o tema.
@@ -235,10 +251,14 @@ faixa preta.
 
 ## Fase E — Deploy
 
-### E1 · Publicar e olhar no claro, no celular
+### E1 ✅ · Publicar e olhar no claro, no celular
 **Camada:** INFRA
 **Pronto quando:** deploy por `npx vercel deploy --prod --yes`, e o Davi abre no
 claro e diz se presta.
+
+✅ **Publicado.** Conferido em produção, antes de avisar: o `data-tema` sai do
+servidor certo nos quatro casos (sem cookie, `claro`, `sistema` e um valor
+inválido), e o `theme-color` e o estilo da barra de status acompanham.
 
 ⚠ **É revisão de gosto, como o ícone da spec 07.** Não há o que conferir contra
 o extrato: ou a tela agrada ou não agrada, e só ele decide.
@@ -250,9 +270,14 @@ o extrato: ou a tela agrada ou não agrada, e só ele decide.
 | Fase | Tarefas | Depende de |
 |---|---|---|
 | A — As decisões puras ✅ | A1–A3 | nada |
-| B — A tela e a varredura | B1–B4 | A1 (a régua julga a paleta) |
-| C — O servidor | C1 | aprovação visual de B |
-| D — Integração | D1–D3 | C |
-| E — Deploy | E1 | D |
+| B — A tela ✅, a varredura ⏳ | B1–B4 | A1 (a régua julga a paleta) |
+| C — O servidor ✅ | C1 | — |
+| D — Integração ✅ | D1–D3 | C |
+| E — Deploy ✅ | E1 | D |
+
+⚠ **A C1 passou na frente da B4, e o motivo é o mesmo da fase B da spec 06.**
+O portão desta spec é o Davi olhando a paleta — e um seletor de tema de mentira
+não dá para julgar. Ele precisava tocar e ver a tela virar. Um protótipo aqui
+seria pior do que a coisa real, e a coisa real custou trinta linhas.
 
 A Etapa 3 (Plan) é feita **tarefa por tarefa**, não tudo de uma vez.

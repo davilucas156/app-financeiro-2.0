@@ -5,8 +5,8 @@ import type {
   Sugestao,
 } from "@/features/classificacao/motor/sugestoes";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { CategoriaEscolhivel } from "./categorias";
-
 
 /**
  * Os até 3 botões de sugestão (tarefa B2).
@@ -65,7 +65,7 @@ export function Sugestoes({
                 <span
                   aria-hidden="true"
                   className="size-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: categoria.pote.cor }}
+                  style={estiloDoPote(categoria.pote.cor)}
                 />
 
                 <span className="min-w-0 flex-1">

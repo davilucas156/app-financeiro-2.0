@@ -67,5 +67,8 @@ export function temaEscolhido(valor: string | undefined | null): Tema {
 export const ROTULOS_DO_TEMA: Record<Tema, { titulo: string; nota: string }> = {
   escuro: { titulo: "Escuro", nota: "O padrão do app." },
   claro: { titulo: "Claro", nota: "Para ler de dia, na rua." },
-  sistema: { titulo: "Seguir o sistema", nota: "Acompanha o ajuste do aparelho." },
+  sistema: {
+    titulo: "Seguir o sistema",
+    nota: "Acompanha o ajuste do aparelho.",
+  },
 };

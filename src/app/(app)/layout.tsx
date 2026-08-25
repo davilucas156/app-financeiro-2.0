@@ -1,4 +1,5 @@
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 import { CabecalhoApp } from "@/features/shell/CabecalhoApp";
 import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
 
@@ -36,7 +37,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <CabecalhoApp mesReferencia={mesAtualPtBr()} />
+      <CabecalhoApp mesReferencia={mesAtualPtBr()} tema={await temaAtual()} />
 
       {/* Espaço inferior no mobile para a barra fixa não cobrir o conteúdo. */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 pb-28 md:pb-8">

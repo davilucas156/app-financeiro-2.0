@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { destinoInicial } from "@/features/autenticacao/destino-inicial";
+import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 import { FazerLogin } from "@/features/autenticacao/fazer-login/FazerLogin";
 
 export const metadata: Metadata = {
@@ -21,5 +22,5 @@ export default async function EntrarPage() {
   const destino = await destinoInicial();
   if (destino !== "/entrar") redirect(destino);
 
-  return <FazerLogin />;
+  return <FazerLogin tema={await temaAtual()} />;
 }

@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import { emReais, diaEMes } from "@/lib/dinheiro";
+import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
-import { metaDoPote, type MetaDoPote } from "@/features/painel/somar-o-mes/meta";
+import {
+  metaDoPote,
+  type MetaDoPote,
+} from "@/features/painel/somar-o-mes/meta";
 import { insightDoPote } from "@/features/painel/veredito-do-mes/insightDoPote";
 import { TrocarCategoria } from "@/features/painel/trocar-categoria/TrocarCategoria";
 import {
@@ -60,11 +64,13 @@ export function CartaoDoPote({
         className="flex w-full items-start gap-3 p-4 text-left transition-colors enabled:hover:bg-card2 disabled:cursor-default"
       >
         {/* A cor do pote vem do banco, não de token do Tailwind — a fase 2 vai
-            deixar o usuário mudá-la, e a tela tem de continuar refletindo. */}
+            deixar o usuário mudá-la, e a tela tem de continuar refletindo.
+            `estiloDoPote` acrescenta a versão para fundo claro (spec 08, D2):
+            no claro, `#00e5a0` dá 1.54 de contraste e a faixa some. */}
         <span
           aria-hidden="true"
           className="mt-0.5 h-9 w-1 shrink-0 rounded-full"
-          style={{ backgroundColor: pote.cor }}
+          style={estiloDoPote(pote.cor)}
         />
 
         <span className="min-w-0 flex-1">
@@ -72,7 +78,9 @@ export function CartaoDoPote({
             <span className="text-sm font-bold break-words">
               {pote.emoji} {pote.nome}
             </span>
-            <span className={`shrink-0 font-mono text-sm font-medium ${cor.valor}`}>
+            <span
+              className={`shrink-0 font-mono text-sm font-medium ${cor.valor}`}
+            >
               {estado === "vazio" ? "—" : emReais(pote.totalCentavos)}
             </span>
           </span>
@@ -84,7 +92,8 @@ export function CartaoDoPote({
               {legendaDoPote(estado, pote, meta.fracao)}
             </span>
             <span className="shrink-0 font-mono text-[10px] text-dim2">
-              {meta.metaCentavos !== null && `meta ${emReais(meta.metaCentavos)}`}
+              {meta.metaCentavos !== null &&
+                `meta ${emReais(meta.metaCentavos)}`}
             </span>
           </span>
         </span>
@@ -103,7 +112,10 @@ export function CartaoDoPote({
  * Estourado em vermelho **na barra e no número** — decisão do Davi: "numero
  * tambem". É o único sinal da tela que pede ação.
  */
-const CORES: Record<EstadoDoPote, { valor: string; legenda: string; barra: string }> = {
+const CORES: Record<
+  EstadoDoPote,
+  { valor: string; legenda: string; barra: string }
+> = {
   vazio: { valor: "text-dim2", legenda: "text-dim2", barra: "" },
   "sem-meta": { valor: "text-text", legenda: "text-dim", barra: "" },
   negativo: { valor: "text-green", legenda: "text-green", barra: "" },
@@ -131,8 +143,8 @@ function Barra({
       <span
         className={`block h-full rounded-full ${estado === "estourado" ? "bg-red" : ""}`}
         style={{
+          ...(estado === "estourado" ? {} : estiloDoPote(cor)),
           width: `${largura}%`,
-          ...(estado === "estourado" ? {} : { backgroundColor: cor }),
         }}
       />
     </span>

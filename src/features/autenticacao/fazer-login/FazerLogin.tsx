@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
 import { Card } from "@/components/ui/Card";
-import { APARENCIA_CLERK } from "@/features/autenticacao/aparencia-clerk";
+import { aparenciaClerk } from "@/features/autenticacao/aparencia-clerk";
+import type { Tema } from "@/features/aparencia/tema/tema";
+import { useTemaEfetivo } from "@/features/aparencia/tema/useTemaEfetivo";
 import { linkSolicitarAcesso } from "@/features/autenticacao/contato";
 
 /**
@@ -13,9 +17,13 @@ import { linkSolicitarAcesso } from "@/features/autenticacao/contato";
  */
 export function FazerLogin({
   naoConvidado = false,
+  tema,
 }: {
   naoConvidado?: boolean;
+  tema: Tema;
 }) {
+  const aparencia = aparenciaClerk(useTemaEfetivo(tema));
+
   return (
     <Card className="p-6">
       {naoConvidado && (
@@ -33,7 +41,7 @@ export function FazerLogin({
       )}
 
       <SignIn
-        appearance={APARENCIA_CLERK}
+        appearance={aparencia}
         // `fallback` e não `force`: assim o `redirect_url` da query string
         // vence, e quem tentou /upload sem sessão volta para /upload em vez
         // de cair no painel. É o que faz o returnBackUrl da D1 valer.

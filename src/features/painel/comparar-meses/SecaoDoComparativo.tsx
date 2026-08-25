@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { emReais } from "@/lib/dinheiro";
 import { nomeDoMes } from "@/lib/mes";
+import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type {
   Comparativo,
   LinhaDoComparativo,
@@ -184,7 +185,8 @@ function BarraDoMes({
   atual: boolean;
   comAno: boolean;
 }) {
-  const largura = teto === 0 ? 0 : Math.round((valor.totalCentavos / teto) * 100);
+  const largura =
+    teto === 0 ? 0 : Math.round((valor.totalCentavos / teto) * 100);
 
   return (
     <div className="flex items-center gap-2">
@@ -200,8 +202,8 @@ function BarraDoMes({
         <span
           className="block h-full rounded-full"
           style={{
+            ...estiloDoPote(cor),
             width: `${Math.max(0, Math.min(100, largura))}%`,
-            backgroundColor: cor,
             opacity: valor.confiavel ? 1 : 0.3,
           }}
         />

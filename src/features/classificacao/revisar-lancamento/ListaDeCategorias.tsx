@@ -2,9 +2,9 @@
 
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
-
 
 /**
  * ⚠ **Não é o `normalizarDescricao` do motor**, e não é descuido.
@@ -17,11 +17,7 @@ import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
  * baixa basta.
  */
 const comparavel = (texto: string) =>
-  texto
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
+  texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
 /**
  * A lista completa, agrupada por pote (tarefas B2 e D3).
@@ -142,7 +138,7 @@ export function ListaDeCategorias({
                 <span
                   aria-hidden="true"
                   className="size-2 rounded-full"
-                  style={{ backgroundColor: pote.cor }}
+                  style={estiloDoPote(pote.cor)}
                 />
                 <h3 className="font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
                   {pote.emoji} {pote.nome}
@@ -195,7 +191,7 @@ function BotaoDeCategoria({
       <span
         aria-hidden="true"
         className="h-6 w-0.5 shrink-0 rounded-full"
-        style={{ backgroundColor: categoria.pote.cor }}
+        style={estiloDoPote(categoria.pote.cor)}
       />
       <span className="min-w-0 flex-1 truncate text-sm text-text">
         {categoria.emoji} {categoria.nome}

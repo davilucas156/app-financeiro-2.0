@@ -20,7 +20,10 @@ describe("a régua, aferida antes de medir qualquer coisa (A1)", () => {
   });
 
   it("a ordem dos argumentos não muda a resposta", () => {
-    expect(razao("#060608", "#e8e8f0")).toBeCloseTo(razao("#e8e8f0", "#060608"), 10);
+    expect(razao("#060608", "#e8e8f0")).toBeCloseTo(
+      razao("#e8e8f0", "#060608"),
+      10,
+    );
   });
 
   it("branco tem luminância 1 e preto, 0", () => {

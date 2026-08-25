@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
+import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
 import { CartaoDaCategoria } from "./CartaoDaCategoria";
@@ -73,7 +74,7 @@ export function TelaDeCategorias({
             <span
               aria-hidden="true"
               className="size-2 rounded-full"
-              style={{ backgroundColor: pote.cor }}
+              style={estiloDoPote(pote.cor)}
             />
             <h2 className="font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
               {pote.emoji} {pote.nome}

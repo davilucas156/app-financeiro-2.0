@@ -60,7 +60,174 @@
   --radius-card: 14px;
 }
 
+/* ════════════════════════════════════════════════════════════
+   TEMA CLARO (spec 08, tarefa B1)
+
+   Os valores acima continuam sendo o tema escuro e o padrão. Aqui
+   embaixo mora a paleta clara, **uma vez**, e depois dela dois
+   blocos que a ligam: um para quem escolheu "claro" e outro para
+   quem escolheu "seguir o sistema" num aparelho claro.
+
+   ⚠ **A paleta clara não é a escura invertida.** As cores do app
+   foram escolhidas para brilhar no preto: o verde de "dentro da
+   meta" dá 12.26 de contraste no escuro e **1.65** sobre branco.
+   Inverter só o fundo apagaria justamente o que a tela quer dizer.
+   Cada cor semântica abaixo foi reescolhida no **mesmo matiz**,
+   escura o bastante para passar de 4.5 — a régua do WCAG para
+   texto — contra `--claro-bg`. O número medido está ao lado de
+   cada uma; ele é o que torna a cor ajustável por outra pessoa.
+
+   ⚠ **A cor dos potes não está aqui, e não pode estar.** Ela vem
+   de `buckets.cor`, no Postgres, e é derivada em tempo de
+   execução por `features/aparencia/tema/corNoTema.ts`. As
+   `--color-pote-*` continuam acima como documentação da
+   identidade, não como fonte da barra.
+════════════════════════════════════════════════════════════ */
+
 @layer base {
+  :root {
+    /*
+      ⚠ **`color-scheme` não é enfeite.** É o que faz o navegador
+      desenhar o que **não** é nosso: a barra de rolagem nativa, o
+      seletor de data do campo de mês, o preenchimento automático do
+      Chrome. Sem isto, um app escuro ganha um calendário branco
+      quando alguém toca num campo de data.
+    */
+    color-scheme: dark;
+
+    /*
+      ⚠ **A cor do pote entra por aqui, e não pelo bloco de tokens.**
+      Ela vem de `buckets.cor`, no Postgres, e cada elemento pintado
+      carrega as duas versões em `--pote-escuro` e `--pote-claro`
+      (ver `features/aparencia/tema/estiloDoPote.ts`). Esta linha é o
+      ponteiro: ela é resolvida **no elemento**, que é onde as duas
+      existem, e é o único jeito de "seguir o sistema" funcionar sem
+      o servidor ter de adivinhar a configuração do aparelho.
+    */
+    --cor-do-pote: var(--pote-escuro);
+
+    /*
+      A paleta clara, definida uma vez e ainda sem efeito nenhum.
+      Quem liga são os dois blocos logo abaixo.
+
+      ── Base ──
+      Cartão branco sobre página cinza, que é o inverso do escuro
+      (onde o cartão é mais claro que a página). A relação entre os
+      dois é o que dá profundidade, e ela se mantém invertendo quem
+      é mais claro.
+    */
+    --claro-bg: #eeeef3;
+    --claro-surface: #ffffff;
+    --claro-card: #ffffff;
+    --claro-card2: #e9e9f0; /* hover: no claro, escurece */
+    --claro-border: #e2e2ea;
+    --claro-border2: #cfcfda;
+    --claro-text: #16161c; /* 15.58 sobre --claro-bg */
+    --claro-dim: #61617a; /* 5.19 — é o rótulo de 96 lugares */
+    --claro-dim2: #9a9ab0; /* 2.38, baixo de propósito: é o desabilitado */
+
+    /*
+      ── Semânticas, reescolhidas ──
+      Todas a ≥ 4.5 contra --claro-bg, no matiz da cor original.
+    */
+    --claro-primary: #c23d00; /* 4.58 · era #ff5000 (3.28) */
+    --claro-green: #007a56; /* 4.63 · era #00e5a0 (1.65) */
+    --claro-red: #db0000; /* 4.53 · era #ff4f4f (3.24) */
+    --claro-gold: #8f6300; /* 4.59 · era #ffc94d (1.53) */
+    --claro-blue: #0062eb; /* 4.60 · era #3d8eff (3.23) */
+    --claro-cyan: #007880; /* 4.54 */
+    --claro-pink: #c52083; /* 4.65 */
+    --claro-purple: #7245f7; /* 4.64 */
+
+    /*
+      ⚠ **`--orange` é o hover de `--primary`, e no claro ele
+      escurece em vez de clarear.** No escuro o botão acende ao
+      passar o mouse; no claro, acender é apagar contra o branco.
+      É o único token cuja regra muda de direção entre os temas.
+    */
+    --claro-orange: #a83200; /* 5.82 */
+  }
+
+  /*
+    ⚠ **A escolha explícita ganha do aparelho.** Este bloco não tem
+    `@media`: quem pediu claro recebe claro, mesmo com o celular
+    configurado em escuro. O `@media` só aparece no bloco seguinte,
+    que é o de quem **abriu mão** de escolher.
+
+    ⚠ **A duplicação das linhas abaixo é de mapeamento, não de
+    decisão.** Todo o julgamento — qual cor, por quê, medida contra
+    o quê — está no bloco de cima, escrito uma vez. O CSS não tem
+    como aplicar um mesmo conjunto de variáveis a partir de duas
+    condições diferentes sem repetir a atribuição.
+
+    ⚠ **`light-dark()` foi medida e recusada, mas não por não
+    funcionar.** Conferido no CSS gerado: o Lightning CSS a reescreve
+    num truque de espaço (`--lightningcss-light`/`-dark`), e declara
+    o par junto de `color-scheme` — funciona. O motivo de não usar é
+    outro: com ela, `--color-green` deixa de valer uma **cor** e
+    passa a valer um par de variáveis. Tudo que lê o token de fora
+    do CSS passa a ver o truque em vez do verde, e `bg-green/8` já
+    lê o token para montar um `color-mix`. Um token de cor que não é
+    uma cor é uma armadilha para a próxima pessoa.
+  */
+  :root[data-tema="claro"] {
+    color-scheme: light;
+
+    --cor-do-pote: var(--pote-claro);
+
+    --color-bg: var(--claro-bg);
+    --color-surface: var(--claro-surface);
+    --color-card: var(--claro-card);
+    --color-card2: var(--claro-card2);
+    --color-border: var(--claro-border);
+    --color-border2: var(--claro-border2);
+    --color-text: var(--claro-text);
+    --color-dim: var(--claro-dim);
+    --color-dim2: var(--claro-dim2);
+
+    --color-primary: var(--claro-primary);
+    --color-green: var(--claro-green);
+    --color-red: var(--claro-red);
+    --color-gold: var(--claro-gold);
+    --color-blue: var(--claro-blue);
+    --color-cyan: var(--claro-cyan);
+    --color-pink: var(--claro-pink);
+    --color-purple: var(--claro-purple);
+    --color-orange: var(--claro-orange);
+  }
+
+  /*
+    "Seguir o sistema": o navegador responde antes de existir
+    JavaScript, e é por isso que esta opção não pisca.
+  */
+  @media (prefers-color-scheme: light) {
+    :root[data-tema="sistema"] {
+      color-scheme: light;
+
+      --cor-do-pote: var(--pote-claro);
+
+      --color-bg: var(--claro-bg);
+      --color-surface: var(--claro-surface);
+      --color-card: var(--claro-card);
+      --color-card2: var(--claro-card2);
+      --color-border: var(--claro-border);
+      --color-border2: var(--claro-border2);
+      --color-text: var(--claro-text);
+      --color-dim: var(--claro-dim);
+      --color-dim2: var(--claro-dim2);
+
+      --color-primary: var(--claro-primary);
+      --color-green: var(--claro-green);
+      --color-red: var(--claro-red);
+      --color-gold: var(--claro-gold);
+      --color-blue: var(--claro-blue);
+      --color-cyan: var(--claro-cyan);
+      --color-pink: var(--claro-pink);
+      --color-purple: var(--claro-purple);
+      --color-orange: var(--claro-orange);
+    }
+  }
+
   body {
     background: var(--color-bg);
     color: var(--color-text);

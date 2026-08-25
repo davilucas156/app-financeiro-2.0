@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { SignOutButton, SignUp } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { APARENCIA_CLERK } from "@/features/autenticacao/aparencia-clerk";
+import { aparenciaClerk } from "@/features/autenticacao/aparencia-clerk";
+import type { Tema } from "@/features/aparencia/tema/tema";
+import { useTemaEfetivo } from "@/features/aparencia/tema/useTemaEfetivo";
 import { linkSolicitarAcesso } from "@/features/autenticacao/contato";
 
 /**
@@ -14,9 +18,13 @@ import { linkSolicitarAcesso } from "@/features/autenticacao/contato";
  */
 export function CadastrarUsuario({
   naoConvidado = false,
+  tema,
 }: {
   naoConvidado?: boolean;
+  tema: Tema;
 }) {
+  const aparencia = aparenciaClerk(useTemaEfetivo(tema));
+
   return (
     <Card className="p-6">
       <div className="mb-5">
@@ -60,7 +68,7 @@ export function CadastrarUsuario({
         </div>
       ) : (
         <SignUp
-          appearance={APARENCIA_CLERK}
+          appearance={aparencia}
           // `/` para a D6 decidir o destino — ver a nota em `FazerLogin`.
           fallbackRedirectUrl="/"
           signInUrl="/entrar"
