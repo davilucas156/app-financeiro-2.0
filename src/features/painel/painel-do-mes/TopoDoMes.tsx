@@ -56,23 +56,45 @@ export function TopoDoMes({
   );
 }
 
+/**
+ * Os meses da conta, e o caminho entre eles.
+ *
+ * ⚠ **Estes eram `<span>`, e o seletor não levava a lugar nenhum.**
+ *
+ * Ele nasceu no protótipo visual da spec 04 (`1b3d195`), quando nada da tela
+ * era ligado. O servidor foi ligado depois e ficou **completo**: a
+ * `dashboard/page.tsx` lê `?mes=` e a `dadosDoPainel` confere o valor contra os
+ * meses da própria conta. Só o elemento nunca virou link.
+ *
+ * O defeito era mudo do pior jeito: com alvo de toque de 44px, borda, hover e o
+ * mês atual em destaque, ele **parecia** funcionar. Quem tinha um mês só não
+ * notava; quem subiu o segundo tocou e não aconteceu nada.
+ *
+ * ⚠ **O mês atual continua sendo link para ele mesmo.** Desabilitá-lo pouparia
+ * uma navegação e tiraria o único jeito de recarregar a tela sem perder o mês
+ * escolhido.
+ */
 function SeletorDeMeses({ mes, meses }: { mes: string; meses: string[] }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <nav
+      aria-label="Mês do painel"
+      className="flex flex-wrap items-center gap-2"
+    >
       {meses.map((m) => (
-        <span
+        <Link
           key={m}
-          aria-current={m === mes ? "true" : undefined}
+          href={`/dashboard?mes=${m}`}
+          aria-current={m === mes ? "page" : undefined}
           className={`inline-flex min-h-11 items-center rounded-card border px-4 text-xs font-bold transition-colors ${
             m === mes
               ? "border-primary/40 bg-primary/10 text-primary"
-              : "border-border2 bg-card text-dim hover:bg-card2"
+              : "border-border2 bg-card text-dim hover:bg-card2 hover:text-text"
           }`}
         >
           {rotuloDeMes(m)}
-        </span>
+        </Link>
       ))}
-    </div>
+    </nav>
   );
 }
 
@@ -111,7 +133,9 @@ function AvisoDeCobertura({
     <Card className="mt-3 border-gold/20 bg-gold/8">
       <p className="text-xs font-bold text-gold">
         Estes números cobrem {cobertura.saiuPct ?? 0}% do que saiu
-        {cobertura.entrouPct !== null && ` e ${cobertura.entrouPct}% do que entrou`}.
+        {cobertura.entrouPct !== null &&
+          ` e ${cobertura.entrouPct}% do que entrou`}
+        .
       </p>
       <p className="mt-1.5 text-xs leading-relaxed text-dim">
         {faltamDecidir === 1
