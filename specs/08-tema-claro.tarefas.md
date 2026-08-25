@@ -2,8 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/08-tema-claro.md` (pendências decididas)
-**Status:** A, B, C e D entregues e no ar. Falta a **B4**, que é o Davi
-olhando as telas no claro — e ela é o portão.
+**Status:** ✅ **concluída.** Todas as fases entregues; a B4 aprovada pelo Davi.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -170,7 +169,7 @@ escuro escolhe "sistema" e não vê nada acontecer.
 **Pronto quando:** existe um caminho até `/configuracoes` em qualquer tela
 interna, com alvo de toque de 44px, sem gastar item da barra de navegação.
 
-### B4 ⏳ · A varredura
+### B4 ✅ · A varredura
 **Camada:** FRONT-VISUAL
 **Pronto quando:** as **oito telas** foram abertas no claro e conferidas:
 `/entrar`, `/cadastrar`, `/bem-vindo`, `/dashboard`, `/upload`, `/revisao`,
@@ -190,7 +189,8 @@ Tailwind, nenhum `white`/`black` literal. As três opacidades fixas que existem
 (`opacity-40` do botão desabilitado, `opacity-60` do campo de arquivo, o 0.3 do
 mês mal classificado) não dependem do fundo.
 
-⏳ **A outra metade é dele.** Nenhuma análise estática diz se a tela está boa.
+✅ **A outra metade era dele, e ele aprovou.** Nenhuma análise estática diria
+se a tela está boa — só o olho de quem vai ler o painel todo mês.
 
 > ⛔ **Portão de aprovação do Davi.** Não seguir para a fase C sem o "ok" visual.
 > Esta spec inteira é gosto: se a paleta não agradar, o resto não importa.
@@ -270,7 +270,7 @@ o extrato: ou a tela agrada ou não agrada, e só ele decide.
 | Fase | Tarefas | Depende de |
 |---|---|---|
 | A — As decisões puras ✅ | A1–A3 | nada |
-| B — A tela ✅, a varredura ⏳ | B1–B4 | A1 (a régua julga a paleta) |
+| B — A tela e a varredura ✅ | B1–B4 | A1 (a régua julga a paleta) |
 | C — O servidor ✅ | C1 | — |
 | D — Integração ✅ | D1–D3 | C |
 | E — Deploy ✅ | E1 | D |
