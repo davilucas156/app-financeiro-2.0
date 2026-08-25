@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { emReais } from "@/lib/dinheiro";
-import { nomeDoMes } from "@/lib/mes";
+import { nomeDoMes, rotuloDeMes } from "@/lib/mes";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type {
   Comparativo,
@@ -34,10 +34,19 @@ import type {
 export function SecaoDoComparativo({
   comparativo,
   potes,
+  mesDeReferencia,
 }: {
   comparativo: Comparativo;
   /** Nome, emoji e cor de cada pote, na ordem do painel. */
   potes: { id: string; nome: string; emoji: string; cor: string }[];
+  /**
+   * O mês que a frase compara com os outros (spec 09).
+   *
+   * ⚠ **Ele passou a ser escrito quando a seção virou tela própria.** Embaixo
+   * do painel, o sujeito era óbvio: o mês estava no topo da mesma tela. Numa
+   * tela sem seletor de mês, "comparado com maio" fica sem sujeito.
+   */
+  mesDeReferencia: string;
 }) {
   const porId = new Map(potes.map((p) => [p.id, p]));
   const teto = maiorValor(comparativo.linhas);
@@ -52,7 +61,7 @@ export function SecaoDoComparativo({
     <>
       <SectionTitle>Comparativo</SectionTitle>
 
-      <Frase media={comparativo.media} />
+      <Frase media={comparativo.media} mes={mesDeReferencia} />
 
       <div className="mt-4 space-y-5">
         {comparativo.linhas.map((linha) => {
@@ -99,12 +108,14 @@ export function SecaoDoComparativo({
  * chamar isso de média seria dar peso estatístico a uma amostra de um. A frase
  * vem pronta da `compararMeses` justamente para não poder ser esquecida aqui.
  */
-function Frase({ media }: { media: Comparativo["media"] }) {
+function Frase({ media, mes }: { media: Comparativo["media"]; mes: string }) {
   if (media.pode) {
     return (
-      <p className="font-mono text-[10px] text-dim">
-        Cada pote, mês a mês. A média é a dos meses classificados —{" "}
-        <span className="text-text">{media.frase}</span>.
+      <p className="font-mono text-[10px] leading-relaxed text-dim">
+        Cada pote, mês a mês.{" "}
+        <span className="text-text">{rotuloDeMes(mes)}</span>{" "}
+        <span className="text-text">{media.frase}</span> — a média é a dos meses
+        classificados.
       </p>
     );
   }

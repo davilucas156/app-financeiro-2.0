@@ -1,6 +1,6 @@
 # Estado do projeto — o que o app é hoje
 
-**Atualizado em:** 24/08/2026, com as specs 06 e 07 no ar
+**Atualizado em:** 24/08/2026, com as specs 06, 07, 08 e 09 no ar
 **Contra:** `readme.md`, o pedido original
 **Para quê:** o `readme.md` é de antes de existir código. Seis specs depois,
 várias decisões dele foram revistas **de propósito** e com motivo registrado.
@@ -93,6 +93,23 @@ tela para isso.
 Open Finance, app nativo, múltiplos idiomas, painel compartilhado entre duas
 pessoas.
 
+### Decidido pelo Davi, ainda sem spec
+
+- **CSV de vários bancos.** Dito em 24/08/2026: *"nossa proposta será receber
+  diferentes csvs nao apenas do banco inter"*. Hoje `FORMATOS` tem **duas**
+  entradas, as duas do Inter, e a régua de `references/formatos-de-extrato.md`
+  é que **formato se mede em arquivo real antes de virar parser**.
+
+  A spec 09 já preparou o terreno pelo lado da ajuda: `FORMATOS` ganhou o campo
+  `banco` e a tela `/passos` deriva dali a lista do que o app entende — ela
+  passa a listar um banco novo sozinha.
+
+  O que a spec do multibanco vai ter de decidir, e ainda não está decidido:
+  **medir cada banco (o que existe hoje, e não escala) ou ler CSV genérico com o
+  usuário apontando as colunas** (que escala, e transfere para ele a chance de
+  errar o sentido do sinal — o erro que faria todo gasto do cartão virar
+  receita). Não dá para escolher sem um arquivo de outro banco na mão.
+
 ### Não está em spec nenhuma, e talvez devesse
 
 - **Os 6 cartões de topo do Comparativo Anual** — investido acumulado, metas
@@ -112,7 +129,10 @@ pessoas.
 | `/revisao` | Decidir um lançamento por vez, com desfazer | 03 |
 | `/regras` | Ver, corrigir e apagar o que o motor aprendeu | 03 |
 | `/dashboard` | Veredito, potes com insight, comparativo | 04 e 06 |
-| `/categorias` | Criar, renomear, mover e apagar categoria | 05 |
+| `/categorias` | Criar, renomear, mover e apagar categoria (recolhível por pote) | 05 e 09 |
+| `/comparativo` | Os potes mês a mês, fora do painel | 09 |
+| `/configuracoes` | Aparência: escuro, claro ou seguir o sistema | 08 |
+| `/passos` | Como pegar o extrato no banco | 09 |
 
 ## Instalável no celular
 

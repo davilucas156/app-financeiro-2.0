@@ -3,8 +3,8 @@ import Link from "next/link";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
-import { compararMeses } from "@/features/painel/comparar-meses/comparativo";
-import { historicoDosMeses } from "@/features/painel/comparar-meses/historicoDosMeses.service";
+import { coberturaDosMeses } from "@/features/painel/comparar-meses/coberturaDosMeses.service";
+import { mediaDoComparativo } from "@/features/painel/comparar-meses/comparativo";
 import { dadosDoPainel } from "@/features/painel/painel-do-mes/painelDoMes.service";
 import { TelaDoPainel } from "@/features/painel/painel-do-mes/TelaDoPainel";
 
@@ -38,15 +38,20 @@ export default async function DashboardPage({
   const { mes } = await searchParams;
 
   /*
-   * ⚠ **As duas leituras em paralelo, e o histórico não depende do mês.**
+   * ⚠ **A segunda leitura é barata de propósito** (spec 09).
    *
-   * `historicoDosMeses` devolve a conta inteira, e quem recorta é a
-   * `compararMeses` com o mês escolhido. Fazer o servidor filtrar por mês daria
-   * uma consulta nova a cada troca no seletor para devolver as mesmas linhas.
+   * Até a spec 08 esta página buscava o `historicoDosMeses` inteiro — gasto por
+   * pote, mês a mês — para desenhar o comparativo aqui embaixo. O comparativo
+   * virou tela própria, e o que sobrou no painel é **uma frase**: "Julho
+   * comparado com a média de 3 meses". Ela se decide com mês e cobertura, sem a
+   * soma por pote.
+   *
+   * ⚠ **Não volte a chamar `historicoDosMeses` aqui.** Era metade do custo
+   * desta página, e ela já faz outras cinco consultas.
    */
-  const [dados, historico] = await Promise.all([
+  const [dados, cobertura] = await Promise.all([
     dadosDoPainel(usuario.id, mes),
-    historicoDosMeses(usuario.id),
+    coberturaDosMeses(usuario.id),
   ]);
 
   if (!dados) {
@@ -58,12 +63,25 @@ export default async function DashboardPage({
           titulo="Nenhum mês no banco ainda"
           descricao="Envie o extrato da conta e da fatura para o painel montar seus potes."
           acao={
-            <Link
-              href="/upload"
-              className="inline-flex min-h-11 items-center rounded-card bg-primary px-5 text-sm font-bold text-bg transition-colors hover:bg-orange"
-            >
-              Enviar extrato
-            </Link>
+            <span className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/upload"
+                className="inline-flex min-h-11 items-center rounded-card bg-primary px-5 text-sm font-bold text-bg transition-colors hover:bg-orange"
+              >
+                Enviar extrato
+              </Link>
+              {/*
+                ⚠ **O segundo caminho até a `/passos` (spec 09, C2).** Quem chega
+                aqui pelo "Começar" do primeiro acesso está olhando uma tela vazia
+                e um botão que pede um arquivo que ele ainda não tem.
+              */}
+              <Link
+                href="/passos"
+                className="inline-flex min-h-11 items-center rounded-card border border-border2 px-5 text-sm font-bold text-text transition-colors hover:bg-card2"
+              >
+                Como pegar o extrato
+              </Link>
+            </span>
           }
         />
       </>
@@ -71,9 +89,6 @@ export default async function DashboardPage({
   }
 
   return (
-    <TelaDoPainel
-      {...dados}
-      comparativo={compararMeses(historico, dados.mes)}
-    />
+    <TelaDoPainel {...dados} media={mediaDoComparativo(cobertura, dados.mes)} />
   );
 }

@@ -34,11 +34,22 @@ import { anoDoMes, nomeDoMes } from "@/lib/mes";
  * régua; some da tela quem não existe, e esse mês existe.
  */
 
-export type MesNoHistorico = {
+/**
+ * O mínimo para decidir se um mês pode entrar na média.
+ *
+ * Separado de `MesNoHistorico` na spec 09: quando o comparativo saiu do painel,
+ * o painel ficou precisando **só da frase** ("comparado com maio", "média de 3
+ * meses") para convidar a olhar a tela nova. A frase se decide com mês e
+ * cobertura; o gasto por pote, que é a consulta cara, não entra nela.
+ */
+export type MesComCobertura = {
   /** `"2026-06"`. */
   mes: string;
   /** `null` quando não saiu dinheiro nenhum naquele mês. */
   coberturaSaiuPct: number | null;
+};
+
+export type MesNoHistorico = MesComCobertura & {
   potes: { poteId: string; totalCentavos: number }[];
 };
 
@@ -110,28 +121,51 @@ export function compararMeses(
     .sort((a, b) => a.mes.localeCompare(b.mes));
 
   const atual = ate.find((m) => m.mes === mesAtual);
-  const anteriores = ate.filter((m) => m.mes < mesAtual);
-  const confiaveis = anteriores.filter(confiavel);
+  const confiaveis = ate.filter((m) => m.mes < mesAtual).filter(confiavel);
 
   return {
     linhas: linhas(ate, atual, confiaveis),
-    media:
-      confiaveis.length === 0
-        ? {
-            pode: false,
-            motivo:
-              anteriores.length === 0 ? "primeiro-mes" : "anteriores-descartados",
-            descartados: anteriores.length,
-          }
-        : {
-            pode: true,
-            mesesNaMedia: confiaveis.length,
-            frase: fraseDaMedia(confiaveis, mesAtual),
-          },
+    media: mediaDoComparativo(historico, mesAtual),
   };
 }
 
-function confiavel(mes: MesNoHistorico): boolean {
+/**
+ * Quais meses anteriores servem de régua — e como dizer isso em uma frase.
+ *
+ * ⚠ **Exportada na spec 09, e a razão é a de sempre neste projeto: a regra
+ * seria escrita duas vezes.** O painel deixou de mostrar o comparativo e passou
+ * a mostrar só a frase dele, como convite para a tela nova. Se a frase do
+ * painel e a da `/comparativo` fossem calculadas em lugares diferentes, um dia
+ * o painel diria "média de 3 meses" e a tela ao lado diria "comparado com
+ * maio" — e quem lesse não teria como saber qual das duas mentiu.
+ *
+ * Ela pede só `MesComCobertura`, e é isso que permite ao painel responder sem
+ * a consulta cara do gasto por pote.
+ */
+export function mediaDoComparativo(
+  meses: MesComCobertura[],
+  mesAtual: string,
+): MediaDoComparativo {
+  const anteriores = meses.filter((m) => m.mes < mesAtual);
+  const confiaveis = anteriores.filter(confiavel);
+
+  if (confiaveis.length === 0) {
+    return {
+      pode: false,
+      motivo:
+        anteriores.length === 0 ? "primeiro-mes" : "anteriores-descartados",
+      descartados: anteriores.length,
+    };
+  }
+
+  return {
+    pode: true,
+    mesesNaMedia: confiaveis.length,
+    frase: fraseDaMedia(confiaveis, mesAtual),
+  };
+}
+
+function confiavel(mes: MesComCobertura): boolean {
   return (
     mes.coberturaSaiuPct !== null &&
     mes.coberturaSaiuPct >= COBERTURA_CONFIAVEL_PCT
@@ -139,6 +173,12 @@ function confiavel(mes: MesNoHistorico): boolean {
 }
 
 /**
+ * ⚠ **A frase completa uma que começa com o nome do mês** — "Julho/2026 <frase>".
+ * Ela ganhou o "comparado com" na spec 09, quando passou a ser lida em dois
+ * lugares que precisam do sujeito: a chamada no painel e o topo da
+ * `/comparativo`. Antes ela vivia embaixo do painel, onde o mês estava no topo
+ * da mesma tela e o sujeito era óbvio.
+ *
  * ⚠ **Com um mês anterior, a palavra "média" não aparece.**
  *
  * É o risco nomeado na spec: com um único mês, "a média dos anteriores" é
@@ -146,12 +186,12 @@ function confiavel(mes: MesNoHistorico): boolean {
  * amostra de um. Aqui ela diz o nome do mês, e quem lê entende o tamanho do que
  * está olhando.
  */
-function fraseDaMedia(confiaveis: MesNoHistorico[], mesAtual: string): string {
+function fraseDaMedia(confiaveis: MesComCobertura[], mesAtual: string): string {
   if (confiaveis.length === 1) {
     return `comparado com ${nomeDoMes(confiaveis[0].mes, anoDoMes(mesAtual))}`;
   }
 
-  return `média de ${confiaveis.length} meses`;
+  return `comparado com a média de ${confiaveis.length} meses`;
 }
 
 /**

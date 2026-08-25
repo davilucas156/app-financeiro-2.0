@@ -2,7 +2,7 @@ import "server-only";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
-import { porcentagemDaCobertura } from "@/features/painel/somar-o-mes/cobertura";
+import { coberturaDosMeses } from "./coberturaDosMeses.service";
 import type { MesNoHistorico } from "./comparativo";
 
 /**
@@ -10,11 +10,10 @@ import type { MesNoHistorico } from "./comparativo";
  *
  * ⚠ `userId` vem de `garantirUsuario()`, nunca de fora.
  *
- * ## Duas consultas agrupadas, nunca uma por mês
+ * ## Consultas agrupadas, nunca uma por mês
  *
- * Doze meses viram doze idas ao banco numa página que já faz cinco. As duas
- * consultas aqui são `group by mes_referencia` — o custo não cresce com o
- * histórico.
+ * Doze meses viram doze idas ao banco numa página que já faz cinco. Tudo aqui é
+ * `group by mes_referencia` — o custo não cresce com o histórico.
  *
  * ## Por que não é uma consulta só
  *
@@ -23,6 +22,10 @@ import type { MesNoHistorico } from "./comparativo";
  * **não** caiu em pote nenhum. Um `inner join` apagaria o denominador; um
  * `left join` com `group by` de duas dimensões devolveria a mesma linha
  * multiplicada. São perguntas diferentes sobre as mesmas linhas.
+ *
+ * A da cobertura mora em `coberturaDosMeses.service.ts` desde a spec 09, porque
+ * o painel passou a precisar **só dela**. Esta função a chama; o SQL não é
+ * repetido.
  *
  * ## As regras herdadas do `somarOMes`, agora em SQL
  *
@@ -73,33 +76,7 @@ export async function historicoDosMeses(
       )
       .groupBy(transactions.mesReferencia, buckets.id),
 
-    db
-      .select({
-        mes: transactions.mesReferencia,
-        saiuCentavos: sql<number>`coalesce(sum(
-          case when ${transactions.direcao} = 'saida'
-               then ${transactions.valorCentavos} else 0 end
-        ), 0)::int`,
-        /*
-         * ⚠ **`categoria_id is not null` e não um `join`** — ver a nota do topo.
-         * A coluna é `set null` ao apagar a categoria, então um lançamento que
-         * perdeu a categoria volta a contar como não classificado, que é
-         * exatamente o que ele passou a ser.
-         */
-        saiuClassificadoCentavos: sql<number>`coalesce(sum(
-          case when ${transactions.direcao} = 'saida'
-                and ${transactions.categoriaId} is not null
-               then ${transactions.valorCentavos} else 0 end
-        ), 0)::int`,
-      })
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.userId, userId),
-          ne(transactions.status, "excluido"),
-        ),
-      )
-      .groupBy(transactions.mesReferencia),
+    coberturaDosMeses(userId),
 
     /*
      * ⚠ **Os potes vêm da tabela de potes** — a lição da B5 da spec 05.
@@ -120,18 +97,11 @@ export async function historicoDosMeses(
     porPote.map((l) => [`${l.mes}:${l.poteId}`, l.totalCentavos]),
   );
 
-  return porMes
-    .map((m) => ({
-      mes: m.mes,
-      coberturaSaiuPct: porcentagemDaCobertura(
-        m.saiuClassificadoCentavos,
-        m.saiuCentavos,
-      ),
-      potes: potesDeGasto.map((p) => ({
-        poteId: p.id,
-        totalCentavos: totais.get(`${m.mes}:${p.id}`) ?? 0,
-      })),
-    }))
-    .sort((a, b) => a.mes.localeCompare(b.mes));
+  return porMes.map((m) => ({
+    ...m,
+    potes: potesDeGasto.map((p) => ({
+      poteId: p.id,
+      totalCentavos: totais.get(`${m.mes}:${p.id}`) ?? 0,
+    })),
+  }));
 }
-

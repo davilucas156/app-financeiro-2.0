@@ -18,12 +18,7 @@ import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
  * conhecer os dois vocabulários.
  */
 export type Papel =
-  | "data"
-  | "descricao"
-  | "valor"
-  | "saldo"
-  | "categoria"
-  | "tipo";
+  "data" | "descricao" | "valor" | "saldo" | "categoria" | "tipo";
 
 /** De onde o lançamento veio. Casa com `transactions.origem` (C1). */
 export type Origem = "csv_conta" | "csv_cartao";
@@ -32,6 +27,18 @@ export type Formato = {
   id: "inter-extrato" | "inter-fatura";
   /** Como aparece para o usuário numa mensagem de erro. */
   nome: string;
+  /**
+   * O banco, escrito como a pessoa o chama (spec 09).
+   *
+   * ⚠ **Existe para a tela de ajuda não poder mentir.** O passo a passo de
+   * "como pegar o extrato" precisa dizer de quais bancos ele fala, e a única
+   * resposta honesta é a lista que **esta** constante conhece. Escrita à mão lá,
+   * ela prometeria um banco no dia em que alguém tirasse o formato daqui.
+   *
+   * Dois formatos podem ter o mesmo banco — conta e cartão do Inter são dois
+   * arquivos da mesma instituição.
+   */
+  banco: string;
   origem: Origem;
   dialeto: Dialeto;
   /** Papel → nome da coluna no arquivo. */
@@ -74,6 +81,7 @@ export const FORMATOS: Formato[] = [
   {
     id: "inter-extrato",
     nome: "Extrato de conta do Inter",
+    banco: "Banco Inter",
     origem: "csv_conta",
     dialeto: { separador: ";", aspas: false },
     colunas: {
@@ -94,6 +102,7 @@ export const FORMATOS: Formato[] = [
   {
     id: "inter-fatura",
     nome: "Fatura do cartão do Inter",
+    banco: "Banco Inter",
     origem: "csv_cartao",
     dialeto: { separador: ",", aspas: true },
     colunas: {
@@ -120,12 +129,14 @@ export const FORMATOS: Formato[] = [
  * hora manda `Descricao`.
  */
 export function normalizarNomeDeColuna(nome: string): string {
-  return nome
-    .normalize("NFD")
-    // Escrito como escapes, e não com os caracteres combinantes literais:
-    // acento solto num arquivo-fonte é invisível e some em copiar e colar.
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    nome
+      .normalize("NFD")
+      // Escrito como escapes, e não com os caracteres combinantes literais:
+      // acento solto num arquivo-fonte é invisível e some em copiar e colar.
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }

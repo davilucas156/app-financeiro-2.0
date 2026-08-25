@@ -69,36 +69,12 @@ export function TelaDeCategorias({
       </Card>
 
       {grupos.map(({ pote, categorias: doPote }) => (
-        <section key={pote.id} className="mt-6">
-          <div className="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="size-2 rounded-full"
-              style={estiloDoPote(pote.cor)}
-            />
-            <h2 className="font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
-              {pote.emoji} {pote.nome}
-            </h2>
-            <span className="font-mono text-[10px] text-dim2">
-              {doPote.length === 0
-                ? "sem categoria"
-                : doPote.length === 1
-                  ? "1 categoria"
-                  : `${doPote.length} categorias`}
-            </span>
-          </div>
-
-          {doPote.map((categoria) => (
-            <CartaoDaCategoria
-              key={categoria.id}
-              categoria={categoria}
-              pote={pote}
-              potes={potes}
-            />
-          ))}
-
-          <NovaCategoria pote={pote} potes={potes} />
-        </section>
+        <PoteRecolhivel
+          key={pote.id}
+          pote={pote}
+          categorias={doPote}
+          potes={potes}
+        />
       ))}
 
       <p className="mt-8 text-[11px] leading-relaxed text-dim">
@@ -169,5 +145,106 @@ function NovaCategoria({
         rotuloDoBotao="Criar"
       />
     </Card>
+  );
+}
+
+/**
+ * Um pote e o que há dentro dele, recolhível (spec 09, tarefa B1).
+ *
+ * ## Por que recolhido é o padrão
+ *
+ * O seed cria **26 categorias em 9 potes**. Com os cabeçalhos e os "+ Nova
+ * categoria", são ~44 blocos empilhados numa tela de 360px — antes de o usuário
+ * criar a primeira categoria dele. A tela existe para achar uma categoria, e
+ * era isso que ela fazia pior: o único jeito de achar era rolar.
+ *
+ * Recolhida, ela é uma lista de nove linhas que cabe na tela inteira.
+ *
+ * ## Recolher não é esconder
+ *
+ * ⚠ **Os nove potes continuam listados, inclusive os vazios.** É a B5 da spec
+ * 05, e ela não expira: se a tela derivasse os potes das categorias, o pote sem
+ * categoria nenhuma sumiria justamente da única tela onde daria para criar uma
+ * dentro dele — e ficaria inalcançável para sempre.
+ *
+ * Recolhido, o pote vazio fica **mais** visível: "sem categoria" é a única coisa
+ * escrita na linha dele, no meio de outras oito que trazem número.
+ *
+ * ⚠ **A contagem fica no cabeçalho porque é o que sobra.** Fechado, ela é a
+ * única informação disponível — e "4 categorias" é exatamente o que decide se
+ * vale abrir.
+ *
+ * ## O estado não é lembrado entre visitas
+ *
+ * Guardar exigiria cookie ou `localStorage` para uma tela que se visita
+ * raramente, e o preço de errar é abrir com um pote aberto que não é o que a
+ * pessoa veio ver. Criar uma categoria **não** fecha o pote: o `useState` mora
+ * aqui e a chave é o id do pote, então a revalidação do servidor não o remonta.
+ */
+function PoteRecolhivel({
+  pote,
+  categorias,
+  potes,
+}: {
+  pote: PoteNaGestao;
+  categorias: CategoriaNaGestao[];
+  potes: PoteNaGestao[];
+}) {
+  const [aberto, setAberto] = useState(false);
+
+  const contagem =
+    categorias.length === 0
+      ? "sem categoria"
+      : categorias.length === 1
+        ? "1 categoria"
+        : `${categorias.length} categorias`;
+
+  return (
+    <section className="mt-2">
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        className="flex min-h-11 w-full items-center gap-2 rounded-card border border-border bg-card px-4 py-2.5 text-left transition-colors hover:bg-card2"
+      >
+        <span
+          aria-hidden="true"
+          className="size-2 shrink-0 rounded-full"
+          style={estiloDoPote(pote.cor)}
+        />
+        <h2 className="min-w-0 flex-1 font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
+          {pote.emoji} {pote.nome}
+        </h2>
+        <span className="shrink-0 font-mono text-[10px] text-dim2">
+          {contagem}
+        </span>
+        {/*
+          A seta gira em vez de trocar de desenho: quem já viu a de cima
+          reconhece a de baixo como a mesma coisa virada, e não como outro
+          botão.
+        */}
+        <span
+          aria-hidden="true"
+          className={`shrink-0 text-[10px] text-dim transition-transform ${aberto ? "rotate-90" : ""}`}
+        >
+          ▶
+        </span>
+      </button>
+
+      {aberto && (
+        <div className="mt-2">
+          {categorias.map((categoria) => (
+            <CartaoDaCategoria
+              key={categoria.id}
+              categoria={categoria}
+              pote={pote}
+              potes={potes}
+            />
+          ))}
+
+          <NovaCategoria pote={pote} potes={potes} />
+        </div>
+      )}
+    </section>
   );
 }

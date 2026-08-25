@@ -35,6 +35,12 @@ const ehRotaProtegida = createRouteMatcher([
   // assim entra: rota interna desprotegida é buraco por hábito, não por
   // consequência. E a tela de amanhã que cair aqui vai herdar a proteção.
   "/configuracoes(.*)",
+  // A spec 09 tirou o comparativo do fim do painel e deu rota a ele. Também
+  // fora do menu, também protegida.
+  "/comparativo(.*)",
+  // A spec 09 trouxe `/passos`, a ajuda de como pegar o extrato. Não lê dado
+  // nenhum, e entra pelo mesmo motivo da `/configuracoes`.
+  "/passos(.*)",
   // Onboarding: já exige usuário autenticado, mas não aparece no menu.
   "/bem-vindo(.*)",
 ]);

@@ -38,5 +38,20 @@ export async function prepararConta(
   // ⚠ **Fora do `try`.** O `redirect()` do Next funciona lançando uma
   // exceção; dentro do bloco acima, o `catch` a engoliria e a tela mostraria
   // "erro" logo depois de gravar tudo com sucesso.
-  redirect("/dashboard");
+  //
+  /*
+   * ⚠ **Vai para `/passos` e não para `/dashboard`** (spec 09, tarefa C2).
+   *
+   * A tela de boas-vindas explica o **método**: os potes, os percentuais, o que
+   * fica fora do rateio. Depois dela, o painel está vazio — e o botão que ele
+   * oferece pede um arquivo que a pessoa ainda não tem.
+   *
+   * O passo que falta acontece **fora do app**, no aplicativo do banco, e é o
+   * único que ninguém adivinha. Mandar direto para o painel era entregar uma
+   * tela em branco a quem acabou de entender a ideia e ainda não sabe o gesto.
+   *
+   * A `/passos` termina com "Enviar extrato", então o caminho até o painel não
+   * ficou mais longo: ficou explicado.
+   */
+  redirect("/passos");
 }

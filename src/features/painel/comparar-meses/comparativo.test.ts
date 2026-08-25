@@ -130,7 +130,7 @@ describe("a frase diz sobre quantos meses está falando", () => {
 
     if (!r.media.pode) throw new Error("deveria comparar");
     expect(r.media.mesesNaMedia).toBe(3);
-    expect(r.media.frase).toBe("média de 3 meses");
+    expect(r.media.frase).toBe("comparado com a média de 3 meses");
   });
 });
 
@@ -215,10 +215,7 @@ describe("a série e a lista de potes", () => {
     );
 
     expect(r.media).toMatchObject({ pode: true, mesesNaMedia: 1 });
-    expect(r.linhas[0].serie.map((v) => v.mes)).toEqual([
-      "2026-04",
-      "2026-05",
-    ]);
+    expect(r.linhas[0].serie.map((v) => v.mes)).toEqual(["2026-04", "2026-05"]);
   });
 
   it("a série sai em ordem, mesmo com o histórico embaralhado", () => {

@@ -2,7 +2,8 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/09-telas-longas-e-primeiro-passo.md`
-**Status:** aguardando aprovação do Davi
+**Status:** as três partes entregues e no ar. Falta o Davi dizer se o painel
+mais curto melhorou, ou se ele sente falta do comparativo ali embaixo.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -51,7 +52,7 @@ painel ficar **mais rápido**, não só mais curto.
 
 ## Parte 1 — O comparativo vira tela
 
-### A1 · A rota `/comparativo`
+### A1 ✅ · A rota `/comparativo`
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `app/(app)/comparativo/page.tsx`, `src/proxy.ts`
 **Pronto quando:** a tela existe, lê o histórico de verdade e tem o "← Painel".
@@ -63,7 +64,7 @@ sobre todos.
 não vem da URL: é o **mês mais recente da conta**, e a tela diz qual é. Sem
 dizer, "este mês contra a média" vira uma comparação sem sujeito.
 
-### A2 · O painel encolhe, e o caminho fica onde estava
+### A2 ✅ · O painel encolhe, e o caminho fica onde estava
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `painel/painel-do-mes/TelaDoPainel.tsx`,
 `app/(app)/dashboard/page.tsx`
@@ -75,11 +76,17 @@ produz ("comparado com maio", "a média de 3 meses"), porque uma linha de
 resultado é o que faz alguém tocar. Um "Ver comparativo →" sozinho é um botão
 que ninguém aperta.
 
-⚠ **Então o painel ainda precisa do histórico?** Não do histórico inteiro — só
-da frase. A decisão de onde ela é calculada é da Etapa 3 (Plan), e a régua é:
-**o painel não pode voltar a fazer a consulta grande.**
+✅ **Resolvido assim:** `mediaDoComparativo` virou export próprio de
+`comparativo.ts`, e pede só `{ mes, coberturaSaiuPct }`. O painel a chama com o
+`coberturaDosMeses.service.ts` — uma consulta sem `join` nenhum, que já existia
+dentro do `historicoDosMeses` e agora é chamada pelos dois. A soma por pote,
+que era a parte cara, saiu do painel.
 
-### A3 · O estado de um mês só
+⚠ **A frase mudou de texto junto.** Era "média de 3 meses"; virou "comparado
+com a média de 3 meses", porque agora ela é lida depois do nome de um mês nos
+dois lugares. "Julho/2026 média de 3 meses" não é uma frase.
+
+### A3 ✅ · O estado de um mês só
 **Camada:** FRONT-VISUAL
 **Pronto quando:** com um mês na conta, o painel **não** mostra o bloco e a
 `/comparativo` explica por quê.
@@ -92,7 +99,7 @@ quem tem um mês só é oferecer uma tela vazia.
 
 ## Parte 2 — As categorias se recolhem
 
-### B1 · O pote vira um botão que abre e fecha
+### B1 ✅ · O pote vira um botão que abre e fecha
 **Camada:** FRONT-VISUAL
 **Arquivo:** `categorias/gerir-categorias/TelaDeCategorias.tsx`
 **Pronto quando:** os nove potes aparecem recolhidos, com a contagem, e abrem
@@ -106,21 +113,22 @@ para criar uma dentro dele. É a B5 da spec 05, e ela não expira.
 ⚠ **A contagem fica no cabeçalho.** Recolhido, ele é a única informação que
 sobra — e "4 categorias" é o que decide se vale abrir.
 
-### B2 · Criar categoria continua funcionando com o pote recolhido
+### B2 ✅ · Criar categoria continua funcionando com o pote recolhido
 **Camada:** FRONT-INTEGRADO
 **Pronto quando:** criar uma categoria dentro de um pote **abre** aquele pote e
 mostra a categoria nova.
 
-⚠ **É o caso que o recolher pode quebrar em silêncio.** O formulário vive dentro
-do pote; se ele gravar e o pote continuar fechado, a tela não muda e a pessoa
-tenta de novo. Criar duas categorias iguais por causa de um acordeão seria um
-defeito caro para uma melhoria de rolagem.
+✅ **Não havia o que quebrar, e vale registrar por quê.** O "+ Nova categoria"
+mora **dentro** do corpo recolhível, então só é alcançável com o pote aberto. E o
+`useState` do aberto/fechado mora no `PoteRecolhivel`, com `key={pote.id}`: a
+revalidação do servidor depois de criar **não** remonta o componente, e o pote
+continua aberto mostrando a categoria nova.
 
 ---
 
 ## Parte 3 — O primeiro passo
 
-### C1 · A tela "Como pegar o extrato"
+### C1 ✅ · A tela "Como pegar o extrato"
 **Camada:** FRONT-VISUAL
 **Arquivos:** `app/(app)/passos/page.tsx`,
 `features/ajuda/pegar-o-extrato/PassoAPasso.tsx`, `src/proxy.ts`
@@ -141,7 +149,19 @@ na soma e mentiroso nos potes. É o que a conferência cruzada de
 ⚠ **Sem captura de tela.** O app do banco muda de layout sozinho, e uma imagem
 desatualizada é pior que texto: ela parece atual.
 
-### C2 · Os três caminhos até ela
+✅ **Desenhada já para o multibanco**, que o Davi anunciou junto com o "pode
+seguir". `FORMATOS` ganhou um campo `banco`, e a lista de bancos da tela é
+**derivada** dele — há teste afirmando isso. Consequências:
+
+- escrever "aceitamos Inter" à mão viraria mentira nos dois sentidos: calada
+  quando entrasse um banco, mentirosa quando saísse um;
+- quando o primeiro formato novo entrar, o banco aparece na tela **sozinho**, e
+  o que faltará é só escrever os passos dele;
+- um banco sem passos escritos **não some**: aparece dizendo que o app lê o
+  arquivo e que o caminho ainda não foi descrito. Silêncio ali faria a pessoa
+  concluir que o banco dela não serve.
+
+### C2 ✅ · Os três caminhos até ela
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `onboarding/concluir-onboarding/`, `app/(app)/dashboard/page.tsx`,
 `app/(app)/upload/page.tsx`
@@ -156,7 +176,7 @@ só existe no primeiro acesso não está lá na hora em que se precisa dele.
 
 ## Fase D — Deploy
 
-### D1 · Publicar
+### D1 ✅ · Publicar
 **Camada:** INFRA
 **Pronto quando:** `npx vercel deploy --prod --yes`, e o Davi diz se o painel
 mais curto melhorou ou se ele sente falta do comparativo ali embaixo.
