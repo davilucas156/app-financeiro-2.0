@@ -2,8 +2,8 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/06-veredito-e-insights.md` (pendências decididas)
-**Status:** ✅ portão visual aprovado pelo Davi. Fases A, B, C e D concluídas.
-Falta a E1 — que aqui não é confirmação de que funcionou, é revisão de texto.
+**Status:** ✅ **concluída.** Todas as fases entregues; a E1 confirmada pelo
+Davi — ele leu o veredito do mês fechado e disse que a frase está certa.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -195,7 +195,7 @@ linha honesta e o caminho para subir outro extrato.
 
 ## Fase E — Deploy
 
-### E1 · Publicar e ler o veredito do mês fechado
+### E1 ✅ · Publicar e ler o veredito do mês fechado
 **Camada:** INFRA
 **Pronto quando:** deploy por `npx vercel deploy --prod --yes` e o Davi lê, no
 celular, o veredito do mês que ele já fechou — e diz se a frase está certa.
@@ -203,6 +203,10 @@ celular, o veredito do mês que ele já fechou — e diz se a frase está certa.
 ⚠ **A E1 aqui não é confirmação de que funcionou; é revisão de texto.** Ele é a
 única pessoa que sabe se "o mês saiu bem acima da renda declarada" é a coisa
 certa a dizer sobre aquele mês.
+
+✅ **Aprovada pelo Davi.** A frase está certa sobre o mês dele — o que valida
+junto a ordem de gravidade da A1: com os dados de hoje o veredito que sai é o
+degrau 2, exatamente como a descoberta 2 previu.
 
 ---
 
