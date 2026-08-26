@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/10-tamanho-da-letra.md`
-**Status:** a escrever
+**Status:** as cinco fases entregues e no ar. Falta o Davi dizer se "Maior" e maior o bastante, ou se um quarto degrau faria falta.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -52,7 +52,7 @@ que não precisa daquele lembrete.
 
 ## Fase A — o vocabulário (o app não muda de aparência)
 
-### A1 · Os quatro tokens novos
+### A1 ✅ · Os quatro tokens novos
 
 **Camada:** INFRA
 **Arquivos:** `src/app/globals.css`
@@ -81,7 +81,7 @@ moveria 97 lugares de uma vez, e o diff da A2 deixaria de ser conferível.
 levasse `normal`, as duas letras do cabeçalho do pote mudariam de entrelinha na
 A3 — que é justamente a tarefa que não pode mudar nada.
 
-### A2 · Os 97 px cravados viram token
+### A2 ✅ · Os 97 px cravados viram token
 
 **Camada:** FRONT-VISUAL
 **Arquivos:** os 39 `.tsx` que a descoberta 1 listou
@@ -107,7 +107,7 @@ letra. E ficam de fora `text-[22px]` e `text-[28px]`, que estão acima da régua
 `/categorias`, `/regras`, `/comparativo`, `/passos` e `/configuracoes` no tamanho
 Padrão e comparar com antes. Nada pode ter se mexido.
 
-### A3 · A exceção do cabeçalho do pote
+### A3 ✅ · A exceção do cabeçalho do pote
 
 **Camada:** FRONT-VISUAL
 **Arquivos:** `src/features/painel/painel-do-mes/CartaoDoPote.tsx`
@@ -122,7 +122,7 @@ configuração de parecer quebrada no painel.
 diferentes.** Sem ele, a próxima pessoa "conserta" a inconsistência e a linha
 volta a quebrar em "Maior".
 
-### A4 · O teste que impede a configuração de vazar
+### A4 ✅ · O teste que impede a configuração de vazar
 
 **Camada:** BACK (teste puro)
 **Arquivos:** `src/features/aparencia/letra/escalaDaLetra.test.ts`
@@ -141,7 +141,7 @@ num documento que ela não sabe que existe.
 
 ## Fase B — a preferência como valor
 
-### B1 · `letra.ts` — e a decisão sobre o esqueleto repetido
+### B1 ✅ · `letra.ts` — e a decisão sobre o esqueleto repetido
 
 **Camada:** BACK
 **Arquivos:** `src/features/aparencia/letra/letra.ts` + `letra.test.ts`
@@ -166,7 +166,7 @@ que já sei que quero compartilhar de qualquer jeito é `VALIDADE_DO_COOKIE_SEG`
 é literalmente o mesmo número **pelo mesmo motivo**, e isso é decisão repetida,
 não forma repetida.
 
-### B2 · `letraAtual.ts`
+### B2 ✅ · `letraAtual.ts`
 
 **Camada:** BACK
 **Arquivos:** `src/features/aparencia/letra/letraAtual.ts`
@@ -180,7 +180,7 @@ que marca a opção. Exatamente o motivo pelo qual `temaAtual.ts` existe.
 
 ## Fase C — a escala liga
 
-### C1 · Os dois blocos de tamanho no CSS
+### C1 ✅ · Os dois blocos de tamanho no CSS
 
 **Camada:** INFRA
 **Arquivos:** `src/app/globals.css`
@@ -196,7 +196,7 @@ degraus, não um adiamento.
 e ela funciona por omissão — o que é frágil o bastante para merecer comentário no
 arquivo.
 
-### C2 · O `<html>` carimba `data-letra`
+### C2 ✅ · O `<html>` carimba `data-letra`
 
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `src/app/layout.tsx`
@@ -213,7 +213,7 @@ não muda a moldura que o sistema desenha — foi cor que mudava.
 
 ## Fase D — a tela
 
-### D1 · `escolherLetra.action.ts`
+### D1 ✅ · `escolherLetra.action.ts`
 
 **Camada:** BACK
 **Arquivos:** `src/features/aparencia/escolher-letra/escolherLetra.action.ts`
@@ -225,7 +225,7 @@ garantia de compilação, e uma action é um endpoint HTTP**. Sem a limpeza,
 `escolherLetra("<script>")` grava a string no cookie — e ela volta carimbada num
 atributo do `<html>` na requisição seguinte.
 
-### D2 · `SeletorDeLetra.tsx`
+### D2 ✅ · `SeletorDeLetra.tsx`
 
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `src/features/aparencia/escolher-letra/SeletorDeLetra.tsx`
@@ -243,7 +243,7 @@ que o `SeletorDeTema` acabou.
 ⚠ **Sem mensagem de erro**, como no tema: a mudança já se vê, e um aviso vermelho
 embaixo de uma tela que visivelmente funcionou confunde mais do que informa.
 
-### D3 · A segunda seção da `/configuracoes`
+### D3 ✅ · A segunda seção da `/configuracoes`
 
 **Camada:** FRONT-INTEGRADO
 **Arquivos:** `src/features/aparencia/escolher-tema/TelaDeConfiguracoes.tsx`,
@@ -266,7 +266,7 @@ mistura ao diff que interessa. Fica anotado como pendência.
 
 ## Fase E — o que aperta em "Maior"
 
-### E1 · Conferir as linhas de dois lados a 360px
+### E1 ✅ · Conferir as linhas de dois lados a 360px
 
 **Camada:** FRONT-VISUAL
 **Arquivos:** a decidir — depende do que apertar
