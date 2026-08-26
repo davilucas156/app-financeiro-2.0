@@ -72,12 +72,12 @@ export function Sugestoes({
                   <span className="block text-sm font-bold text-text">
                     {categoria.emoji} {categoria.nome}
                   </span>
-                  <span className="mt-0.5 block truncate text-[11px] text-dim">
+                  <span className="mt-0.5 block truncate text-2xs text-dim">
                     {s.porque}
                   </span>
                 </span>
 
-                <span className="shrink-0 font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
+                <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim2 uppercase">
                   {ROTULO[s.fonte]}
                 </span>
               </button>

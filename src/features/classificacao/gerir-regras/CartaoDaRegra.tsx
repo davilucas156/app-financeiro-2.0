@@ -44,7 +44,7 @@ export function CartaoDaRegra({
     <Card className="mt-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <p className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             {rotuloDoTipo(regra.criterio)}
           </p>
           <p className="mt-1 font-mono text-sm break-words text-text">
@@ -141,7 +141,7 @@ function Editor({
     <div className="mt-4 border-t border-border pt-4">
       {editavel ? (
         <label className="block">
-          <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             Procurar por
           </span>
           {/*
@@ -165,7 +165,7 @@ function Editor({
       )}
 
       <label className="mt-3 block">
-        <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+        <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
           Mandar para
         </span>
         <select
@@ -186,7 +186,7 @@ function Editor({
         </select>
       </label>
 
-      <p className="mt-3 text-[11px] leading-relaxed text-dim">
+      <p className="mt-3 text-2xs leading-relaxed text-dim">
         Vale daqui para frente. Os {regra.jaClassificou} lançamentos que ela já
         classificou ficam como estão.
       </p>
@@ -201,7 +201,7 @@ function Editor({
       </div>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}
@@ -248,7 +248,7 @@ function Exclusao({
       </div>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}

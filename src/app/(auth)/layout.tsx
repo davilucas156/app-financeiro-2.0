@@ -20,7 +20,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
     >
       <div className="w-full max-w-sm">
         <header className="mb-8">
-          <p className="font-mono text-[9px] font-bold tracking-[3px] text-primary uppercase">
+          <p className="font-mono text-4xs font-bold tracking-[3px] text-primary uppercase">
             Painel Financeiro
           </p>
           <h1 className="mt-1.5 text-[28px] leading-none font-extrabold tracking-tight">

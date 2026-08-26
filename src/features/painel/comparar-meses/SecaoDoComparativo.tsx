@@ -111,7 +111,7 @@ export function SecaoDoComparativo({
 function Frase({ media, mes }: { media: Comparativo["media"]; mes: string }) {
   if (media.pode) {
     return (
-      <p className="font-mono text-[10px] leading-relaxed text-dim">
+      <p className="font-mono text-3xs leading-relaxed text-dim">
         Cada pote, mês a mês.{" "}
         <span className="text-text">{rotuloDeMes(mes)}</span>{" "}
         <span className="text-text">{media.frase}</span> — a média é a dos meses
@@ -158,7 +158,7 @@ function Diferenca({ linha }: { linha: LinhaDoComparativo }) {
 
   if (linha.diferencaCentavos === 0) {
     return (
-      <span className="shrink-0 font-mono text-[10px] text-dim">
+      <span className="shrink-0 font-mono text-3xs text-dim">
         igual à média
       </span>
     );
@@ -168,7 +168,7 @@ function Diferenca({ linha }: { linha: LinhaDoComparativo }) {
 
   return (
     <span
-      className={`shrink-0 font-mono text-[10px] ${acima ? "text-red" : "text-green"}`}
+      className={`shrink-0 font-mono text-3xs ${acima ? "text-red" : "text-green"}`}
     >
       {acima ? "+" : "−"}
       {emReais(Math.abs(linha.diferencaCentavos))}
@@ -202,7 +202,7 @@ function BarraDoMes({
   return (
     <div className="flex items-center gap-2">
       <span
-        className={`w-14 shrink-0 font-mono text-[10px] ${atual ? "text-text" : "text-dim"}`}
+        className={`w-14 shrink-0 font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
       >
         {nomeDoMes(valor.mes).slice(0, 3)}
         {comAno && `/${valor.mes.slice(2, 4)}`}
@@ -221,7 +221,7 @@ function BarraDoMes({
       </span>
 
       <span
-        className={`w-20 shrink-0 text-right font-mono text-[10px] ${atual ? "text-text" : "text-dim"}`}
+        className={`w-20 shrink-0 text-right font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
       >
         {emReais(valor.totalCentavos)}
       </span>
@@ -234,7 +234,7 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
 
   return (
     <div className="flex items-center gap-2 pt-1">
-      <span className="w-14 shrink-0 font-mono text-[10px] text-dim2">
+      <span className="w-14 shrink-0 font-mono text-3xs text-dim2">
         média
       </span>
       <span className="h-2 flex-1 overflow-hidden rounded-full">
@@ -243,7 +243,7 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
           style={{ width: `${Math.max(0, Math.min(100, largura))}%` }}
         />
       </span>
-      <span className="w-20 shrink-0 text-right font-mono text-[10px] text-dim2">
+      <span className="w-20 shrink-0 text-right font-mono text-3xs text-dim2">
         {emReais(centavos)}
       </span>
     </div>

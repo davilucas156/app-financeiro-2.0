@@ -53,7 +53,7 @@ export function CartaoDaCategoria({
           {categoria.emoji} {categoria.nome}
         </span>
         <span
-          className={`shrink-0 font-mono text-[10px] ${nunca ? "text-dim2" : "text-dim"}`}
+          className={`shrink-0 font-mono text-3xs ${nunca ? "text-dim2" : "text-dim"}`}
         >
           {oQueDependeDela(categoria)}
         </span>
@@ -79,7 +79,7 @@ export function CartaoDaCategoria({
       )}
 
       {modo === "vendo" && !podeMover(categoria) && (
-        <p className="mt-2 text-[11px] leading-relaxed text-dim2">
+        <p className="mt-2 text-2xs leading-relaxed text-dim2">
           Não dá para mover de pote com lançamento dentro: isso mudaria o rateio
           de todos os meses anteriores de uma vez.
         </p>
@@ -166,7 +166,7 @@ function Mudanca({
   return (
     <div className="mt-4 border-t border-border pt-4">
       <label className="block">
-        <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+        <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
           Mover para
         </span>
         <select
@@ -184,7 +184,7 @@ function Mudanca({
         </select>
       </label>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-dim">
+      <p className="mt-2 text-2xs leading-relaxed text-dim">
         Ela está vazia, então não há passado para reescrever. É por isso que
         mover é permitido agora e deixa de ser assim que o primeiro lançamento
         cair aqui.
@@ -207,7 +207,7 @@ function Mudanca({
       </div>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}
@@ -373,7 +373,7 @@ function Exclusao({
       </div>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}

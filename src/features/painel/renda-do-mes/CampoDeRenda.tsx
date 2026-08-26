@@ -53,7 +53,7 @@ export function CampoDeRenda({
     <Card className="mt-3 border-border2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <p className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             Renda do mês
           </p>
           <p className="mt-1 font-mono text-lg font-medium text-text">
@@ -70,7 +70,7 @@ export function CampoDeRenda({
         </button>
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-dim">
+      <p className="mt-2 text-2xs leading-relaxed text-dim">
         {renda === null ? (
           "Sem ela não dá para calcular meta nenhuma — e inventar uma base seria inventar a sua renda. Os potes abaixo mostram o gasto sem barra."
         ) : renda.herdada ? (
@@ -121,7 +121,7 @@ function Editor({
   return (
     <Card className="mt-3 border-primary/30">
       <label className="block">
-        <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+        <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
           Renda de {rotuloDeMes(mes)}
         </span>
         <div className="mt-1.5 flex items-center gap-2 rounded-card border border-border2 bg-bg px-3">
@@ -143,7 +143,7 @@ function Editor({
       {/* O que você digitou, do jeito que vai ser gravado. Digitar "1.200" e
           ver "R$ 1.200,00" antes de salvar é o que impede o zero a mais de
           passar despercebido. */}
-      <p className="mt-2 font-mono text-[11px] text-dim">
+      <p className="mt-2 font-mono text-2xs text-dim">
         {centavos === null ? "—" : `vira ${emReais(centavos)}`}
       </p>
 
@@ -168,7 +168,7 @@ function Editor({
       </div>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}

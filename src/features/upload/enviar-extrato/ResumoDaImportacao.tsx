@@ -116,7 +116,7 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
             className="flex items-center justify-between gap-3 rounded-pote border border-border bg-card px-4 py-3"
           >
             <span className="min-w-0 truncate text-xs font-bold">{a.rotulo}</span>
-            <span className="shrink-0 font-mono text-[11px] text-dim">
+            <span className="shrink-0 font-mono text-2xs text-dim">
               {a.entraram} lançamentos
             </span>
           </div>
@@ -209,7 +209,7 @@ function Numero({
 }) {
   return (
     <div className="px-5 py-4">
-      <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+      <p className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
         {rotulo}
       </p>
       <p

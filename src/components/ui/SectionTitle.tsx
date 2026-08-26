@@ -13,7 +13,7 @@ export function SectionTitle({
 }) {
   return (
     <div className={cn("mt-7 mb-4 flex items-center gap-3", className)}>
-      <h2 className="font-mono text-[9px] font-bold tracking-[2.5px] whitespace-nowrap text-dim uppercase">
+      <h2 className="font-mono text-4xs font-bold tracking-[2.5px] whitespace-nowrap text-dim uppercase">
         {children}
       </h2>
       <span className="bg-border2 h-px flex-1" />

@@ -140,7 +140,7 @@ export function ListaDeCategorias({
                   className="size-2 rounded-full"
                   style={estiloDoPote(pote.cor)}
                 />
-                <h3 className="font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
+                <h3 className="font-mono text-3xs font-bold tracking-[1.5px] text-dim uppercase">
                   {pote.emoji} {pote.nome}
                 </h3>
               </div>
@@ -197,12 +197,12 @@ function BotaoDeCategoria({
         {categoria.emoji} {categoria.nome}
       </span>
       {atual ? (
-        <span className="shrink-0 font-mono text-[9px] font-bold tracking-[1px] text-primary uppercase">
+        <span className="shrink-0 font-mono text-4xs font-bold tracking-[1px] text-primary uppercase">
           atual
         </span>
       ) : (
         mostrarPote && (
-          <span className="shrink-0 font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
+          <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim2 uppercase">
             {categoria.pote.nome}
           </span>
         )

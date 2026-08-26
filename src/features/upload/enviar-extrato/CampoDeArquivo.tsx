@@ -68,7 +68,7 @@ export function CampoDeArquivo({
           <span className="flex items-center gap-2">
             <span className="text-sm font-bold">{rotulo}</span>
             {opcional && (
-              <span className="font-mono text-[9px] tracking-[1px] text-dim2 uppercase">
+              <span className="font-mono text-4xs tracking-[1px] text-dim2 uppercase">
                 opcional
               </span>
             )}
@@ -79,7 +79,7 @@ export function CampoDeArquivo({
               {/* `truncate` e não quebra de linha: nome de arquivo de banco é
                   longo e empurraria o tamanho para fora da tela em 360px. */}
               <span className="truncate text-xs text-text">{arquivo.nome}</span>
-              <span className="shrink-0 font-mono text-[10px] text-dim2">
+              <span className="shrink-0 font-mono text-3xs text-dim2">
                 {arquivo.tamanho}
               </span>
             </span>
@@ -91,7 +91,7 @@ export function CampoDeArquivo({
         </span>
 
         {travado && (
-          <span className="font-mono text-[9px] tracking-[1px] text-dim uppercase">
+          <span className="font-mono text-4xs tracking-[1px] text-dim uppercase">
             enviando
           </span>
         )}

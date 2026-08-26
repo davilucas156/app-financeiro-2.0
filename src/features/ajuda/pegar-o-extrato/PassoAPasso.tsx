@@ -31,7 +31,7 @@ export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
     <>
       <Link
         href={voltarPara}
-        className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
+        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
       >
         ← Voltar
       </Link>
@@ -68,7 +68,7 @@ export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
       {bancos.map(({ banco, passos }) => (
         <section key={banco} className="mt-8">
           <h2 className="text-sm font-bold">{banco}</h2>
-          <p className="mt-1 font-mono text-[10px] text-dim">
+          <p className="mt-1 font-mono text-3xs text-dim">
             {arquivosDoBanco(banco).join(" · ")}
           </p>
 
@@ -85,7 +85,7 @@ export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
                   <Card className="flex gap-3 p-4">
                     <span
                       aria-hidden="true"
-                      className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-bold text-primary"
+                      className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-2xs font-bold text-primary"
                     >
                       {i + 1}
                     </span>

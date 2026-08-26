@@ -72,7 +72,7 @@ export function FormularioDeCategoria({
     <div className="mt-4 border-t border-border pt-4">
       <div className="flex gap-2">
         <label className="w-16 shrink-0">
-          <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             Emoji
           </span>
           <input
@@ -85,7 +85,7 @@ export function FormularioDeCategoria({
         </label>
 
         <label className="min-w-0 flex-1">
-          <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             Nome
           </span>
           <input
@@ -116,7 +116,7 @@ export function FormularioDeCategoria({
 
       {potes && (
         <label className="mt-3 block">
-          <span className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <span className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             No pote
           </span>
           {/*
@@ -136,7 +136,7 @@ export function FormularioDeCategoria({
               </option>
             ))}
           </select>
-          <span className="mt-1.5 block text-[11px] leading-relaxed text-dim">
+          <span className="mt-1.5 block text-2xs leading-relaxed text-dim">
             Pote é obrigatório: categoria fora de pote não entra em rateio
             nenhum, e um gasto que não cai em pote é um gasto que o painel não
             conta.
@@ -145,7 +145,7 @@ export function FormularioDeCategoria({
       )}
 
       {problema && (
-        <p className="mt-3 text-[11px] leading-relaxed text-gold">{problema}</p>
+        <p className="mt-3 text-2xs leading-relaxed text-gold">{problema}</p>
       )}
 
       <div className="mt-4 flex gap-2">
@@ -169,7 +169,7 @@ export function FormularioDeCategoria({
       </div>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}

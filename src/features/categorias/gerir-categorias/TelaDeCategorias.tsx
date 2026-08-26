@@ -51,7 +51,7 @@ export function TelaDeCategorias({
       */}
       <Link
         href="/dashboard"
-        className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
+        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
       >
         ← Painel
       </Link>
@@ -77,7 +77,7 @@ export function TelaDeCategorias({
         />
       ))}
 
-      <p className="mt-8 text-[11px] leading-relaxed text-dim">
+      <p className="mt-8 text-2xs leading-relaxed text-dim">
         Não dá para criar ou apagar pote aqui, e é de propósito: os potes são a
         espinha do método e os percentuais somam 100% — criar um mexe no rateio
         de todos os outros. Isso é item próprio da fase 2.{" "}
@@ -212,10 +212,10 @@ function PoteRecolhivel({
           className="size-2 shrink-0 rounded-full"
           style={estiloDoPote(pote.cor)}
         />
-        <h2 className="min-w-0 flex-1 font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
+        <h2 className="min-w-0 flex-1 font-mono text-3xs font-bold tracking-[1.5px] text-dim uppercase">
           {pote.emoji} {pote.nome}
         </h2>
-        <span className="shrink-0 font-mono text-[10px] text-dim2">
+        <span className="shrink-0 font-mono text-3xs text-dim2">
           {contagem}
         </span>
         {/*
@@ -225,7 +225,7 @@ function PoteRecolhivel({
         */}
         <span
           aria-hidden="true"
-          className={`shrink-0 text-[10px] text-dim transition-transform ${aberto ? "rotate-90" : ""}`}
+          className={`shrink-0 text-3xs text-dim transition-transform ${aberto ? "rotate-90" : ""}`}
         >
           ▶
         </span>

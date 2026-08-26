@@ -27,7 +27,7 @@ export function TelaDeConfiguracoes({ tema }: { tema: Tema }) {
       */}
       <Link
         href="/dashboard"
-        className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
+        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
       >
         ← Painel
       </Link>
@@ -35,7 +35,7 @@ export function TelaDeConfiguracoes({ tema }: { tema: Tema }) {
       <SectionTitle className="mt-2">Configurações</SectionTitle>
 
       <section className="mt-6">
-        <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+        <p className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
           Aparência
         </p>
 

@@ -50,7 +50,7 @@ export function CadastrarUsuario({
           <div className="mt-4 flex flex-wrap items-center gap-4">
             <a
               href={linkSolicitarAcesso()}
-              className="font-mono text-[11px] font-bold text-text underline underline-offset-4"
+              className="font-mono text-2xs font-bold text-text underline underline-offset-4"
             >
               Solicitar acesso
             </a>
@@ -59,7 +59,7 @@ export function CadastrarUsuario({
             <SignOutButton>
               <button
                 type="button"
-                className="font-mono text-[11px] font-bold text-dim underline underline-offset-4 hover:text-text"
+                className="font-mono text-2xs font-bold text-dim underline underline-offset-4 hover:text-text"
               >
                 Sair desta conta
               </button>

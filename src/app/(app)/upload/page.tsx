@@ -37,7 +37,7 @@ export default async function UploadPage() {
         tutorial que só existe no primeiro acesso não está lá na hora em que se
         precisa dele.
       */}
-      <p className="text-[11px] leading-relaxed text-dim">
+      <p className="text-2xs leading-relaxed text-dim">
         Não lembra como baixar o arquivo no banco?{" "}
         <Link href="/passos?de=upload" className="underline underline-offset-4">
           O passo a passo

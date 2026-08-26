@@ -74,12 +74,31 @@ export function CartaoDoPote({
         />
 
         <span className="min-w-0 flex-1">
+          {/*
+            ⚠ **`text-fixo` e não `text-sm`, nas duas linhas abaixo — de
+            propósito, e é a única exceção do app** (spec 10, tarefa A3).
+
+            É o pedido do Davi: *"com exceção das letras dos cards de pote que
+            já são grandes"*. Estas duas **são** as que já são grandes: 14px,
+            contra os 10 e 12 do resto do cartão.
+
+            E são a linha com o orçamento mais apertado do painel. A 360px ela
+            põe nome e valor lado a lado, na mesma linha de base — crescer 40%
+            empurraria "Liberdade Financeira" para a segunda linha, todo mês,
+            em nove cartões.
+
+            ⚠ **A exceção é destas duas, e de mais nada aqui dentro.** A
+            legenda, o "meta …", o insight, as categorias e os lançamentos
+            continuam em tokens que escalam. Uniformizar isto "por
+            consistência" quebra a linha em "Maior" e faz a configuração
+            parecer sem efeito no painel ao mesmo tempo.
+          */}
           <span className="flex items-baseline justify-between gap-3">
-            <span className="text-sm font-bold break-words">
+            <span className="text-fixo font-bold break-words">
               {pote.emoji} {pote.nome}
             </span>
             <span
-              className={`shrink-0 font-mono text-sm font-medium ${cor.valor}`}
+              className={`shrink-0 font-mono text-fixo font-medium ${cor.valor}`}
             >
               {estado === "vazio" ? "—" : emReais(pote.totalCentavos)}
             </span>
@@ -88,10 +107,10 @@ export function CartaoDoPote({
           <Barra estado={estado} fracao={meta.fracao} cor={pote.cor} />
 
           <span className="mt-1.5 flex items-baseline justify-between gap-3">
-            <span className={`font-mono text-[10px] ${cor.legenda}`}>
+            <span className={`font-mono text-3xs ${cor.legenda}`}>
               {legendaDoPote(estado, pote, meta.fracao)}
             </span>
-            <span className="shrink-0 font-mono text-[10px] text-dim2">
+            <span className="shrink-0 font-mono text-3xs text-dim2">
               {meta.metaCentavos !== null &&
                 `meta ${emReais(meta.metaCentavos)}`}
             </span>
@@ -179,7 +198,7 @@ function DentroDoPote({
         <p className="mt-4 text-xs leading-relaxed text-text">{insight}</p>
       )}
 
-      <p className="mt-4 font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+      <p className="mt-4 font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
         Por categoria
       </p>
 
@@ -197,7 +216,7 @@ function DentroDoPote({
         ))}
       </div>
 
-      <p className="mt-5 font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+      <p className="mt-5 font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
         Lançamentos
       </p>
 
@@ -208,7 +227,7 @@ function DentroDoPote({
             className="rounded-pote border border-border bg-card px-3 py-2.5"
           >
             <div className="flex items-baseline justify-between gap-3">
-              <span className="min-w-0 font-mono text-[11px] break-words text-text">
+              <span className="min-w-0 font-mono text-2xs break-words text-text">
                 {l.descricao}
               </span>
               <span
@@ -222,7 +241,7 @@ function DentroDoPote({
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
-              <span className="min-w-0 font-mono text-[10px] break-words text-dim">
+              <span className="min-w-0 font-mono text-3xs break-words text-dim">
                 {diaEMes(l.data)} · {l.categoriaEmoji} {l.categoriaNome}
                 {/*
                   ⚠ **A procedência da C3, na tela** (D3).
@@ -240,7 +259,7 @@ function DentroDoPote({
             </div>
 
             {l.conferir && (
-              <p className="mt-2 text-[10px] leading-relaxed text-gold">
+              <p className="mt-2 text-3xs leading-relaxed text-gold">
                 ⚠ mesmo valor de uma saída deste pote — confira se é reembolso
                 ou a mesma transferência aparecendo duas vezes
               </p>

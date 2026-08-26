@@ -42,7 +42,7 @@ export function ChamadaDoComparativo({
         className="flex min-h-11 items-center gap-3 px-4 py-4 transition-colors hover:bg-card2"
       >
         <span className="min-w-0 flex-1">
-          <span className="block font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+          <span className="block font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
             Comparativo
           </span>
           <span className="mt-1 block text-xs leading-relaxed text-text">

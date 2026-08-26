@@ -165,7 +165,7 @@ function Numero({
 }) {
   return (
     <div className="px-3 py-4 text-center">
-      <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+      <p className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
         {rotulo}
       </p>
       <p className={`mt-1 font-mono text-sm font-medium break-words ${cor}`}>

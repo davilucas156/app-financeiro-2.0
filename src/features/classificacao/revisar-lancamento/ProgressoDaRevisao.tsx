@@ -21,7 +21,7 @@ export function ProgressoDaRevisao({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
-        <span className="font-mono text-[10px] font-bold tracking-[1.5px] text-dim uppercase">
+        <span className="font-mono text-3xs font-bold tracking-[1.5px] text-dim uppercase">
           {rotuloDeMes(mes)}
         </span>
         <span className="font-mono text-xs font-bold text-text">

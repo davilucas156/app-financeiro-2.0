@@ -147,7 +147,7 @@ export function TelaDoPainel({
         errado ou uma categoria no pote errado — a vontade de arrumar nasce
         deste lado, não de um item de menu.
       */}
-      <p className="mt-8 text-[11px] leading-relaxed text-dim">
+      <p className="mt-8 text-2xs leading-relaxed text-dim">
         Categoria com nome errado, repetida ou no pote errado?{" "}
         <Link href="/categorias" className="underline underline-offset-4">
           Arrumar categorias

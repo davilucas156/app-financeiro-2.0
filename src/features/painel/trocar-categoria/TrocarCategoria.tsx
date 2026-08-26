@@ -87,7 +87,7 @@ export function TrocarCategoria({
             setTrocado(false);
             setAberto(true);
           }}
-          className="inline-flex min-h-11 items-center rounded-card border border-border2 px-3 text-[10px] font-bold text-text transition-colors hover:bg-card2"
+          className="inline-flex min-h-11 items-center rounded-card border border-border2 px-3 text-3xs font-bold text-text transition-colors hover:bg-card2"
         >
           Trocar categoria
         </button>
@@ -98,7 +98,7 @@ export function TrocarCategoria({
           para uma categoria do mesmo pote, onde nada se move.
         */}
         {trocado && (
-          <p className="mt-1.5 text-[10px] leading-relaxed text-dim">
+          <p className="mt-1.5 text-3xs leading-relaxed text-dim">
             Trocado. Se errou,{" "}
             <Link href="/revisao" className="text-primary underline">
               dá para desfazer na revisão
@@ -118,7 +118,7 @@ export function TrocarCategoria({
       aria-busy={gravando || undefined}
     >
       {aviso && (
-        <p className="text-[11px] leading-relaxed text-gold">
+        <p className="text-2xs leading-relaxed text-gold">
           ⚠ {aviso}{" "}
           <Link href="/regras" className="underline">
             Ver regras
@@ -147,7 +147,7 @@ export function TrocarCategoria({
       </button>
 
       {erro && (
-        <p role="alert" className="mt-2 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-2 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}

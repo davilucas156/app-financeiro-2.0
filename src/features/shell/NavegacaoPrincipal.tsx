@@ -54,7 +54,7 @@ export function NavegacaoPrincipal({
             className={cn(
               "flex min-h-11 items-center justify-center gap-2 transition-colors",
               variante === "inferior"
-                ? "flex-1 flex-col py-2 text-[10px]"
+                ? "flex-1 flex-col py-2 text-3xs"
                 : "rounded-card px-3 text-xs",
               "font-mono font-bold tracking-wider uppercase",
               ativo ? "text-primary" : "text-dim hover:text-text",

@@ -30,7 +30,7 @@ export function FaixaDoVeredito({ veredito }: { veredito: Veredito | null }) {
 
   return (
     <Card className={`mt-4 border-l-4 ${cor.borda}`}>
-      <p className="font-mono text-[9px] font-bold tracking-[1.5px] text-dim uppercase">
+      <p className="font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">
         O mês em uma frase
       </p>
       <p className={`mt-2 text-sm leading-relaxed ${cor.texto}`}>

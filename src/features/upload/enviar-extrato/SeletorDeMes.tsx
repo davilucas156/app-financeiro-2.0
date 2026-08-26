@@ -39,7 +39,7 @@ export function SeletorDeMes({
     <div className={className}>
       <label
         htmlFor="mes-referencia"
-        className="font-mono text-[9px] font-bold tracking-[2px] text-dim uppercase"
+        className="font-mono text-4xs font-bold tracking-[2px] text-dim uppercase"
       >
         Mês de referência
       </label>

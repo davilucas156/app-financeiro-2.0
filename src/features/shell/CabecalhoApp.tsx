@@ -35,7 +35,7 @@ export function CabecalhoApp({
     >
       <div className="mx-auto flex h-[62px] w-full max-w-5xl items-center gap-4 px-5">
         <div className="min-w-0">
-          <p className="font-mono text-[9px] font-bold tracking-[2px] text-primary uppercase">
+          <p className="font-mono text-4xs font-bold tracking-[2px] text-primary uppercase">
             6 Potes
           </p>
           <p className="truncate text-sm font-bold">{mesReferencia}</p>

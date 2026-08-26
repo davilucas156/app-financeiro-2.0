@@ -66,7 +66,7 @@ export function TelaDeRegras({
         <CartaoDaRegra key={regra.id} regra={regra} categorias={categorias} />
       ))}
 
-      <p className="mt-6 text-[11px] leading-relaxed text-dim">
+      <p className="mt-6 text-2xs leading-relaxed text-dim">
         Não dá para criar regra do zero aqui, e é de propósito: regra escrita de
         memória erra. Elas nascem na{" "}
         <Link href="/revisao" className="underline underline-offset-4">

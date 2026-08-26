@@ -19,7 +19,7 @@ export function ConcluirOnboarding({ nome }: { nome?: string }) {
   return (
     <div className="mx-auto w-full max-w-md px-5 py-12">
       <header>
-        <p className="font-mono text-[9px] font-bold tracking-[3px] text-primary uppercase">
+        <p className="font-mono text-4xs font-bold tracking-[3px] text-primary uppercase">
           Primeiro acesso
         </p>
         <h1 className="mt-2 text-[28px] leading-tight font-extrabold tracking-tight break-words">
@@ -45,14 +45,14 @@ export function ConcluirOnboarding({ nome }: { nome?: string }) {
             <span className="flex-1 text-sm font-bold break-words">
               {pote.nome}
             </span>
-            <span className="pr-4 font-mono text-[11px] text-dim">
+            <span className="pr-4 font-mono text-2xs text-dim">
               {rotuloMeta(pote)}
             </span>
           </div>
         ))}
       </div>
 
-      <p className="mt-3 font-mono text-[10px] leading-relaxed text-dim2">
+      <p className="mt-3 font-mono text-3xs leading-relaxed text-dim2">
         Os dois últimos ficam fora do rateio: manutenção é custo flutuante e
         repasses não são gasto seu. Dá para ajustar os percentuais depois.
       </p>

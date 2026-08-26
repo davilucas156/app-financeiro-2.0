@@ -118,7 +118,7 @@ function AvisoDoVoltar({ voltar }: { voltar: PodeVoltar | null }) {
   if (!aviso) return null;
 
   return (
-    <p className="mt-2 text-[11px] leading-relaxed text-dim">↩ {aviso}</p>
+    <p className="mt-2 text-2xs leading-relaxed text-dim">↩ {aviso}</p>
   );
 }
 
@@ -221,7 +221,7 @@ function Revisando({
             </p>
 
             {atual.regraChave && (
-              <p className="mt-2 rounded-pote border border-border bg-bg px-3 py-2 font-mono text-[11px] break-words text-dim">
+              <p className="mt-2 rounded-pote border border-border bg-bg px-3 py-2 font-mono text-2xs break-words text-dim">
                 {atual.regraChave}
               </p>
             )}
@@ -280,7 +280,7 @@ function Revisando({
  */
 function CaminhoParaCategorias() {
   return (
-    <p className="mt-8 text-[11px] leading-relaxed text-dim">
+    <p className="mt-8 text-2xs leading-relaxed text-dim">
       Duas categorias dizendo a mesma coisa, ou uma que você nunca usa?{" "}
       <Link href="/categorias" className="underline underline-offset-4">
         Arrumar categorias

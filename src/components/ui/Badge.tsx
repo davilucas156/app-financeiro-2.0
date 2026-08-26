@@ -30,13 +30,13 @@ export function Badge({
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-[20px] border px-3.5 py-1.5",
-        "font-mono text-[10px] font-bold tracking-[1px] uppercase",
+        "font-mono text-3xs font-bold tracking-[1px] uppercase",
         classes,
         className,
       )}
     >
       {ponto && (
-        <span aria-hidden="true" className="text-[7px] leading-none">
+        <span aria-hidden="true" className="text-marca leading-none">
           ●
         </span>
       )}

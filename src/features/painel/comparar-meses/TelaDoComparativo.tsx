@@ -48,7 +48,7 @@ export function TelaDoComparativo({
       */}
       <Link
         href="/dashboard"
-        className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
+        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
       >
         ← Painel
       </Link>

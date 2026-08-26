@@ -58,6 +58,75 @@
   /* ── Raios ────────────────────────────────────────────── */
   --radius-pote: 12px;
   --radius-card: 14px;
+
+  /* ── Tamanhos de letra (spec 10, tarefa A1) ───────────────
+     Os três degraus abaixo de `text-xs` não existiam: eram 97
+     `text-[9px]`/`[10px]`/`[11px]` espalhados por 39 arquivos.
+     px cravado compila para `font-size:10px` — um número
+     absoluto, sem variável, por onde nenhuma preferência entra.
+     Enquanto eles existirem, metade do texto do app não obedece
+     à configuração de tamanho.
+
+     ⚠ **Ficam em `px`, e é decisão.** `rem` seria mais elegante
+     e mudaria o tamanho de quem tem a fonte do navegador
+     ajustada — que é exatamente o que a conversão não pode
+     fazer. Cada token mantém a unidade que já tinha: estes três
+     em px porque eram px; `--text-xs` e `--text-sm` seguem em
+     rem porque é assim que o Tailwind os entrega.
+
+     ⚠ **`line-height: inherit` reproduz o hoje ao pixel, e é a
+     única forma que reproduz.** O `text-[10px]` compila **só**
+     com `font-size`: a entrelinha daqueles elementos é a
+     herdada, seja ela qual for. `normal` acertaria na maioria
+     dos 97 — e apertaria em silêncio qualquer um que esteja
+     dentro de um pai com entrelinha própria. `inherit` é
+     idêntico a não declarar nada, em todos os casos, sem
+     precisar auditar 97 aninhamentos.
+
+     E não custa a escala: a entrelinha herdada de um pai é
+     quase sempre uma razão sem unidade, que se aplica à fonte
+     **deste** elemento — então ela cresce junto. */
+  --text-4xs: 9px;
+  --text-4xs--line-height: inherit;
+  --text-3xs: 10px;
+  --text-3xs--line-height: inherit;
+  --text-2xs: 11px;
+  --text-2xs--line-height: inherit;
+
+  /* ── Os dois que não escalam ──────────────────────────────
+     Estes dois **de propósito não aparecem** nos blocos
+     `[data-letra]` lá embaixo. A exceção funciona por omissão, e
+     é frágil o bastante para estar escrita aqui em voz alta:
+     apagar uma destas linhas não quebra nada visível hoje, e
+     quebra uma linha do painel no tamanho "Maior".
+
+     ⚠ **`--text-fixo` é a exceção que o Davi pediu** — "com
+     exceção das letras dos cards de pote que já são grandes". Ela
+     vale para as **duas** letras do cabeçalho do pote, que é a
+     única linha do painel com orçamento apertado a 360px. Ver
+     `CartaoDoPote.tsx`.
+
+     ⚠ **Valor e entrelinha são cópias exatas do `--text-sm`**,
+     que é de onde essas duas letras saíram — inclusive a
+     unidade. Em `14px` elas ficariam idênticas hoje e parariam
+     de obedecer ao ajuste de fonte do navegador: a mesma
+     armadilha da nota de cima, ao contrário.
+
+     E aqui `inherit` seria errado, ao contrário dos três de
+     cima: aquelas 97 **não tinham** entrelinha declarada, estas
+     duas **tinham** — a de `text-sm`. Reproduzir o hoje é copiar
+     a razão, não herdar do pai.
+
+     ⚠ **`--text-marca` não é letra: é o `●` do `Badge`**, que é
+     `aria-hidden` e existe só para dar peso à pílula. Ele ganhou
+     token em vez de virar exceção na lista do teste da A4 —
+     lista de exceção cresce sozinha até a regra não valer mais,
+     e um token diz o mesmo sendo greppável. Fica em `px` pela
+     regra de cima: era `text-[7px]`, um 7 absoluto. */
+  --text-fixo: 0.875rem; /* 14px */
+  --text-fixo--line-height: calc(1.25 / 0.875);
+  --text-marca: 7px;
+  --text-marca--line-height: inherit;
 }
 
 /* ════════════════════════════════════════════════════════════

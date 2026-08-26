@@ -54,7 +54,7 @@ export function AcaoDeDecidir({
       </button>
 
       {erro && (
-        <p role="alert" className="mt-1.5 text-[11px] leading-relaxed text-red">
+        <p role="alert" className="mt-1.5 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}
