@@ -1,3 +1,5 @@
+import { escolhaValida } from "@/features/aparencia/preferencia/preferenciaDoAparelho";
+
 /**
  * A preferência de tema, como valor (tarefa A2 da spec 08).
  *
@@ -7,6 +9,14 @@
  * atributo no `<html>`; a tela de configurações, que marca a opção escolhida; e
  * a action, que grava. Escrita três vezes, ela diverge — é a mesma regra que
  * criou `chaveDaRegra.ts` na spec 03 e `lib/mes.ts` na 06.
+ *
+ * ## O que saiu daqui na spec 10
+ *
+ * A validade do cookie e a limpeza do valor foram para
+ * `preferencia/preferenciaDoAparelho.ts` quando a segunda preferência do
+ * aparelho chegou. ⚠ **O que ficou é o que é decisão deste tema** — os três
+ * valores, o padrão escuro, os rótulos —, e é exatamente o que não caberia num
+ * módulo genérico: os parágrafos abaixo não teriam onde morar lá.
  */
 
 export const TEMAS = ["escuro", "claro", "sistema"] as const;
@@ -38,30 +48,20 @@ export const TEMA_PADRAO: Tema = "escuro";
 export const COOKIE_DO_TEMA = "tema";
 
 /**
- * Um ano.
- *
- * ⚠ **O cookie do tema não é sessão.** Sem `httpOnly` — não há nada secreto
- * nele — e com validade longa de propósito: um tema que expira junto com o
- * login é um tema que se perde toda vez que a pessoa volta.
- */
-export const VALIDADE_DO_COOKIE_SEG = 60 * 60 * 24 * 365;
-
-/**
  * O que veio no cookie → um dos três temas.
  *
- * ⚠ **Cookie é texto que o usuário controla, e valor desconhecido não é erro.**
- * `tema=roxo` cai no padrão sem exceção e sem log: quase sempre é um valor
- * gravado por uma versão anterior do app, não um ataque. Reclamar disso encheria
- * o log de produção com o histórico das nossas próprias mudanças.
+ * ⚠ **O corpo saiu daqui na spec 10, e o significado não.** Quando a segunda
+ * preferência do aparelho chegou, a limpeza do cookie passou a ser escrita duas
+ * vezes — e neste projeto o escrito duas vezes ganha arquivo. O mecanismo mora
+ * em `preferencia/preferenciaDoAparelho.ts`, junto do porquê de valor
+ * desconhecido não virar log.
+ *
+ * **A função continua existindo mesmo tendo uma linha**, porque é ela que os
+ * três lugares chamam. Trocá-la por `escolhaValida(TEMAS, TEMA_PADRAO, …)` em
+ * cada um deles é o caminho para um deles esquecer a lista ou o padrão.
  */
 export function temaEscolhido(valor: string | undefined | null): Tema {
-  if (valor === undefined || valor === null) return TEMA_PADRAO;
-
-  const limpo = valor.trim().toLowerCase();
-
-  return (TEMAS as readonly string[]).includes(limpo)
-    ? (limpo as Tema)
-    : TEMA_PADRAO;
+  return escolhaValida(TEMAS, TEMA_PADRAO, valor);
 }
 
 export const ROTULOS_DO_TEMA: Record<Tema, { titulo: string; nota: string }> = {

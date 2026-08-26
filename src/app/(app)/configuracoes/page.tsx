@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TelaDeConfiguracoes } from "@/features/aparencia/escolher-tema/TelaDeConfiguracoes";
+import { letraAtual } from "@/features/aparencia/letra/letraAtual";
 import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 
 export const metadata: Metadata = {
@@ -19,5 +20,7 @@ export const metadata: Metadata = {
  * `(app)`, por onde esta rota passa como todas as outras.
  */
 export default async function ConfiguracoesPage() {
-  return <TelaDeConfiguracoes tema={await temaAtual()} />;
+  const [tema, letra] = await Promise.all([temaAtual(), letraAtual()]);
+
+  return <TelaDeConfiguracoes tema={tema} letra={letra} />;
 }

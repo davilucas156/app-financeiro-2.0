@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Syne, DM_Mono } from "next/font/google";
+import { letraAtual } from "@/features/aparencia/letra/letraAtual";
 import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 import "./globals.css";
 
@@ -114,14 +115,22 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
    * É a **raiz** e não a moldura de `(app)` porque `/entrar`, `/cadastrar` e
    * `/bem-vindo` estão fora dela e precisam do tema igual. `/entrar` é
    * justamente a primeira tela que alguém vê.
+   *
+   * ⚠ **`data-letra` entra pela mesma porta pelo mesmo motivo** (spec 10,
+   * tarefa C2): decidido no cliente, o app abriria no tamanho padrão e saltaria
+   * para o escolhido.
+   *
+   * As duas leituras vão num `Promise.all`: são dois cookies da mesma
+   * requisição, e encadeá-las seria esperar duas vezes pela mesma coisa.
    */
-  const tema = await temaAtual();
+  const [tema, letra] = await Promise.all([temaAtual(), letraAtual()]);
 
   return (
     <ClerkProvider afterSignOutUrl="/entrar">
       <html
         lang="pt-br"
         data-tema={tema}
+        data-letra={letra}
         className={`${syne.variable} ${dmMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">{children}</body>

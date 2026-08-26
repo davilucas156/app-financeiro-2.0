@@ -182,6 +182,19 @@ function Diferenca({ linha }: { linha: LinhaDoComparativo }) {
  * Ele sai da média porque não pode servir de régua. Tirá-lo também da barra
  * faria um mês inteiro do ano do Davi desaparecer da tela — e desaparecer é
  * exatamente o que um comparativo existe para impedir.
+ *
+ * ## As duas colunas se medem em `em`, e não em pixel (spec 10, tarefa E1)
+ *
+ * `w-[5.6em]` e `w-[8em]` são exatamente os antigos `w-14` e `w-20` enquanto o
+ * `text-3xs` valer 10px — 5,6 × 10 e 8 × 10. A diferença aparece nos degraus de
+ * tamanho de letra: em "Maior" o `text-3xs` vai a 14px e "R$ 1.234,56" passa a
+ * pedir ~92px de DM Mono, dentro de uma caixa de 80. O valor quebraria em duas
+ * linhas e desalinharia a linha inteira.
+ *
+ * ⚠ **`em` porque ele se resolve contra a fonte deste elemento**, que é
+ * justamente o que muda. `rem` não serviria: ele olha para a raiz, que não se
+ * mexe. A barra é `flex-1` e absorve a diferença — é a parte da linha que pode
+ * ceder sem perder informação.
  */
 function BarraDoMes({
   valor,
@@ -202,7 +215,7 @@ function BarraDoMes({
   return (
     <div className="flex items-center gap-2">
       <span
-        className={`w-14 shrink-0 font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
+        className={`w-[5.6em] shrink-0 font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
       >
         {nomeDoMes(valor.mes).slice(0, 3)}
         {comAno && `/${valor.mes.slice(2, 4)}`}
@@ -221,7 +234,7 @@ function BarraDoMes({
       </span>
 
       <span
-        className={`w-20 shrink-0 text-right font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
+        className={`w-[8em] shrink-0 text-right font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
       >
         {emReais(valor.totalCentavos)}
       </span>
@@ -234,7 +247,7 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
 
   return (
     <div className="flex items-center gap-2 pt-1">
-      <span className="w-14 shrink-0 font-mono text-3xs text-dim2">
+      <span className="w-[5.6em] shrink-0 font-mono text-3xs text-dim2">
         média
       </span>
       <span className="h-2 flex-1 overflow-hidden rounded-full">
@@ -243,7 +256,7 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
           style={{ width: `${Math.max(0, Math.min(100, largura))}%` }}
         />
       </span>
-      <span className="w-20 shrink-0 text-right font-mono text-3xs text-dim2">
+      <span className="w-[8em] shrink-0 text-right font-mono text-3xs text-dim2">
         {emReais(centavos)}
       </span>
     </div>

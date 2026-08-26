@@ -1,10 +1,9 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { gravarPreferencia } from "@/features/aparencia/preferencia/gravarPreferencia";
 import {
   COOKIE_DO_TEMA,
   temaEscolhido,
-  VALIDADE_DO_COOKIE_SEG,
   type Tema,
 } from "@/features/aparencia/tema/tema";
 
@@ -37,18 +36,11 @@ export async function escolherTema(tema: Tema): Promise<void> {
    */
   const seguro = temaEscolhido(tema);
 
-  const cookieStore = await cookies();
-
-  cookieStore.set(COOKIE_DO_TEMA, seguro, {
-    /*
-     * ⚠ **Sem `httpOnly`, e isso é decisão.** Não há nada secreto num tema, e
-     * deixar o JavaScript ler ajuda: o cliente confere o que está gravado sem
-     * mais uma ida ao servidor.
-     */
-    httpOnly: false,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: VALIDADE_DO_COOKIE_SEG,
-  });
+  /*
+   * As opções do cookie — e o porquê de cada uma — moram em
+   * `preferencia/gravarPreferencia.ts` desde a spec 10. Elas valiam palavra por
+   * palavra para o tamanho da letra, e decisão repetida em duas actions é
+   * decisão que um dia diverge numa delas.
+   */
+  await gravarPreferencia(COOKIE_DO_TEMA, seguro);
 }
