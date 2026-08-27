@@ -161,6 +161,37 @@ o alias `@` usa `import.meta.dirname`.
 extrato está no `.gitignore` por carregar dado financeiro real, e amostra em
 código fica obviamente sintética e não some do repositório.
 
+## Formatação — ⚠ nunca rode `prettier --write` em massa
+
+**O projeto não é formatado por Prettier.** Não há `.prettierrc`, e `prettier`
+não está no `package.json` — nem em `dependencies`, nem em `devDependencies`.
+O que existe é código escrito à mão num estilo *parecido* com o do Prettier.
+
+Medido em 26/08/2026 com o Prettier 3.9.6 e opções padrão: **62 de ~200
+arquivos de `src/` sairiam diferentes**, e a diferença vai para **os dois
+lados** — o que mata a hipótese de "está só desatualizado":
+
+| Arquivo                                | O que o Prettier faria                                        |
+| -------------------------------------- | ------------------------------------------------------------- |
+| `upload/limites.ts`                    | **quebra** um `if` de 88 colunas em duas linhas               |
+| `components/ui/Card.tsx`               | **junta** uma assinatura quebrada à mão, que caberia em 79    |
+| `shell/NavegacaoPrincipal.tsx`         | **junta** um ternário quebrado à mão                          |
+| `painel/somar-o-mes/meta.test.ts`      | move o `.toBe()` para fora do `expect(` quebrado              |
+
+⚠ **As consequências de rodar mesmo assim:**
+
+1. **Um commit de funcionalidade vira um commit de 150 arquivos**, e a revisão
+   do que importa se perde no meio. Aconteceu na spec 12 e teve de ser desfeito.
+2. **`npx prettier` não tem versão fixa.** Sem a dependência declarada, cada
+   sessão baixa a mais recente, e os padrões do Prettier mudam entre versões —
+   a mesma linha de comando dá resultados diferentes em dias diferentes.
+
+**O que fazer:** formatar **só o arquivo que você está escrevendo**, e conferir
+antes com `--check` se a saída bate com o estilo dos vizinhos. Quem quiser
+resolver isso de vez tem de tomar uma decisão explícita — fixar a versão,
+escrever o `.prettierrc` e reformatar tudo num commit só, que não é decisão de
+quem está no meio de uma spec.
+
 ## Banco de dados — como mexer
 
 ```
