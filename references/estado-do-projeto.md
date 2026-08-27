@@ -1,6 +1,6 @@
 # Estado do projeto — o que o app é hoje
 
-**Atualizado em:** 24/08/2026, com as specs 06, 07, 08 e 09 no ar
+**Atualizado em:** 26/08/2026, com as specs 06, 07, 08, 09 e 10 no ar
 **Contra:** `readme.md`, o pedido original
 **Para quê:** o `readme.md` é de antes de existir código. Seis specs depois,
 várias decisões dele foram revistas **de propósito** e com motivo registrado.
@@ -104,11 +104,17 @@ pessoas.
   `banco` e a tela `/passos` deriva dali a lista do que o app entende — ela
   passa a listar um banco novo sozinha.
 
-  O que a spec do multibanco vai ter de decidir, e ainda não está decidido:
-  **medir cada banco (o que existe hoje, e não escala) ou ler CSV genérico com o
-  usuário apontando as colunas** (que escala, e transfere para ele a chance de
-  errar o sentido do sinal — o erro que faria todo gasto do cartão virar
-  receita). Não dá para escolher sem um arquivo de outro banco na mão.
+  ⚠ **A bifurcação foi resolvida em `specs/11-csv-de-varios-bancos.md`, que
+  está escrita e aguardando aprovação do Davi.** Ela estava registrada assim:
+  _medir cada banco (não escala) ou ler CSV genérico com o usuário apontando as
+  colunas (escala, e transfere para ele a chance de errar o sentido do sinal)_ —
+  e dizia que não dava para escolher sem um arquivo de outro banco na mão.
+
+  A spec 11 mostra que são a **mesma operação em ordens diferentes**: alguém
+  olha um CSV e descreve dialeto, colunas e sinal. Muda **quem** e **quando**. A
+  decisão é fazer as duas — `FORMATOS` continua o caminho rápido, e o que o
+  usuário mapeia **vira formato salvo**, reconhecido sozinho no envio seguinte.
+  Isso destrava a spec hoje: nada nela depende de um CSV de outro banco existir.
 
 ### Não está em spec nenhuma, e talvez devesse
 
