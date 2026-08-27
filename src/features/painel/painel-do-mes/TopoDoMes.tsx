@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
-import { rotuloDeMes } from "@/lib/mes";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 
 /**
@@ -17,18 +16,20 @@ import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
  * acreditar neles. Um rodapé cinza aqui seria a defesa não funcionando: todo
  * número desta tela é uma soma correta de dados incompletos, e quem não lê isso
  * é enganado por uma tela que não mentiu.
+ *
+ * ⚠ **A fileira de meses saiu daqui na spec 12**, para
+ * `painel/navegar-entre-meses/AbasDoPainel.tsx`. Ela passou a navegar entre
+ * duas telas, e a `/comparativo` não pode importar este componente — que soma
+ * um mês — só para desenhar uma linha de abas. Quem a desenha agora é a
+ * `TelaDoPainel`, no mesmo lugar de antes.
  */
 export function TopoDoMes({
-  mes,
-  meses,
   entrouCentavos,
   saiuCentavos,
   diferencaCentavos,
   cobertura,
   faltamDecidir,
 }: {
-  mes: string;
-  meses: string[];
   entrouCentavos: number;
   saiuCentavos: number;
   diferencaCentavos: number;
@@ -37,8 +38,6 @@ export function TopoDoMes({
 }) {
   return (
     <>
-      <SeletorDeMeses mes={mes} meses={meses} />
-
       <Card className="mt-4 p-0">
         <div className="grid grid-cols-3 divide-x divide-border">
           <Numero rotulo="Entrou" centavos={entrouCentavos} cor="text-green" />
@@ -53,48 +52,6 @@ export function TopoDoMes({
 
       <AvisoDeCobertura cobertura={cobertura} faltamDecidir={faltamDecidir} />
     </>
-  );
-}
-
-/**
- * Os meses da conta, e o caminho entre eles.
- *
- * ⚠ **Estes eram `<span>`, e o seletor não levava a lugar nenhum.**
- *
- * Ele nasceu no protótipo visual da spec 04 (`1b3d195`), quando nada da tela
- * era ligado. O servidor foi ligado depois e ficou **completo**: a
- * `dashboard/page.tsx` lê `?mes=` e a `dadosDoPainel` confere o valor contra os
- * meses da própria conta. Só o elemento nunca virou link.
- *
- * O defeito era mudo do pior jeito: com alvo de toque de 44px, borda, hover e o
- * mês atual em destaque, ele **parecia** funcionar. Quem tinha um mês só não
- * notava; quem subiu o segundo tocou e não aconteceu nada.
- *
- * ⚠ **O mês atual continua sendo link para ele mesmo.** Desabilitá-lo pouparia
- * uma navegação e tiraria o único jeito de recarregar a tela sem perder o mês
- * escolhido.
- */
-function SeletorDeMeses({ mes, meses }: { mes: string; meses: string[] }) {
-  return (
-    <nav
-      aria-label="Mês do painel"
-      className="flex flex-wrap items-center gap-2"
-    >
-      {meses.map((m) => (
-        <Link
-          key={m}
-          href={`/dashboard?mes=${m}`}
-          aria-current={m === mes ? "page" : undefined}
-          className={`inline-flex min-h-11 items-center rounded-card border px-4 text-xs font-bold transition-colors ${
-            m === mes
-              ? "border-primary/40 bg-primary/10 text-primary"
-              : "border-border2 bg-card text-dim hover:bg-card2 hover:text-text"
-          }`}
-        >
-          {rotuloDeMes(m)}
-        </Link>
-      ))}
-    </nav>
   );
 }
 

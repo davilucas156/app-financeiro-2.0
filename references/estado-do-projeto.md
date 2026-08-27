@@ -1,6 +1,6 @@
 # Estado do projeto — o que o app é hoje
 
-**Atualizado em:** 26/08/2026, com as specs 06, 07, 08, 09 e 10 no ar
+**Atualizado em:** 26/08/2026, com as specs 06, 07, 08, 09, 10 e 12 no ar
 **Contra:** `readme.md`, o pedido original
 **Para quê:** o `readme.md` é de antes de existir código. Seis specs depois,
 várias decisões dele foram revistas **de propósito** e com motivo registrado.
@@ -118,10 +118,18 @@ pessoas.
 
 ### Não está em spec nenhuma, e talvez devesse
 
-- **Os 6 cartões de topo do Comparativo Anual** — investido acumulado, metas
-  acumuladas, médias de gasolina/custos fixos/lazer, total de manutenção. São
-  agregados por **categoria** e por **ano**; o histórico da spec 06 é por pote.
-  Seriam outra consulta. Decisão registrada na spec 06, pendência 5.
+- **Fixar uma categoria como cartão do comparativo.** A spec 12 entregou os
+  cartões de topo, mas **por pote** — e o painel original tinha um de categoria,
+  o ⛽ Média Mensal Gasolina. Ele ficou de fora (spec 12, pendência 4) porque é o
+  único dos seis que não é pote e seria a única consulta nova da spec. Se fizer
+  falta, o pedido real é _"fixar uma categoria como cartão"_, que é
+  funcionalidade e não cartão.
+
+> ⚠ **Os 6 cartões de topo do Comparativo Anual saíram daqui.** Eram dívida
+> aberta desde a spec 06 (pendência 5), com a justificativa de que _"seriam outra
+> consulta"_. A spec 12 conferiu: **cinco dos seis são potes**, e os emojis batem
+> um a um com o `potes-padrao.ts`. `historicoDosMeses` já respondia — foram
+> entregues sem uma linha de SQL nova.
 
 ---
 
@@ -136,7 +144,7 @@ pessoas.
 | `/regras`               | Ver, corrigir e apagar o que o motor aprendeu                   | 03      |
 | `/dashboard`            | Veredito, potes com insight, comparativo                        | 04 e 06 |
 | `/categorias`           | Criar, renomear, mover e apagar categoria (recolhível por pote) | 05 e 09 |
-| `/comparativo`          | Os potes mês a mês, fora do painel                              | 09      |
+| `/comparativo`          | Os potes mês a mês num ano, com os cartões de topo              | 09 e 12 |
 | `/configuracoes`        | Aparência (escuro/claro/sistema) e tamanho da letra             | 08 e 10 |
 | `/passos`               | Como pegar o extrato no banco                                   | 09      |
 

@@ -6,6 +6,7 @@ import type { MediaDoComparativo } from "@/features/painel/comparar-meses/compar
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
+import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
 import { metaDoPote } from "@/features/painel/somar-o-mes/meta";
 import { FaixaDoVeredito } from "@/features/painel/veredito-do-mes/FaixaDoVeredito";
 import { vereditoDoMes } from "@/features/painel/veredito-do-mes/veredito";
@@ -96,9 +97,13 @@ export function TelaDoPainel({
     <>
       <SectionTitle>Painel do mês</SectionTitle>
 
+      {/*
+        A fileira de abas (spec 12, B1). Ela era desenhada aqui mesmo, de dentro
+        do `TopoDoMes`; mudou de arquivo, não de lugar na tela.
+      */}
+      <AbasDoPainel meses={meses} mes={mes} aqui="painel" />
+
       <TopoDoMes
-        mes={mes}
-        meses={meses}
         entrouCentavos={entrouCentavos}
         saiuCentavos={saiuCentavos}
         diferencaCentavos={diferencaCentavos}

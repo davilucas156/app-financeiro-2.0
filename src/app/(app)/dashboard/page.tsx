@@ -3,8 +3,10 @@ import Link from "next/link";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { mesesDoAno } from "@/features/painel/comparar-meses/anoDoComparativo";
 import { coberturaDosMeses } from "@/features/painel/comparar-meses/coberturaDosMeses.service";
 import { mediaDoComparativo } from "@/features/painel/comparar-meses/comparativo";
+import { anoDoMes } from "@/lib/mes";
 import { dadosDoPainel } from "@/features/painel/painel-do-mes/painelDoMes.service";
 import { TelaDoPainel } from "@/features/painel/painel-do-mes/TelaDoPainel";
 
@@ -88,7 +90,24 @@ export default async function DashboardPage({
     );
   }
 
-  return (
-    <TelaDoPainel {...dados} media={mediaDoComparativo(cobertura, dados.mes)} />
+  /*
+   * ⚠ **A frase recorta pelo ano, como a `/comparativo` (spec 12, C1).**
+   *
+   * As duas compartilham `mediaDoComparativo` desde a spec 09 justamente para
+   * não poderem divergir — o motivo está escrito lá: "se a frase do painel e a
+   * da `/comparativo` fossem calculadas em lugares diferentes, um dia o painel
+   * diria 'média de 3 meses' e a tela ao lado diria 'comparado com maio', e quem
+   * lesse não teria como saber qual das duas mentiu".
+   *
+   * Recortar por ano só de um lado reintroduziria exatamente essa divergência.
+   *
+   * ⚠ **O recorte é sobre `cobertura`, a consulta barata.** Continua valendo o
+   * aviso acima: não volte a chamar `historicoDosMeses` aqui.
+   */
+  const media = mediaDoComparativo(
+    mesesDoAno(cobertura, anoDoMes(dados.mes)),
+    dados.mes,
   );
+
+  return <TelaDoPainel {...dados} media={media} />;
 }

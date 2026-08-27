@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/12-comparativo-anual.md`, aprovada pelo Davi
-**Status:** a escrever
+**Status:** ✅ as cinco fases entregues. Falta o Davi dizer se oito cartões antes das barras é resumo ou muro, e se o aviso de janeiro basta.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -61,7 +61,7 @@ painel se faz sobre `coberturaDosMeses`, que é a consulta barata que ela já fa
 
 ## Fase A — as duas contas
 
-### A1 · Recortar o histórico por ano `INFRA`
+### ✅ A1 · Recortar o histórico por ano `INFRA`
 
 Um módulo puro que responde três perguntas: **quais anos a conta tem**, **quais
 meses são de um ano**, e **qual ano abrir por padrão**.
@@ -77,7 +77,7 @@ meses são de um ano**, e **qual ano abrir por padrão**.
 conta que atravessa a virada, `?ano=` inventado, `?ano=` de um ano sem mês, e
 `?ano=<script>`.
 
-### A2 · O cartão de um pote no ano `INFRA`
+### ✅ A2 · O cartão de um pote no ano `INFRA`
 
 A função que transforma o histórico **já recortado** em um cartão por pote:
 total do ano, média mensal, quantos meses entraram na média, e a série mês a mês
@@ -98,7 +98,7 @@ tem de bater exatamente com a soma da série.
 
 ## Fase B — a fileira vira abas
 
-### B1 · Extrair a fileira para pasta própria `FRONT-VISUAL`
+### ✅ B1 · Extrair a fileira para pasta própria `FRONT-VISUAL`
 
 `SeletorDeMeses` sai de dentro do `TopoDoMes.tsx` e vira
 `painel/navegar-entre-meses/AbasDoPainel.tsx`, **sem mudar de aparência**.
@@ -110,7 +110,7 @@ entrou/saiu/diferença para desenhar uma linha de abas.
 **Pronto quando:** o painel está idêntico ao pixel, e `TopoDoMes.tsx` não
 desenha mais aba nenhuma.
 
-### B2 · A aba do comparativo entra na fileira `FRONT-VISUAL`
+### ✅ B2 · A aba do comparativo entra na fileira `FRONT-VISUAL`
 
 O último item da fileira é `📊 Comparativo`, visualmente distinto dos meses e
 separado deles.
@@ -124,7 +124,7 @@ separado deles.
 **Pronto quando:** a aba aparece com dois meses, não aparece com um, e o mês
 atual continua sendo o único marcado enquanto se está no painel.
 
-### B3 · A fileira aparece na `/comparativo` `FRONT-INTEGRADO`
+### ✅ B3 · A fileira aparece na `/comparativo` `FRONT-INTEGRADO`
 
 A mesma fileira, no topo da `/comparativo`, com a aba do comparativo marcada e
 nenhum mês marcado.
@@ -139,7 +139,7 @@ da `/comparativo` leva ao painel naquele mês; a `← Painel` continua ali.
 
 ## Fase C — o ano na `/comparativo`
 
-### C1 · A tela passa a ser de um ano `FRONT-INTEGRADO`
+### ✅ C1 · A tela passa a ser de um ano `FRONT-INTEGRADO`
 
 A rota lê `?ano=`, valida pela A1 e recorta o histórico antes de chamar
 `compararMeses`.
@@ -155,7 +155,7 @@ só quebraria isso.
 **Pronto quando:** as barras, a média e a frase são todas do ano escolhido, e as
 etiquetas largam o `/26` sozinhas.
 
-### C2 · O seletor de ano, e o aviso de janeiro `FRONT-VISUAL`
+### ✅ C2 · O seletor de ano, e o aviso de janeiro `FRONT-VISUAL`
 
 O seletor lista só anos que têm mês, e **não aparece quando há um ano só**
 (pendência 8) — controle de uma opção promete escolha que não existe.
@@ -173,7 +173,7 @@ link para o ano anterior.
 
 ## Fase D — os cartões
 
-### D1 · O cartão, visual `FRONT-VISUAL`
+### ✅ D1 · O cartão, visual `FRONT-VISUAL`
 
 Grade de duas colunas a 360px. Cada cartão: emoji e nome do pote, **total do ano**
 como número grande, **média mensal com quantos meses** embaixo, e a linha mês a
@@ -189,7 +189,7 @@ lição da fase E da spec 10: medir em `em` desde já, e não descobrir depois.
 de seis dígitos não quebra a grade; nenhum `text-[Npx]` cravado (o teste da spec
 10 reprova).
 
-### D2 · Os cartões na tela, com dado de verdade `FRONT-INTEGRADO`
+### ✅ D2 · Os cartões na tela, com dado de verdade `FRONT-INTEGRADO`
 
 Ligar a A2 na `/comparativo`, acima das barras.
 
@@ -200,7 +200,7 @@ aparece com R$ 0,00; trocar de ano troca os cartões junto com as barras.
 
 ## Fase E — a conferência
 
-### E1 · Os cartões e as barras têm de contar a mesma história `INFRA`
+### ✅ E1 · Os cartões e as barras têm de contar a mesma história `INFRA`
 
 Um teste que soma a série do cartão e a série da barra do mesmo pote no mesmo ano
 e exige que batam.
@@ -213,7 +213,7 @@ nada; comparar duas leituras diferentes do mesmo dado, prova.
 **Pronto quando:** o teste passa, e `comparativo.test.ts` passa **sem uma linha
 alterada** — a prova de que o recorte não tocou no que já funcionava.
 
-### E2 · Fechar os documentos `INFRA`
+### ✅ E2 · Fechar os documentos `INFRA`
 
 `references/estado-do-projeto.md`: a linha da `/comparativo`, e **tirar do
 backlog** os 6 cartões do Comparativo Anual, que estavam em "não está em spec
