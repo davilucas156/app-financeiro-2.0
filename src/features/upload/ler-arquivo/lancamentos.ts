@@ -1,3 +1,9 @@
+import {
+  FORMATO_DE_DATA_PADRAO,
+  FORMATO_DE_NUMERO_PADRAO,
+  type FormatoDeData,
+  type FormatoDeNumero,
+} from "@/features/upload/ler-arquivo/dialetos";
 import type { Formato, Papel } from "@/features/upload/ler-arquivo/formatos";
 import type { Reconhecimento } from "@/features/upload/ler-arquivo/reconhecer";
 
@@ -51,14 +57,26 @@ export type Leitura = {
  * `1989.9999999999998` em JavaScript — um centavo perdido por lançamento, em
  * silêncio. A conta é feita em texto: parte inteira e centavos separados.
  *
- * ⚠ **Leitura estritamente pt-BR:** vírgula é decimal, ponto é milhar.
- * `1.200` é mil e duzentos. Aceitar as duas convenções obrigaria a adivinhar,
- * e adivinhar errado aqui erra por cem vezes.
+ * ⚠ **A convenção é declarada, nunca adivinhada** (spec 11, tarefa A2). Em
+ * pt-BR a vírgula é decimal e o ponto é milhar, então `1.200` é mil e duzentos;
+ * em en-US é o contrário, e `1.200` seria um e dois décimos — que **não é
+ * centavo**, e por isso é recusado nos dois. Adivinhar entre as duas erraria
+ * por cem vezes, e erraria em silêncio.
+ *
+ * O padrão é pt-BR porque é o que os dois arquivos medidos usam. Quem passa
+ * outro é um formato que a pessoa mapeou (spec 11).
  */
-export function paraCentavos(texto: string): number | null {
+export function paraCentavos(
+  texto: string,
+  formato: FormatoDeNumero = FORMATO_DE_NUMERO_PADRAO,
+): number | null {
   // Tira símbolo de moeda e todo tipo de espaço, inclusive o não separável
   // (U+00A0) e o fino (U+202F), que aparecem em exportação de banco.
-  let limpo = texto.replace(/R\$/gi, "").replace(/[\s  ]/g, "");
+  // O `$` sozinho sai também: `paraCentavos` deixou de ser só do Inter, e
+  // banco que exporta em en-US escreve `$1,200.50`.
+  let limpo = texto
+    .replace(/R\$/gi, "")
+    .replace(/\$/g, "").replace(/[\s  ]/g, "");
   if (limpo === "") return null;
 
   let negativo = false;
@@ -69,10 +87,34 @@ export function paraCentavos(texto: string): number | null {
     limpo = limpo.slice(1);
   }
 
-  const partes = limpo.split(",");
+  // A única diferença entre as duas convenções: quem separa centavos e quem
+  // agrupa milhar. O resto da função não sabe qual é qual.
+  const decimal = formato === "pt-BR" ? "," : ".";
+  const milhar = formato === "pt-BR" ? "." : ",";
+
+  const partes = limpo.split(decimal);
   if (partes.length > 2) return null;
 
-  const inteiroTexto = partes[0].replace(/\./g, "");
+  /*
+   * ⚠ **O agrupamento de milhar é conferido, e não só removido** (spec 11).
+   *
+   * Até aqui a função apagava os pontos e somava. Isso fazia `152.40` ser lido
+   * em pt-BR como **R$ 1.524,00** — cem vezes o valor, sem erro nenhum. Nunca
+   * mordeu porque os dois arquivos do Inter escrevem centavo com vírgula; com
+   * banco de fora, é o modo de falhar mais caro que existe: silencioso e por
+   * duas ordens de grandeza.
+   *
+   * Um separador de milhar é seguido de **exatamente três dígitos**. `152.40`
+   * não é pt-BR — é en-US, e recusar aqui é o que deixa a leitura en-US ganhar
+   * o desempate no palpite (`palpite.ts`).
+   */
+  const grupos = partes[0].split(milhar);
+  if (grupos.length > 1) {
+    if (!/^\d{1,3}$/.test(grupos[0])) return null;
+    if (!grupos.slice(1).every((g) => /^\d{3}$/.test(g))) return null;
+  }
+
+  const inteiroTexto = grupos.join("");
   const centavosTexto = partes[1] ?? "";
 
   if (!/^\d+$/.test(inteiroTexto)) return null;
@@ -87,16 +129,62 @@ export function paraCentavos(texto: string): number | null {
 }
 
 /**
+ * ⚠ **A ordem dos campos é declarada, nunca adivinhada** (spec 11, tarefa A1).
+ *
+ * `01/02/2026` é 1º de fevereiro ou 2 de janeiro, e **as duas leituras são
+ * plausíveis**. Só o arquivo inteiro desempata, e só quando ele tem algum dia
+ * acima de 12 — por isso quem escolhe é o formato, e o palpite que o propõe
+ * (`palpite.ts`) trata o caso ambíguo com nome e sobrenome.
+ *
+ * Este erro é pior que o do sinal de um jeito específico: sinal trocado aparece
+ * num total, data trocada **move lançamentos de mês** — e o mês é o eixo do
+ * painel, do comparativo e da média. Não tem sintoma.
+ */
+const CAMPOS_DA_DATA: Record<
+  FormatoDeData,
+  { padrao: RegExp; ordem: readonly ["dia" | "mes" | "ano", ...("dia" | "mes" | "ano")[]] }
+> = {
+  "dd/mm/aaaa": {
+    padrao: /^(\d{2})\/(\d{2})\/(\d{4})$/,
+    ordem: ["dia", "mes", "ano"],
+  },
+  "dd-mm-aaaa": {
+    padrao: /^(\d{2})-(\d{2})-(\d{4})$/,
+    ordem: ["dia", "mes", "ano"],
+  },
+  "mm/dd/aaaa": {
+    padrao: /^(\d{2})\/(\d{2})\/(\d{4})$/,
+    ordem: ["mes", "dia", "ano"],
+  },
+  "aaaa-mm-dd": {
+    padrao: /^(\d{4})-(\d{2})-(\d{2})$/,
+    ordem: ["ano", "mes", "dia"],
+  },
+};
+
+/**
  * `"02/06/2026"` → `"2026-06-02"`. Devolve `null` quando não dá para ler.
  *
  * Confere se a data **existe**, e não só se os números estão na faixa:
- * `31/02/2026` passa em qualquer checagem de faixa e não é um dia.
+ * `31/02/2026` passa em qualquer checagem de faixa e não é um dia. A ida e
+ * volta por `Date` vale para os quatro formatos, e é ela que pega isso.
+ *
+ * O padrão é `dd/mm/aaaa` porque é o que os dois arquivos medidos usam.
  */
-export function paraDataISO(texto: string): string | null {
-  const casou = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto.trim());
+export function paraDataISO(
+  texto: string,
+  formato: FormatoDeData = FORMATO_DE_DATA_PADRAO,
+): string | null {
+  const { padrao, ordem } = CAMPOS_DA_DATA[formato];
+  const casou = padrao.exec(texto.trim());
   if (!casou) return null;
 
-  const [, dia, mes, ano] = casou;
+  const campos: Record<string, string> = {};
+  ordem.forEach((campo, i) => {
+    campos[campo] = casou[i + 1];
+  });
+
+  const { dia, mes, ano } = campos;
   const iso = `${ano}-${mes}-${dia}`;
 
   // `Date.UTC` normaliza silenciosamente 31/02 para 03/03. A ida e volta pega
@@ -148,7 +236,10 @@ export function paraLancamentos(
       return;
     }
 
-    const data = paraDataISO(dataBruta);
+    // ⚠ Os dialetos vêm do formato, e não do padrão da função (spec 11). Ler
+    // um arquivo en-US com a régua pt-BR não dá erro: dá centavo trocado por
+    // milhar, em silêncio.
+    const data = paraDataISO(dataBruta, r.formato.formatoData);
     if (data === null) {
       ignorar(`data não reconhecida: "${dataBruta.trim()}"`);
       return;
@@ -163,7 +254,7 @@ export function paraLancamentos(
       return;
     }
 
-    const centavos = paraCentavos(valorBruto);
+    const centavos = paraCentavos(valorBruto, r.formato.formatoNumero);
     if (centavos === null) {
       ignorar(`valor não reconhecido: "${valorBruto.trim()}"`);
       return;

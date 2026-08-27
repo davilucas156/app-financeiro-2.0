@@ -1,3 +1,7 @@
+import type {
+  FormatoDeData,
+  FormatoDeNumero,
+} from "@/features/upload/ler-arquivo/dialetos";
 import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
 
 /**
@@ -24,7 +28,16 @@ export type Papel =
 export type Origem = "csv_conta" | "csv_cartao";
 
 export type Formato = {
-  id: "inter-extrato" | "inter-fatura";
+  /**
+   * ⚠ **Deixou de ser uma união fechada na spec 11.** Enquanto os formatos
+   * eram só os de código, o tipo podia listá-los; com formato que o usuário
+   * mapeia, a lista passa a ter linhas no banco.
+   *
+   * Perde-se pouco: a Descoberta 1 da spec 11 mediu que `formato.id` **só
+   * aparece em teste** — nenhum arquivo de produção pergunta de que banco veio
+   * um lançamento. O que atravessa o app é `Origem`, e essa continua fechada.
+   */
+  id: string;
   /** Como aparece para o usuário numa mensagem de erro. */
   nome: string;
   /**
@@ -55,6 +68,16 @@ export type Formato = {
    * receita, e o mês fecharia com uma renda inventada de milhares de reais.
    */
   sinalNegativo: "entrada" | "saida";
+
+  /**
+   * Como este banco escreve data e dinheiro (spec 11, A1 e A2).
+   *
+   * ⚠ **Os dois formatos do Inter declaram o que o leitor já supunha.** É isso
+   * que faz a fase A da spec 11 provar que não mudou nada: o padrão das duas
+   * funções é exatamente este valor.
+   */
+  formatoData: FormatoDeData;
+  formatoNumero: FormatoDeNumero;
 
   /**
    * Descrições que **não são gasto nem receita** — pagamento de fatura, e o
@@ -90,6 +113,8 @@ export const FORMATOS: Formato[] = [
       valor: "Valor",
       saldo: "Saldo",
     },
+    formatoData: "dd/mm/aaaa",
+    formatoNumero: "pt-BR",
     sinalNegativo: "saida",
     padroesDePassagem: [
       {
@@ -112,6 +137,8 @@ export const FORMATOS: Formato[] = [
       categoria: "Categoria",
       tipo: "Tipo",
     },
+    formatoData: "dd/mm/aaaa",
+    formatoNumero: "pt-BR",
     sinalNegativo: "entrada",
     padroesDePassagem: [
       { padrao: /^PAGAMENTO ON LINE/, motivo: "pagamento da fatura do cartão" },
