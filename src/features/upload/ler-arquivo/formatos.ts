@@ -97,8 +97,18 @@ export type Formato = {
 };
 
 /**
- * A ordem importa só no empate, que hoje não existe: lido com o dialeto
- * errado, cada arquivo vira uma coluna só e não se parece com o outro.
+ * ⚠ **O empate deixou de ser hipotético na spec 11.**
+ *
+ * Enquanto os formatos eram só estes dois, a ordem importava só no empate — e
+ * ele não existia: lido com o dialeto errado, cada arquivo vira uma coluna só e
+ * não se parece com o outro.
+ *
+ * Com formato que o usuário mapeia, ele passa a existir: dois bancos com
+ * cabeçalho `Data,Descrição,Valor` são perfeitamente plausíveis. A regra
+ * (pendência 5 da spec 11) é **o do usuário ganha do de código, e entre os dele
+ * ganha o mais recente** — quem ensinou por último ensinou sabendo do anterior.
+ *
+ * Quem a aplica é a `reconhecer`, pela ordem em que recebe as listas.
  */
 export const FORMATOS: Formato[] = [
   {

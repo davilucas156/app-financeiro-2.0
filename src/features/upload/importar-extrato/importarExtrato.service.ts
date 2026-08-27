@@ -9,10 +9,14 @@ import {
   type NovaTransacao,
 } from "@/db/schema";
 import { classificarImportacao } from "@/features/classificacao/classificar-importacao/classificarImportacao";
+import { formatosDoUsuario } from "@/features/upload/formatos-do-usuario/formatosDoUsuario.service";
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
 import { prepararLancamentos } from "@/features/upload/ler-arquivo/preparar";
-import { reconhecer, type Reconhecimento } from "@/features/upload/ler-arquivo/reconhecer";
+import {
+  reconhecer,
+  type Reconhecimento,
+} from "@/features/upload/ler-arquivo/reconhecer";
 import { TAMANHO_MAXIMO } from "@/features/upload/limites";
 
 /**
@@ -92,6 +96,15 @@ export async function importarExtrato(
     reconhecido: Extract<Reconhecimento, { ok: true }>;
   };
 
+  /*
+   * ⚠ **Os formatos que este usuário ensinou entram na leitura** (spec 11).
+   *
+   * Buscados uma vez, fora do laço: são dois arquivos por envio, e a lista é
+   * a mesma para os dois. E buscados **aqui**, no serviço, porque a
+   * `reconhecer` continua pura — ela recebe, não vai ao banco.
+   */
+  const doUsuario = await formatosDoUsuario(userId);
+
   const lidos: Lido[] = [];
 
   for (const arquivo of arquivos) {
@@ -104,7 +117,7 @@ export async function importarExtrato(
       };
     }
 
-    const reconhecido = reconhecer(arquivo.bytes);
+    const reconhecido = reconhecer(arquivo.bytes, doUsuario);
     if (!reconhecido.ok) {
       // Recusa os **dois** arquivos: a transação é conjunta, e gravar metade
       // faria o usuário reenviar tudo com o `on conflict` escondendo o resto.
@@ -178,13 +191,19 @@ export async function importarExtrato(
   }
 
   // ── Fase A: ler e preparar ───────────────────────────────────────────────
-  const leituras = novos.map((l) => ({ ...l, leitura: paraLancamentos(l.reconhecido) }));
+  const leituras = novos.map((l) => ({
+    ...l,
+    leitura: paraLancamentos(l.reconhecido),
+  }));
 
   // Os dois arquivos numa chamada só: o pagamento de fatura e o par que se
   // anula só aparecem olhando os dois juntos (medido — os R$ 318,19 estão num
   // e noutro).
   const preparados = prepararLancamentos(
-    leituras.map((l) => ({ origem: l.origem, lancamentos: l.leitura.lancamentos })),
+    leituras.map((l) => ({
+      origem: l.origem,
+      lancamentos: l.leitura.lancamentos,
+    })),
   );
 
   const excluidos = preparados.filter((p) => p.marcacao === "excluido").length;

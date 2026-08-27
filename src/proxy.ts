@@ -38,6 +38,10 @@ const ehRotaProtegida = createRouteMatcher([
   // A spec 09 tirou o comparativo do fim do painel e deu rota a ele. Também
   // fora do menu, também protegida.
   "/comparativo(.*)",
+  // A spec 11 trouxe `/formatos` e `/formatos/novo`. Esta lê e escreve linhas
+  // por `user_id` — é a receita de leitura dos extratos de alguém —, então
+  // desprotegida ela não seria "buraco por hábito": seria buraco de verdade.
+  "/formatos(.*)",
   // A spec 09 trouxe `/passos`, a ajuda de como pegar o extrato. Não lê dado
   // nenhum, e entra pelo mesmo motivo da `/configuracoes`.
   "/passos(.*)",

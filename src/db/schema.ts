@@ -13,8 +13,12 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import type { Criterio, TipoDeRegra } from "@/features/classificacao/motor/regras";
+import type {
+  Criterio,
+  TipoDeRegra,
+} from "@/features/classificacao/motor/regras";
 import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
+import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
 import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
@@ -248,7 +252,9 @@ export const imports = pgTable(
      * O resumo congelado no momento do envio. Fica guardado porque a tela de
      * histórico o mostra meses depois, e recontar exigiria reler o arquivo.
      */
-    lancamentosImportados: integer("lancamentos_importados").notNull().default(0),
+    lancamentosImportados: integer("lancamentos_importados")
+      .notNull()
+      .default(0),
 
     /**
      * As linhas que o leitor **não** conseguiu ler — número, motivo e o
@@ -264,7 +270,10 @@ export const imports = pgTable(
      * responde "o que eu perdi?" sem manter o extrato completo parado em
      * algum lugar.
      */
-    ignoradas: jsonb("ignoradas").$type<LinhaIgnorada[]>().notNull().default([]),
+    ignoradas: jsonb("ignoradas")
+      .$type<LinhaIgnorada[]>()
+      .notNull()
+      .default([]),
 
     criadoEm: timestamp("criado_em", { withTimezone: true })
       .notNull()
@@ -431,16 +440,19 @@ export const transactions = pgTable(
      */
     unique("transactions_user_id_impressao_unq").on(t.userId, t.impressao),
 
-    check(
-      "transactions_direcao_ck",
-      sql`${t.direcao} in ('entrada','saida')`,
-    ),
+    check("transactions_direcao_ck", sql`${t.direcao} in ('entrada','saida')`),
     check(
       "transactions_status_ck",
       sql`${t.status} in ('importado','revisao_pendente','excluido')`,
     ),
-    check("transactions_origem_ck", sql`${t.origem} in ('csv_conta','csv_cartao')`),
-    check("transactions_mes_ck", sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`),
+    check(
+      "transactions_origem_ck",
+      sql`${t.origem} in ('csv_conta','csv_cartao')`,
+    ),
+    check(
+      "transactions_mes_ck",
+      sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`,
+    ),
     check("transactions_valor_ck", sql`${t.valorCentavos} >= 0`),
 
     // A consulta da D9: "me mostre os 8 lançamentos que esta regra pegou".
@@ -755,7 +767,10 @@ export const monthlyIncome = pgTable(
      */
     primaryKey({ columns: [t.userId, t.mesReferencia] }),
 
-    check("monthly_income_mes_ck", sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`),
+    check(
+      "monthly_income_mes_ck",
+      sql`${t.mesReferencia} ~ '^[0-9]{4}-[0-9]{2}$'`,
+    ),
     // Renda negativa não é um mês ruim, é erro de digitação.
     check("monthly_income_valor_ck", sql`${t.rendaCentavos} >= 0`),
   ],
@@ -763,3 +778,119 @@ export const monthlyIncome = pgTable(
 
 export type RendaDoMes = typeof monthlyIncome.$inferSelect;
 export type NovaRendaDoMes = typeof monthlyIncome.$inferInsert;
+
+/**
+ * Os formatos de CSV que **o usuário** ensinou o app a ler (spec 11, tarefa B1).
+ *
+ * ## Uma tabela nova, e nenhuma alteração nas existentes
+ *
+ * ⚠ É a Descoberta 1 da spec 11, e ela foi medida: `formato.id` **só aparece em
+ * teste**. Nenhum arquivo de produção pergunta de qual banco veio um lançamento
+ * — o que atravessa o app é `origem` (`csv_conta`/`csv_cartao`), que `imports` e
+ * `transactions` já guardam desde a spec 02.
+ *
+ * Por isso o multibanco não pede coluna em lugar nenhum. O formato é a **receita
+ * de leitura**; o lançamento é o que foi lido, e ele sai igual venha de onde
+ * vier.
+ *
+ * ## Por que os formatos do Inter continuam em código
+ *
+ * `FORMATOS`, em `ler-arquivo/formatos.ts`, foi **medido em arquivo real** e é
+ * o caminho rápido: quando o arquivo bate com um deles, o app não pergunta nada.
+ * Esta tabela é o caminho lento, para o banco que ninguém mediu — e o que a
+ * pessoa mapeia aqui vira, para ela, tão automático quanto os de código.
+ */
+export const userFormats = pgTable(
+  "user_formats",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    /** Como aparece numa mensagem de erro: "Extrato da conta do Banco X". */
+    nome: text("nome").notNull(),
+
+    /**
+     * O banco, escrito como a pessoa o chama.
+     *
+     * ⚠ **A `/passos` deriva dela a lista do que o app entende** (spec 09), e é
+     * por isso que ela é obrigatória aqui como é em `Formato`. Um formato sem
+     * banco tiraria a tela de ajuda do lugar.
+     */
+    banco: text("banco").notNull(),
+
+    origem: text("origem").$type<"csv_conta" | "csv_cartao">().notNull(),
+
+    /** `{ separador, aspas }` — ver `ler-arquivo/grade.ts`. */
+    dialeto: jsonb("dialeto").$type<Dialeto>().notNull(),
+
+    /**
+     * Papel → **nome** da coluna no arquivo, igual a `Formato.colunas`.
+     *
+     * ⚠ **Nome e não índice, embora a pessoa aponte índice na tela.** Guardar o
+     * índice obrigaria a escrever um segundo caminho de reconhecimento, e
+     * quebraria **em silêncio** no dia em que o banco acrescentasse uma coluna
+     * à esquerda — o formato continuaria casando e passaria a ler a coluna
+     * errada. Por nome ele deixa de casar, e a pessoa vê "não reconheci".
+     *
+     * A tradução de índice para nome acontece ao salvar, em
+     * `formatos-do-usuario/formatoDoUsuario.ts`.
+     */
+    colunas: jsonb("colunas").$type<Record<string, string>>().notNull(),
+
+    /**
+     * O que o sinal negativo significa **neste** arquivo.
+     *
+     * ⚠ O erro caro da spec 11: lido ao contrário, todo gasto do cartão vira
+     * receita e o mês fecha com uma renda inventada. A defesa não é esta coluna
+     * — é a prévia que mostrou a consequência antes de a linha ser gravada.
+     */
+    sinalNegativo: text("sinal_negativo")
+      .$type<"entrada" | "saida">()
+      .notNull(),
+
+    /** Ver `ler-arquivo/dialetos.ts`. */
+    formatoData: text("formato_data").notNull(),
+    formatoNumero: text("formato_numero").notNull(),
+
+    /**
+     * Descrições que não são gasto nem receita — pagamento de fatura e afins.
+     *
+     * ⚠ **Nasce vazio, e a tela não pergunta** (pendência 8 da spec 11). É a
+     * pergunta que ninguém sabe responder, e a falta dela não produz o desastre:
+     * `prepararLancamentos` casa pares que se anulam **por valor e data**, sem
+     * olhar texto, e os dois lados caem em revisão. Sem configuração o app
+     * pergunta; ele não inventa.
+     */
+    padroesDePassagem: jsonb("padroes_de_passagem")
+      .$type<{ padrao: string; motivo: string }[]>()
+      .notNull()
+      .default([]),
+
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("user_formats_user_id_idx").on(t.userId),
+    /** Dois formatos com o mesmo nome seriam indistinguíveis na `/formatos`. */
+    unique("user_formats_user_id_nome_unq").on(t.userId, t.nome),
+    check(
+      "user_formats_origem_ck",
+      sql`${t.origem} in ('csv_conta','csv_cartao')`,
+    ),
+    check(
+      "user_formats_sinal_ck",
+      sql`${t.sinalNegativo} in ('entrada','saida')`,
+    ),
+  ],
+);
+
+export type FormatoDoUsuario = typeof userFormats.$inferSelect;
+export type NovoFormatoDoUsuario = typeof userFormats.$inferInsert;

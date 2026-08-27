@@ -59,7 +59,20 @@ type Tentativa = {
  * A1, e deixar isso para quem chama seria plantar o erro de comparar `"﻿Data"`
  * com `"Data"` e nunca entender por quê.
  */
-export function reconhecer(bytes: Uint8Array): Reconhecimento {
+export function reconhecer(
+  bytes: Uint8Array,
+  /**
+   * Os formatos que **este usuário** ensinou (spec 11, tarefa C1).
+   *
+   * ⚠ **Recebidos, e não buscados.** Esta função continua pura e continua
+   * testável com bytes na mão; quem vai ao banco é quem chama. Importar o
+   * serviço aqui traria `server-only` junto e mataria os testes que provam o
+   * leitor desde a spec 02.
+   *
+   * ⚠ **Eles vêm na frente na hora de desempatar.** Ver `escolhaEntre`.
+   */
+  doUsuario: Formato[] = [],
+): Reconhecimento {
   const texto = decodificar(bytes);
 
   if (texto.trim() === "") {
@@ -70,7 +83,9 @@ export function reconhecer(bytes: Uint8Array): Reconhecimento {
     };
   }
 
-  const tentativas = FORMATOS.map((formato) => tentar(texto, formato));
+  const tentativas = [...doUsuario, ...FORMATOS].map((formato) =>
+    tentar(texto, formato),
+  );
   const acerto = tentativas.find((t) => t.faltando.length === 0);
 
   if (acerto) {
