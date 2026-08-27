@@ -15,16 +15,16 @@ exemplo abaixo são inventadas, seguindo o formato exato.
 
 Baixado como "Extrato ... CSV".
 
-| Propriedade | Valor |
-|---|---|
-| Codificação | UTF-8, **sem** BOM |
-| Separador | `;` (ponto e vírgula) |
-| Aspas nos campos | **nenhuma** |
-| Linhas antes do cabeçalho | 5 (4 de metadados + 1 em branco) |
-| Cabeçalho | `Data Lançamento;Descrição;Valor;Saldo` |
-| Data | `dd/mm/aaaa` |
-| Valor | `1.200,00` — milhar `.`, decimal `,`, negativo com `-` na frente |
-| Sentido | pelo sinal do valor |
+| Propriedade               | Valor                                                            |
+| ------------------------- | ---------------------------------------------------------------- |
+| Codificação               | UTF-8, **sem** BOM                                               |
+| Separador                 | `;` (ponto e vírgula)                                            |
+| Aspas nos campos          | **nenhuma**                                                      |
+| Linhas antes do cabeçalho | 5 (4 de metadados + 1 em branco)                                 |
+| Cabeçalho                 | `Data Lançamento;Descrição;Valor;Saldo`                          |
+| Data                      | `dd/mm/aaaa`                                                     |
+| Valor                     | `1.200,00` — milhar `.`, decimal `,`, negativo com `-` na frente |
+| Sentido                   | pelo sinal do valor                                              |
 
 ```
 Extrato Conta Corrente
@@ -46,16 +46,16 @@ puro, sem tratamento de aspas.
 
 ## Banco Inter — Fatura do cartão
 
-| Propriedade | Valor |
-|---|---|
-| Codificação | UTF-8 **com BOM** (`EF BB BF`) |
-| Separador | `,` (vírgula) |
-| Aspas nos campos | **todos** entre aspas |
-| Linhas antes do cabeçalho | 0 |
-| Cabeçalho | `Data,Lançamento,Categoria,Tipo,Valor` |
-| Data | `dd/mm/aaaa` |
-| Valor | `"R$ 15,00"` — prefixo `R$ `, decimal `,`. Negativo: `"-R$ 318,19"`, com o sinal **antes** do `R$` |
-| Sentido | quase tudo é saída; o negativo é o pagamento da fatura |
+| Propriedade               | Valor                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| Codificação               | UTF-8 **com BOM** (`EF BB BF`)                                                                     |
+| Separador                 | `,` (vírgula)                                                                                      |
+| Aspas nos campos          | **todos** entre aspas                                                                              |
+| Linhas antes do cabeçalho | 0                                                                                                  |
+| Cabeçalho                 | `Data,Lançamento,Categoria,Tipo,Valor`                                                             |
+| Data                      | `dd/mm/aaaa`                                                                                       |
+| Valor                     | `"R$ 15,00"` — prefixo `R$ `, decimal `,`. Negativo: `"-R$ 318,19"`, com o sinal **antes** do `R$` |
+| Sentido                   | quase tudo é saída; o negativo é o pagamento da fatura                                             |
 
 ```
 "Data","Lançamento","Categoria","Tipo","Valor"
@@ -82,9 +82,9 @@ todas. **Um mesmo parser não lê os dois arquivos** — são duas configuraçõ
 
 ## O sinal significa o oposto em cada arquivo
 
-| | Negativo | Positivo |
-|---|---|---|
-| Extrato da conta | dinheiro **saiu** | dinheiro **entrou** |
+|                  | Negativo                    | Positivo                      |
+| ---------------- | --------------------------- | ----------------------------- |
+| Extrato da conta | dinheiro **saiu**           | dinheiro **entrou**           |
 | Fatura do cartão | crédito, **abate** a fatura | compra, dinheiro **vai sair** |
 
 Na fatura, uma compra de 15,00 é positiva **e é gasto**. Assumir "negativo é
@@ -112,12 +112,84 @@ confiar no parser. Somar o que o próprio parser leu não prova nada.
 
 O pagamento da fatura aparece **duas vezes**, uma em cada arquivo:
 
-| Arquivo | Linha | Valor |
-|---|---|---|
-| Extrato | `Pagamento efetuado: "Pagamento fatura cartao Inter"` | `-318,19` |
-| Fatura | `PAGAMENTO ON LINE` | `-R$ 318,19` |
+| Arquivo | Linha                                                 | Valor        |
+| ------- | ----------------------------------------------------- | ------------ |
+| Extrato | `Pagamento efetuado: "Pagamento fatura cartao Inter"` | `-318,19`    |
+| Fatura  | `PAGAMENTO ON LINE`                                   | `-R$ 318,19` |
 
 Importar os dois sem tratamento faz R$ 318,19 sair da conta **duas vezes**, e o
 mês fecha errado para menos. O `readme.md` §7 já previa isso ("exclusões
 automáticas: pagamento de fatura"); os textos exatos acima são o que permite
 detectar.
+
+---
+
+## Formato que o usuário ensina (spec 11)
+
+Os formatos acima foram **medidos por quem escreveu o app**. A spec 11
+acrescentou o outro caminho: quando nenhum formato conhecido reconhece o
+arquivo, a pessoa ensina o app a lê-lo, e o que ela ensinou vira uma linha em
+`user_formats` — reconhecida sozinha a partir do envio seguinte.
+
+> A régua deste documento continua valendo para o **código**: formato que entra
+> em `FORMATOS` se mede em arquivo real antes de virar parser. O que muda é que
+> deixou de ser o único jeito de o app ler um banco.
+
+### O que um formato precisa declarar
+
+|                                         | De onde sai                                                       |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| Separador e tratamento de aspas         | proposto por `palpite.ts`, conferido na tela                      |
+| Linha do cabeçalho                      | proposta: a primeira com a largura da tabela e nenhum dado dentro |
+| Colunas (data, descrição, valor, saldo) | propostas **pelo conteúdo das células**, nunca pelo nome          |
+| Formato de data                         | o que lê a coluna inteira                                         |
+| Convenção de número                     | idem                                                              |
+| O que o sinal negativo significa        | a leitura que deixa menos linhas como entrada                     |
+
+⚠ **O formato é gravado com o _nome_ da coluna, não com o índice.** A pessoa
+aponta a terceira coluna na tela; o que vai para o banco é `"Vlr"`. Índice
+quebraria **em silêncio** no dia em que o banco acrescentasse uma coluna à
+esquerda — o formato continuaria casando e passaria a ler a coluna errada. Por
+nome ele deixa de casar, e a pessoa vê "não reconheci", que é falhar em voz alta.
+
+### As duas armadilhas, e o que as segura
+
+**O sinal.** Já documentado acima: na conta, negativo é saída; na fatura, uma
+compra positiva é gasto. Lido ao contrário, todo gasto do cartão vira receita.
+
+A defesa **não é uma pergunta melhor** — "o negativo é entrada ou saída?" é
+convenção contábil perguntada a quem só queria subir um extrato, e ninguém sabe
+conferir a própria resposta. A defesa é a tela mostrar a consequência:
+
+> 34 lançamentos: R$ 4.812,00 de gasto e R$ 0,00 de entrada.
+
+Com o sinal trocado, a mesma frase diz "R$ 4.812,00 de entrada" numa fatura.
+
+**A data.** `01/02/2026` é 1º de fevereiro ou 2 de janeiro, e **as duas leituras
+são plausíveis**. Só o arquivo desempata, e só quando tem algum dia acima de 12.
+
+⚠ Este erro é pior que o do sinal de um jeito específico: sinal trocado aparece
+num total, data trocada **move lançamentos de mês** — e o mês é o eixo do painel,
+do comparativo e da média. Não tem sintoma. Por isso o palpite nunca propõe
+`mm/dd` por preferência, e a prévia mostra as datas **já lidas**.
+
+### A conferência, quando o arquivo permite
+
+A régua deste documento — _"somar o que o próprio parser leu não prova nada"_ —
+vale igual aqui. Quando o mapeamento aponta uma coluna de saldo, a tela roda a
+mesma checagem do Inter: cada valor aplicado ao saldo da linha anterior tem de
+dar o saldo da seguinte, e ela diz quantas transições batem.
+
+⚠ **Fatura de cartão nunca traz saldo.** Para esses, a única defesa é a frase da
+consequência, que é mais fraca — e a tela **diz isso**, em vez de fingir que
+conferiu.
+
+### O que o usuário não declara, e por quê
+
+`padroesDePassagem` — o texto do pagamento de fatura — nasce **vazio**, e a tela
+não pergunta. É a pergunta que ninguém sabe responder, e a falta dela não produz
+o desastre do dinheiro saindo duas vezes: `prepararLancamentos` casa pares que se
+anulam **por valor e data, sem olhar texto**, e marca os dois lados como
+"revisão".
+
+Sem configuração o app **pergunta**; ele não inventa.

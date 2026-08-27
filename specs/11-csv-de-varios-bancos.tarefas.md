@@ -2,7 +2,7 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/11-csv-de-varios-bancos.md`
-**Status:** a executar
+**Status:** ✅ as cinco fases entregues. Duas coisas mudaram na execução e estão anotadas abaixo, nas tarefas D1 e D4.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -18,10 +18,10 @@ idas ao servidor.
 
 Três saídas, e a escolhida:
 
-| Saída                                              | Por que não / por que sim                                                                                                        |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Gravar o CSV num storage temporário                | ❌ Contraria a spec 02, C3, que decidiu **não** guardar o arquivo. Extrato tem número de conta e o gasto do mês inteiro           |
-| Mandar o texto decodificado para o cliente          | ❌ Aí quem separa por `;` e acha o cabeçalho é o navegador — regra de negócio no front, contra `architecture.md`                  |
+| Saída                                                    | Por que não / por que sim                                                                                                          |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Gravar o CSV num storage temporário                      | ❌ Contraria a spec 02, C3, que decidiu **não** guardar o arquivo. Extrato tem número de conta e o gasto do mês inteiro            |
+| Mandar o texto decodificado para o cliente               | ❌ Aí quem separa por `;` e acha o cabeçalho é o navegador — regra de negócio no front, contra `architecture.md`                   |
 | ✅ **O `File` fica no navegador; cada prévia o reenvia** | O objeto `File` vive na memória da aba, e cada mudança de dialeto reposta os bytes para uma action que devolve **a grade já lida** |
 
 ⚠ **É a única das três que respeita Thin Client / Fat Server e a spec 02 ao mesmo
@@ -29,8 +29,13 @@ tempo.** O custo é reenviar até 2 MB por ajuste — e são poucos ajustes, cad
 deliberado, num arquivo que o limite já prende em 2 MB (`upload/limites.ts`).
 
 Isso decide a forma da tela: **o mapeamento é um componente de cliente que
-segura o `File`**, e não uma rota para onde se navega. `/formatos/novo` existe
-como rota, mas quem chega nela sem arquivo é convidado a escolher um.
+segura o `File`**, e não uma rota para onde se navega.
+
+⚠ **Na execução, `/formatos/novo` deixou de existir.** O plano previa a rota
+"para quem chega sem arquivo escolher um" — e isso é um segundo seletor de
+arquivo que não serve a ninguém: quem tem o arquivo já está no `/upload`, e
+quem não tem não vai mapear nada. O mapeamento abre **no lugar da mensagem de
+erro**, e a `/formatos` ficou só para ver e apagar.
 
 ## A ordem: o vocabulário, o banco, o servidor, a tela
 
@@ -53,21 +58,21 @@ escolhido no cartão — continua certo para qualquer banco, porque é sobre
 
 ## Reuso antes de criação
 
-| O que                        | Onde                                | Para quê aqui                                       |
-| ---------------------------- | ----------------------------------- | --------------------------------------------------- |
-| `paraGrade`, `decodificar`   | `ler-arquivo/grade.ts`              | A prévia usa **a mesma** leitura do import de verdade |
-| `reconhecer`                 | `ler-arquivo/reconhecer.ts`         | Ganha um parâmetro, não um irmão                    |
-| `paraLancamentos`            | `ler-arquivo/lancamentos.ts`        | A prévia da consequência sai dele, não de outra conta |
-| `prepararLancamentos`        | `ler-arquivo/preparar.ts`           | Pares que se anulam já cobrem o banco sem `padroesDePassagem` |
-| `escolhaValida`              | `aparencia/preferencia/`            | Validar `origem` e `sinalNegativo` vindos do cliente |
-| `Card`, `SectionTitle`, `EstadoVazio` | `components/ui/`           | As duas telas novas                                 |
-| `CampoDeArquivo`             | `upload/enviar-extrato/`            | O arquivo na tela de mapeamento                     |
+| O que                                 | Onde                         | Para quê aqui                                                 |
+| ------------------------------------- | ---------------------------- | ------------------------------------------------------------- |
+| `paraGrade`, `decodificar`            | `ler-arquivo/grade.ts`       | A prévia usa **a mesma** leitura do import de verdade         |
+| `reconhecer`                          | `ler-arquivo/reconhecer.ts`  | Ganha um parâmetro, não um irmão                              |
+| `paraLancamentos`                     | `ler-arquivo/lancamentos.ts` | A prévia da consequência sai dele, não de outra conta         |
+| `prepararLancamentos`                 | `ler-arquivo/preparar.ts`    | Pares que se anulam já cobrem o banco sem `padroesDePassagem` |
+| `escolhaValida`                       | `aparencia/preferencia/`     | Validar `origem` e `sinalNegativo` vindos do cliente          |
+| `Card`, `SectionTitle`, `EstadoVazio` | `components/ui/`             | As duas telas novas                                           |
+| `CampoDeArquivo`                      | `upload/enviar-extrato/`     | O arquivo na tela de mapeamento                               |
 
 ---
 
 ## Fase A — o que o leitor ainda não sabe fazer
 
-### A1 · A data deixa de ser só `dd/mm/aaaa` `INFRA`
+### ✅ A1 · A data deixa de ser só `dd/mm/aaaa` `INFRA`
 
 `paraDataISO` ganha um formato declarado. Hoje é uma expressão regular fixa.
 
@@ -80,7 +85,7 @@ total: ele move lançamentos de mês, e o mês é o eixo do produto inteiro.
 `dd-mm-aaaa`, `mm/dd/aaaa`) são lidos; `31/02` continua recusado em todos; e o
 teste do Inter passa **sem uma linha alterada**.
 
-### A2 · O número deixa de ser só pt-BR `INFRA`
+### ✅ A2 · O número deixa de ser só pt-BR `INFRA`
 
 `paraCentavos` ganha o mesmo tratamento: `1.200,00` (pt-BR) e `1,200.00` (en-US).
 
@@ -91,7 +96,7 @@ teste do Inter passa **sem uma linha alterada**.
 mil e duzentos e em en-US é um e dois décimos — **recusado**, porque centavo tem
 duas casas; e os testes de hoje passam sem alteração.
 
-### A3 · `Formato` deixa de ser uma lista fechada `INFRA`
+### ✅ A3 · `Formato` deixa de ser uma lista fechada `INFRA`
 
 `id` é hoje a união `"inter-extrato" | "inter-fatura"`. Passa a aceitar formato
 de usuário, e `Formato` ganha `formatoData` e `formatoNumero`.
@@ -101,7 +106,7 @@ a fase A prova que não mudou nada.
 
 **Pronto quando:** `tsc` limpo e a suíte inteira passa sem alteração.
 
-### A4 · O palpite que pré-preenche a tela `INFRA`
+### ✅ A4 · O palpite que pré-preenche a tela `INFRA`
 
 Dada uma grade, propor: separador, aspas, linha do cabeçalho, e qual coluna é
 data, descrição e valor — pelo **conteúdo das células**, não pelo nome.
@@ -120,7 +125,7 @@ larga em texto.
 aspas, cabeçalho e os três papéis — partindo das amostras de `amostras.ts`,
 sem consultar `FORMATOS`.
 
-### A5 · A prévia da consequência, e a conferência do saldo `INFRA`
+### ✅ A5 · A prévia da consequência, e a conferência do saldo `INFRA`
 
 Dado um mapeamento candidato e uma grade: quantos lançamentos saem, quanto
 entrou, quanto saiu, e quantas linhas seriam ignoradas.
@@ -143,7 +148,7 @@ aponta a coluna errada.
 
 ## Fase B — a tabela
 
-### B1 · `user_formats` `BANCO`
+### ✅ B1 · `user_formats` `BANCO`
 
 Uma tabela nova. ⚠ **Zero alteração nas existentes** — Descoberta 1 da spec.
 
@@ -159,7 +164,7 @@ no diff.
 
 ## Fase C — o servidor
 
-### C1 · `reconhecer` passa a conhecer os formatos do usuário `BACK`
+### ✅ C1 · `reconhecer` passa a conhecer os formatos do usuário `BACK`
 
 Ela recebe a lista em vez de importar `FORMATOS` direto — continua pura,
 continua testável com bytes na mão, e quem busca no banco é quem chama.
@@ -171,7 +176,7 @@ empate, que hoje não existe"; com formato de usuário ele passa a existir.
 **Pronto quando:** um arquivo que bate com um formato de código continua sendo
 lido por ele; um que bate com os dois é lido pelo do usuário.
 
-### C2 · Gravar, editar e apagar um formato `BACK`
+### ✅ C2 · Gravar, editar e apagar um formato `BACK`
 
 Actions com `garantirUsuario()`, `user_id` **sempre** do servidor.
 
@@ -186,7 +191,7 @@ nunca a string; e apagar formato de outro usuário não acha linha.
 
 ## Fase D — as telas
 
-### D1 · A tela de mapeamento, visual `FRONT-VISUAL`
+### ✅ D1 · A tela de mapeamento, visual `FRONT-VISUAL`
 
 Prévia da grade, dialeto, linha do cabeçalho, colunas, "este arquivo é",
 sinal com a frase da consequência, nome do banco.
@@ -198,7 +203,7 @@ ela só tocar em "Salvar", tem de dar certo no caso comum.
 falta, nunca "preencha os campos"; nenhum `text-[Npx]` (o teste da spec 10
 reprova).
 
-### D2 · O mapeamento com arquivo de verdade `FRONT-INTEGRADO`
+### ✅ D2 · O mapeamento com arquivo de verdade `FRONT-INTEGRADO`
 
 Ligar a prévia à A5 pela action, com o `File` segurado no cliente.
 
@@ -206,7 +211,7 @@ Ligar a prévia à A5 pela action, com o `File` segurado no cliente.
 a frase na hora; salvar grava e **importa o arquivo em seguida** — a pessoa veio
 subir um extrato, não configurar um app.
 
-### D3 · A saída no erro do `/upload` `FRONT-INTEGRADO`
+### ✅ D3 · A saída no erro do `/upload` `FRONT-INTEGRADO`
 
 A mensagem de "não reconheci" ganha o botão de ensinar, **com o arquivo já
 escolhido**.
@@ -214,7 +219,7 @@ escolhido**.
 **Pronto quando:** o beco sem saída de hoje tem porta, e quem tem formato salvo
 não vê nem o erro nem o botão.
 
-### D4 · `/formatos`, o que o app aprendeu a ler `FRONT-INTEGRADO`
+### ✅ D4 · `/formatos`, o que o app aprendeu a ler `FRONT-INTEGRADO`
 
 Lista, edição e remoção. ⚠ **Formato salvo errado envenena todo envio futuro
 daquele banco, em silêncio** — sem esta tela o único conserto seria mexer no
@@ -223,10 +228,16 @@ banco de dados.
 ⚠ **Apagar formato não apaga lançamento.** Receita de leitura e comida são
 coisas diferentes; desfazer importação já existe na `/upload` desde a spec 02.
 
-**Pronto quando:** apagar confirma dizendo quantos envios usaram aquele formato,
-e os lançamentos continuam lá depois.
+⚠ **Na execução, a contagem de envios caiu.** Ela pedia uma coluna `formato_id`
+em `imports` — contra a promessa desta spec, que era verificável e foi
+verificada: a migration 0011 é um `CREATE TABLE` e nada mais. A confirmação diz
+o que é verdade sem o número: os lançamentos ficam, e arquivos daquele banco
+voltam a pedir para ser ensinados.
 
-### D5 · Proteger as rotas novas `INFRA`
+**Pronto quando:** apagar confirma dizendo o que **não** apaga, e os lançamentos
+continuam lá depois.
+
+### ✅ D5 · Proteger as rotas novas `INFRA`
 
 ⚠ **Rota interna nova NÃO é protegida automaticamente** (`architecture.md`).
 `/formatos` e `/formatos/novo` entram à mão em `src/proxy.ts`.
@@ -237,7 +248,7 @@ e os lançamentos continuam lá depois.
 
 ## Fase E — fechar
 
-### E1 · O banco inventado que se ensina sozinho `INFRA`
+### ✅ E1 · O banco inventado que se ensina sozinho `INFRA`
 
 Uma amostra em `amostras.ts` de um banco que não existe, em outro dialeto —
 separador `,`, data `aaaa-mm-dd`, número en-US — que **não** casa com nenhum
@@ -249,7 +260,7 @@ formato de código, é mapeada, salva, e no segundo envio é reconhecida sozinha
 **Pronto quando:** o ciclo inteiro passa em teste, e os testes do Inter passam
 sem uma linha alterada.
 
-### E2 · Os documentos `INFRA`
+### ✅ E2 · Os documentos `INFRA`
 
 `references/formatos-de-extrato.md` ganha a seção do formato de usuário;
 `references/architecture.md` ganha a tabela nova;

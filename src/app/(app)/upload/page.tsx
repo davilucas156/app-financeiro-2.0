@@ -50,6 +50,20 @@ export default async function UploadPage() {
       </div>
 
       <MesesImportados envios={envios} />
+
+      {/*
+        ⚠ **O caminho até a `/formatos` fica no rodapé, e não no topo** (spec
+        11). Quem abre esta tela veio enviar um arquivo, não administrar
+        formatos — e o momento de mexer neles é depois de um envio dar errado,
+        que é onde a mensagem de erro já oferece ensinar. Aqui embaixo o link
+        serve a quem quer conferir ou apagar o que ensinou.
+      */}
+      <p className="mt-8 text-2xs leading-relaxed text-dim">
+        <Link href="/formatos" className="underline underline-offset-4">
+          Os formatos que eu leio
+        </Link>{" "}
+        — e os que você me ensinou.
+      </p>
     </>
   );
 }

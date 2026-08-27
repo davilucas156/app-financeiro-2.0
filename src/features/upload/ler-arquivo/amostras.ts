@@ -34,3 +34,31 @@ export const FATURA_INTER = `﻿"Data","Lançamento","Categoria","Tipo","Valor"
 "12/06/2026","OFICINA EXEMPLO        BETIM         BRA","OUTROS","Parcela 1/2","R$ 166,50"
 "02/06/2026","PAGAMENTO ON LINE","OUTROS","Compra à vista","-R$ 318,19"
 `;
+
+/**
+ * Um banco que **não existe**, para a spec 11 (tarefa E1).
+ *
+ * ⚠ **Esta é a única amostra do arquivo que não foi medida em arquivo real**, e
+ * a diferença importa: as duas de cima descrevem formatos que existem e por isso
+ * viraram entradas em `FORMATOS`; esta existe para exercitar o caminho de quem
+ * **não** está lá.
+ *
+ * Ela é de propósito o oposto do Inter em tudo que dá:
+ *
+ * | | Inter (conta) | aqui |
+ * |---|---|---|
+ * | separador | `;` | `,` |
+ * | data | `dd/mm/aaaa` | `aaaa-mm-dd` |
+ * | número | `1.200,00` | `1200.00` |
+ * | cabeçalho | linha 5 | linha 0 |
+ * | nomes de coluna | `Data Lançamento`… | nada que a `reconhecer` conheça |
+ *
+ * ⚠ **Nomes inventados e nenhum número de conta**, como manda o
+ * `references/formatos-de-extrato.md`. Não há dado real de ninguém aqui.
+ */
+export const EXTRATO_BANCO_INVENTADO = `Fecha_Mov,Historico,Vlr,Saldo_Post
+2026-03-04,COMPRA MERCADO CENTRAL,-152.40,3847.60
+2026-03-05,TRANSFERENCIA RECEBIDA,1200.00,5047.60
+2026-03-11,ASSINATURA MENSAL,-39.90,5007.70
+2026-03-18,POSTO DE COMBUSTIVEL,-210.00,4797.70
+`;

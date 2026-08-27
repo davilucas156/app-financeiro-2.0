@@ -1,6 +1,6 @@
 # Estado do projeto — o que o app é hoje
 
-**Atualizado em:** 26/08/2026, com as specs 06, 07, 08, 09, 10 e 12 no ar
+**Atualizado em:** 27/08/2026, com as specs 06 a 12 no ar
 **Contra:** `readme.md`, o pedido original
 **Para quê:** o `readme.md` é de antes de existir código. Seis specs depois,
 várias decisões dele foram revistas **de propósito** e com motivo registrado.
@@ -93,29 +93,6 @@ tela para isso.
 Open Finance, app nativo, múltiplos idiomas, painel compartilhado entre duas
 pessoas.
 
-### Decidido pelo Davi, ainda sem spec
-
-- **CSV de vários bancos.** Dito em 24/08/2026: _"nossa proposta será receber
-  diferentes csvs nao apenas do banco inter"_. Hoje `FORMATOS` tem **duas**
-  entradas, as duas do Inter, e a régua de `references/formatos-de-extrato.md`
-  é que **formato se mede em arquivo real antes de virar parser**.
-
-  A spec 09 já preparou o terreno pelo lado da ajuda: `FORMATOS` ganhou o campo
-  `banco` e a tela `/passos` deriva dali a lista do que o app entende — ela
-  passa a listar um banco novo sozinha.
-
-  ⚠ **A bifurcação foi resolvida em `specs/11-csv-de-varios-bancos.md`, que
-  está escrita e aguardando aprovação do Davi.** Ela estava registrada assim:
-  _medir cada banco (não escala) ou ler CSV genérico com o usuário apontando as
-  colunas (escala, e transfere para ele a chance de errar o sentido do sinal)_ —
-  e dizia que não dava para escolher sem um arquivo de outro banco na mão.
-
-  A spec 11 mostra que são a **mesma operação em ordens diferentes**: alguém
-  olha um CSV e descreve dialeto, colunas e sinal. Muda **quem** e **quando**. A
-  decisão é fazer as duas — `FORMATOS` continua o caminho rápido, e o que o
-  usuário mapeia **vira formato salvo**, reconhecido sozinho no envio seguinte.
-  Isso destrava a spec hoje: nada nela depende de um CSV de outro banco existir.
-
 ### Não está em spec nenhuma, e talvez devesse
 
 - **Fixar uma categoria como cartão do comparativo.** A spec 12 entregou os
@@ -140,6 +117,7 @@ pessoas.
 | `/entrar`, `/cadastrar` | Acesso, com allowlist                                           | 01      |
 | `/bem-vindo`            | Primeiro acesso, cria potes e categorias                        | 01      |
 | `/upload`               | Enviar extrato, histórico de envios, desfazer                   | 02      |
+| `/formatos`             | O que o app lê, e o que você ensinou a ele                      | 11      |
 | `/revisao`              | Decidir um lançamento por vez, com desfazer                     | 03      |
 | `/regras`               | Ver, corrigir e apagar o que o motor aprendeu                   | 03      |
 | `/dashboard`            | Veredito, potes com insight, comparativo                        | 04 e 06 |

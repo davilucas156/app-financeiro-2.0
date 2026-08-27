@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CampoDeArquivo } from "@/features/upload/enviar-extrato/CampoDeArquivo";
+import { PainelDeMapeamento } from "@/features/upload/formatos-do-usuario/PainelDeMapeamento";
 import { ResumoDaImportacao } from "@/features/upload/enviar-extrato/ResumoDaImportacao";
 import { SeletorDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
 import { enviarExtrato } from "@/features/upload/importar-extrato/importarExtrato.action";
@@ -25,7 +26,15 @@ import { formatarTamanho, recusar } from "@/features/upload/limites";
  * estados acontecem de verdade.
  */
 
-type Escolhido = { nome: string; tamanho: string } | null;
+/**
+ * ⚠ **O `File` fica guardado, e nao so o nome** (spec 11).
+ *
+ * E o que permite ensinar um formato sem pedir o arquivo de novo: o objeto
+ * vive na memoria desta aba, e o painel de mapeamento o reenvia a cada ajuste.
+ * Sem isto, quem recebe "nao reconheci" teria de escolher o arquivo outra vez
+ * -- que e onde a spec dizia que a pessoa desiste.
+ */
+type Escolhido = { nome: string; tamanho: string; arquivo: File } | null;
 
 const ROTULO: Record<CampoDeEnvio, string> = {
   conta: "Extrato da conta",
@@ -44,10 +53,12 @@ export function FormularioDeEnvio({
     FormData
   >(enviarExtrato, null);
 
-  const [escolhidos, setEscolhidos] = useState<Record<CampoDeEnvio, Escolhido>>({
-    conta: null,
-    cartao: null,
-  });
+  const [escolhidos, setEscolhidos] = useState<Record<CampoDeEnvio, Escolhido>>(
+    {
+      conta: null,
+      cartao: null,
+    },
+  );
   const [erros, setErros] = useState<Record<CampoDeEnvio, string | null>>({
     conta: null,
     cartao: null,
@@ -69,9 +80,16 @@ export function FormularioDeEnvio({
       ...e,
       [campo]: problema
         ? null
-        : { nome: arquivo.name, tamanho: formatarTamanho(arquivo.size) },
+        : {
+            nome: arquivo.name,
+            tamanho: formatarTamanho(arquivo.size),
+            arquivo,
+          },
     }));
   }
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const [ensinando, setEnsinando] = useState(false);
 
   const temArquivo = Boolean(escolhidos.conta || escolhidos.cartao);
   const erroDoServidor = resultado && !resultado.ok ? resultado.erro : null;
@@ -79,9 +97,20 @@ export function FormularioDeEnvio({
   const jaImportados = sucesso?.arquivos.filter((a) => a.jaImportado) ?? [];
   const gravados = sucesso?.arquivos.filter((a) => !a.jaImportado) ?? [];
 
+  /*
+   * ⚠ **Só o erro de reconhecimento vira convite para ensinar.** Campo trocado
+   * ou arquivo grande demais não se resolvem com um formato novo, e oferecer o
+   * botão ali mandaria a pessoa mapear um arquivo que o app já sabe ler.
+   */
+  const podeEnsinar =
+    erroDoServidor !== null && /reconheci|faltar/i.test(erroDoServidor);
+
+  const paraEnsinar =
+    escolhidos.conta?.arquivo ?? escolhidos.cartao?.arquivo ?? null;
+
   return (
     <>
-      <form action={agir}>
+      <form ref={formRef} action={agir}>
         <Card>
           <SeletorDeMes valor={mes} opcoes={meses} desabilitado={enviando} />
 
@@ -91,7 +120,13 @@ export function FormularioDeEnvio({
               rotulo={ROTULO.conta}
               descricao="CSV do Inter, com Data Lançamento, Descrição, Valor e Saldo."
               estado={
-                erros.conta ? "erro" : enviando ? "enviando" : escolhidos.conta ? "escolhido" : "vazio"
+                erros.conta
+                  ? "erro"
+                  : enviando
+                    ? "enviando"
+                    : escolhidos.conta
+                      ? "escolhido"
+                      : "vazio"
               }
               arquivo={escolhidos.conta ?? undefined}
               erro={erros.conta ?? undefined}
@@ -104,7 +139,13 @@ export function FormularioDeEnvio({
               descricao="CSV da fatura. Dá para enviar só a conta e mandar o cartão depois."
               opcional
               estado={
-                erros.cartao ? "erro" : enviando ? "enviando" : escolhidos.cartao ? "escolhido" : "vazio"
+                erros.cartao
+                  ? "erro"
+                  : enviando
+                    ? "enviando"
+                    : escolhidos.cartao
+                      ? "escolhido"
+                      : "vazio"
               }
               arquivo={escolhidos.cartao ?? undefined}
               erro={erros.cartao ?? undefined}
@@ -130,13 +171,52 @@ export function FormularioDeEnvio({
         </Card>
       </form>
 
-      {erroDoServidor && (
+      {erroDoServidor && !ensinando && (
         <Card role="alert" className="mt-3 border-red/20 bg-red/8">
           <p className="text-xs font-bold text-red">Não deu para importar.</p>
           <p className="mt-1.5 text-xs leading-relaxed text-dim">
             {erroDoServidor}
           </p>
+
+          {/*
+            ⚠ **O beco sem saída ganha porta** (spec 11, tarefa D3).
+            Até aqui, "não reconheci este arquivo" era o fim: o extrato não
+            entrava, o mês não fechava, e o app não servia para quem tem conta
+            em outro banco. O botão só aparece quando o app **não reconheceu** o
+            arquivo — erro de mês ou de campo trocado não se resolve ensinando.
+          */}
+          {podeEnsinar && (
+            <>
+              <p className="mt-3 text-xs leading-relaxed text-dim">
+                Se este arquivo é de outro banco, dá para me ensinar a lê-lo.
+                Faço isso uma vez e reconheço sozinho a partir do próximo envio.
+              </p>
+              <Button
+                variant="secondary"
+                onClick={() => setEnsinando(true)}
+                className="mt-4"
+              >
+                Ensinar o app a ler este arquivo
+              </Button>
+            </>
+          )}
         </Card>
+      )}
+
+      {ensinando && paraEnsinar && (
+        <PainelDeMapeamento
+          arquivo={paraEnsinar}
+          aoDesistir={() => setEnsinando(false)}
+          /*
+           * ⚠ **Salvar não termina o trabalho: importar termina.** A pessoa veio
+           * subir um extrato, não configurar um app. Depois de gravar o formato,
+           * o formulário reenvia o mesmo arquivo — que agora é reconhecido.
+           */
+          aoSalvar={() => {
+            setEnsinando(false);
+            formRef.current?.requestSubmit();
+          }}
+        />
       )}
 
       {jaImportados.length > 0 && (
