@@ -44,6 +44,9 @@ export async function listarParaGerir(userId: string): Promise<DadosDaGestao> {
           emoji: buckets.emoji,
           cor: buckets.cor,
           tipo: buckets.tipo,
+          // A coluna já existe desde a spec 03: nenhuma consulta nova, só uma
+          // coluna a mais na que já rodava.
+          percentual: buckets.percentualMeta,
           ordem: buckets.ordem,
         })
         .from(buckets)

@@ -83,6 +83,13 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
           emoji: buckets.emoji,
           cor: buckets.cor,
           tipo: buckets.tipo,
+          /*
+           * A /revisão não usa a meta — ela carrega porque `PoteNaGestao` é
+           * **um pote**, e um pote tem meta. Deixar o campo de fora aqui
+           * pediria um segundo tipo para a mesma coisa; a coluna sai da
+           * tabela que esta consulta já lê, e não custa consulta nenhuma.
+           */
+          percentual: buckets.percentualMeta,
           ordem: buckets.ordem,
         })
         .from(buckets)

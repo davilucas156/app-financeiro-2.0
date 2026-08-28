@@ -14,6 +14,7 @@ const pote = (id: string, ordem: number): PoteNaGestao => ({
   emoji: "🫙",
   cor: "#fff",
   tipo: "gasto",
+  percentual: null,
   ordem,
 });
 

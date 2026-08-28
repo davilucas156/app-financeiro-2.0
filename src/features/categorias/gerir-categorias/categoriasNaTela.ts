@@ -13,6 +13,13 @@ export type PoteNaGestao = {
   /** Hex, direto de `buckets.cor` — nunca token do Tailwind. */
   cor: string;
   tipo: "gasto" | "renda";
+  /**
+   * `buckets.percentual_meta` (spec 13, B1).
+   *
+   * Nulo é **sem meta**, nunca 0%: `potes-padrao.ts` é explícito, e a tela
+   * mostra a observação no lugar do número.
+   */
+  percentual: number | null;
   ordem: number;
 };
 
