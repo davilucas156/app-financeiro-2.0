@@ -1,0 +1,9 @@
+# Commits que so mexeram em formatacao. O `git blame` deve pular eles para
+# nao atribuir 60 arquivos inteiros a quem apenas rodou o formatador.
+#
+# Para o Git respeitar este arquivo (por repositorio, por maquina):
+#
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Aplica o formatador em todo o src, sem mudar comportamento (27/08/2026)
+e21239ddffd48227275497acd26f97389dba69c8

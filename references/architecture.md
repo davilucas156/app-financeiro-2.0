@@ -161,36 +161,59 @@ o alias `@` usa `import.meta.dirname`.
 extrato está no `.gitignore` por carregar dado financeiro real, e amostra em
 código fica obviamente sintética e não some do repositório.
 
-## Formatação — ⚠ nunca rode `prettier --write` em massa
+## Formatação — a regra está escrita, e é verificável
 
-**O projeto não é formatado por Prettier.** Não há `.prettierrc`, e `prettier`
-não está no `package.json` — nem em `dependencies`, nem em `devDependencies`.
-O que existe é código escrito à mão num estilo *parecido* com o do Prettier.
+**O projeto é formatado por Prettier**, versão fixa (`3.9.6`, sem `^`) em
+`devDependencies`. A config é `prettier.config.mjs`; o que ela não formata está
+em `.prettierignore`.
 
-Medido em 26/08/2026 com o Prettier 3.9.6 e opções padrão: **62 de ~200
-arquivos de `src/` sairiam diferentes**, e a diferença vai para **os dois
-lados** — o que mata a hipótese de "está só desatualizado":
+```
+npm run format         # formata
+npm run format:check   # só confere, não escreve
+```
 
-| Arquivo                                | O que o Prettier faria                                        |
-| -------------------------------------- | ------------------------------------------------------------- |
-| `upload/limites.ts`                    | **quebra** um `if` de 88 colunas em duas linhas               |
-| `components/ui/Card.tsx`               | **junta** uma assinatura quebrada à mão, que caberia em 79    |
-| `shell/NavegacaoPrincipal.tsx`         | **junta** um ternário quebrado à mão                          |
-| `painel/somar-o-mes/meta.test.ts`      | move o `.toBe()` para fora do `expect(` quebrado              |
+⚠ **Isto é recente, e nasceu de um acidente.** Até 27/08/2026 não havia config
+nem dependência: o estilo existia só na mão de quem escrevia. Rodar `npx
+prettier --write` "para arrumar um arquivo" reformatava tudo, e **139 arquivos
+alheios entraram no commit de uma funcionalidade** (spec 12). Foi desfeito antes
+de subir. A lição não é "não rode o formatador" — é que **uma regra que mora na
+lembrança de alguém falha uma hora**.
 
-⚠ **As consequências de rodar mesmo assim:**
+### O que ficou de fora, e por quê
 
-1. **Um commit de funcionalidade vira um commit de 150 arquivos**, e a revisão
-   do que importa se perde no meio. Aconteceu na spec 12 e teve de ser desfeito.
-2. **`npx prettier` não tem versão fixa.** Sem a dependência declarada, cada
-   sessão baixa a mais recente, e os padrões do Prettier mudam entre versões —
-   a mesma linha de comando dá resultados diferentes em dias diferentes.
+| Ignorado                | Motivo                                                     |
+| ----------------------- | ---------------------------------------------------------- |
+| `*.md`                  | specs e referências têm quebra de linha **deliberada**      |
+| `src/db/migrations/`    | gerado pelo Drizzle — reformatar cria briga com a ferramenta |
+| `planejamento_anual_davi.html` | documento de origem, não fonte que a gente mantém    |
+| `*.code-workspace`      | escrito pelo próprio VS Code                                |
 
-**O que fazer:** formatar **só o arquivo que você está escrevendo**, e conferir
-antes com `--check` se a saída bate com o estilo dos vizinhos. Quem quiser
-resolver isso de vez tem de tomar uma decisão explícita — fixar a versão,
-escrever o `.prettierrc` e reformatar tudo num commit só, que não é decisão de
-quem está no meio de uma spec.
+O `*.md` é o que mais importa. Formatador não sabe que um aviso isolado está
+isolado de propósito, nem que o parágrafo é curto porque a ideia é curta.
+
+### A adoção, e como ela foi conferida
+
+60 arquivos de `src/` mudaram, num commit sozinho, sem funcionalidade junto.
+Formatação não muda comportamento — mas *dizer* isso não prova nada, então foi
+conferido dos dois jeitos:
+
+1. **`tsc`, `eslint` e os 611 testes** passaram depois da reformatação.
+2. **Comparação caractere a caractere ignorando espaço em branco**, arquivo por
+   arquivo contra a versão anterior. Sobraram 11 diferenças, todas do mesmo
+   punhado de categorias inócuas: o `|` inicial de um `type` união que passou a
+   caber numa linha, o `;` que aparece depois do último campo quando um tipo
+   inline é quebrado, um par de parênteses de `return` que sumiu, e um `{" "}`
+   de JSX que o Prettier **acrescentou** justamente para preservar o espaço que
+   a quebra de linha comeria.
+
+⚠ **Esse commit polui o `git blame`** dos 60 arquivos. Por isso existe o
+`.git-blame-ignore-revs`. Para o Git passar a respeitá-lo:
+
+```
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+É por repositório e por máquina — quem clonar de novo roda outra vez.
 
 ## Banco de dados — como mexer
 
