@@ -1,0 +1,21 @@
+# O que o formatador não toca, e por quê.
+
+# Gerado por outra ferramenta. Reformatar aqui é criar diferença com o que a
+# ferramenta produz na próxima vez — briga sem vencedor.
+.next/
+src/db/migrations/
+package-lock.json
+
+# ⚠ **Texto escrito para ser lido, não código.** As specs, os planos e as
+# referências têm quebra de linha deliberada: parágrafo curto onde a ideia é
+# curta, aviso isolado onde ele precisa ser visto. Formatador não sabe disso, e
+# o que ele "arruma" aqui é a legibilidade que alguém decidiu à mão.
+*.md
+
+# O HTML original do planejamento — é o documento de origem do projeto, não
+# fonte que a gente mantém. Ele vale como está, do jeito que chegou.
+planejamento_anual_davi.html
+
+# Arquivo do editor, escrito pelo próprio VS Code. Formatá-lo só garante que o
+# `format:check` reprove no dia em que o editor o reescrever do jeito dele.
+*.code-workspace
