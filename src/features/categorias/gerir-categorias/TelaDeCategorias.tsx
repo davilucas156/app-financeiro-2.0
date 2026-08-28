@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
+import { CampoDeMeta } from "@/features/categorias/definir-meta/CampoDeMeta";
+import { ResumoDasMetas } from "@/features/categorias/definir-meta/ResumoDasMetas";
 import { CartaoDaCategoria } from "./CartaoDaCategoria";
 import { criar } from "./gerirCategorias.action";
 import {
@@ -32,9 +34,11 @@ import {
 export function TelaDeCategorias({
   potes,
   categorias,
+  temRenda,
 }: {
   potes: PoteNaGestao[];
   categorias: CategoriaNaGestao[];
+  temRenda: boolean;
 }) {
   const grupos = agruparParaGerir(potes, categorias);
 
@@ -77,10 +81,13 @@ export function TelaDeCategorias({
         />
       ))}
 
+      <ResumoDasMetas potes={potes} temRenda={temRenda} />
+
       <p className="mt-8 text-2xs leading-relaxed text-dim">
         Não dá para criar ou apagar pote aqui, e é de propósito: os potes são a
-        espinha do método e os percentuais somam 100% — criar um mexe no rateio
-        de todos os outros. Isso é item próprio da fase 2.{" "}
+        espinha do método, e criar um mexe no rateio de todos os outros. O
+        percentual de cada um você muda aí em cima. Isso é item próprio da fase
+        2.{" "}
         <Link href="/regras" className="underline underline-offset-4">
           As regras
         </Link>{" "}
@@ -212,9 +219,19 @@ function PoteRecolhivel({
           className="size-2 shrink-0 rounded-full"
           style={estiloDoPote(pote.cor)}
         />
-        <h2 className="min-w-0 flex-1 font-mono text-3xs font-bold tracking-[1.5px] text-dim uppercase">
+        <h2 className="min-w-0 flex-1 truncate font-mono text-3xs font-bold tracking-[1.5px] text-dim uppercase">
           {pote.emoji} {pote.nome}
         </h2>
+        {/*
+          ⚠ **Só nos potes de gasto.** O pote de renda não tem meta — ele é o
+          que entra, não o que se reparte — e um "sem meta" nele leria como
+          falta, e não como o que é.
+        */}
+        {pote.tipo === "gasto" && (
+          <span className="shrink-0 font-mono text-3xs font-bold text-dim">
+            {pote.percentual === null ? "sem meta" : `${pote.percentual}%`}
+          </span>
+        )}
         <span className="shrink-0 font-mono text-3xs text-dim2">
           {contagem}
         </span>
@@ -233,6 +250,16 @@ function PoteRecolhivel({
 
       {aberto && (
         <div className="mt-2">
+          {/*
+            A meta vem antes das categorias porque ela é do **pote**, e as
+            categorias são o que há dentro dele. E fica aqui dentro, e não no
+            cabeçalho, por um motivo simples: o cabeçalho já é um botão, e
+            botão dentro de botão não existe.
+          */}
+          {pote.tipo === "gasto" && (
+            <CampoDeMeta poteId={pote.id} percentual={pote.percentual} />
+          )}
+
           {categorias.map((categoria) => (
             <CartaoDaCategoria
               key={categoria.id}

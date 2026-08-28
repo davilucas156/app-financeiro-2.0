@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { listarParaGerir } from "@/features/categorias/gerir-categorias/listarParaGerir.service";
 import { TelaDeCategorias } from "@/features/categorias/gerir-categorias/TelaDeCategorias";
+import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
+import { mesAtual } from "@/lib/mes";
 
 export const metadata: Metadata = {
   title: "Categorias · Painel Financeiro 6 Potes",
@@ -24,7 +26,27 @@ export const metadata: Metadata = {
  */
 export default async function CategoriasPage() {
   const usuario = await garantirUsuario();
-  const { potes, categorias } = await listarParaGerir(usuario.id);
 
-  return <TelaDeCategorias potes={potes} categorias={categorias} />;
+  /*
+   * ⚠ **Uma consulta a mais, e ela paga por si** (spec 13, C3).
+   *
+   * A tela não mostra o valor da renda — só precisa saber se **existe**. Sem
+   * ela, `metaDoPote` devolve `null` para todo pote: o percentual fica lá,
+   * correto, e invisível. Quem mexeu na meta e não viu nada acontecer conclui
+   * que o app não salvou.
+   *
+   * As duas consultas são independentes, então vão juntas.
+   */
+  const [{ potes, categorias }, renda] = await Promise.all([
+    listarParaGerir(usuario.id),
+    rendaDoMes(usuario.id, mesAtual()),
+  ]);
+
+  return (
+    <TelaDeCategorias
+      potes={potes}
+      categorias={categorias}
+      temRenda={renda !== null}
+    />
+  );
 }

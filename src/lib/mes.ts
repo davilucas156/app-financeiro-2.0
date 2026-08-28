@@ -60,3 +60,16 @@ export function nomeDoMes(mes: string, anoDeReferencia?: string): string {
 export function anoDoMes(mes: string): string {
   return mes.split("-")[0];
 }
+
+/**
+ * O mês de hoje, em `YYYY-MM`.
+ *
+ * ⚠ **UTC, e não hora local**, como todo o resto deste arquivo: o mês é um
+ * rótulo, não um instante, e ler o fuso do aparelho faria a virada do mês
+ * acontecer em hora diferente para cada pessoa.
+ */
+export function mesAtual(hoje = new Date()): string {
+  const mes = String(hoje.getUTCMonth() + 1).padStart(2, "0");
+
+  return `${hoje.getUTCFullYear()}-${mes}`;
+}
