@@ -36,7 +36,9 @@ describe("as duas formas que o banco usa", () => {
 
 describe("o que não é transferência", () => {
   it("pagamento de fatura", () => {
-    expect(pessoaDe('Pagamento efetuado: "Pagamento fatura cartao Banco"')).toBeNull();
+    expect(
+      pessoaDe('Pagamento efetuado: "Pagamento fatura cartao Banco"'),
+    ).toBeNull();
   });
 
   it("aplicação em investimento", () => {
@@ -71,8 +73,12 @@ describe("por que o nome, e não o número da conta", () => {
     // Medido: a mesma contraparte apareceu no mesmo mês com dois números de
     // conta diferentes e duas grafias. Regra amarrada ao número teria falhado
     // na segunda vez.
-    const primeira = pessoaDe('Pix recebido: "Cp :10000002-Empresa Exemplo Ltda"');
-    const segunda = pessoaDe('Pix recebido: "Cp :10000003-EMPRESA EXEMPLO LTDA"');
+    const primeira = pessoaDe(
+      'Pix recebido: "Cp :10000002-Empresa Exemplo Ltda"',
+    );
+    const segunda = pessoaDe(
+      'Pix recebido: "Cp :10000003-EMPRESA EXEMPLO LTDA"',
+    );
 
     expect(primeira).toBe("Empresa Exemplo Ltda");
     expect(segunda).toBe("EMPRESA EXEMPLO LTDA");
@@ -99,7 +105,9 @@ describe("por que o nome, e não o número da conta", () => {
   it("preserva a grafia para a tela poder mostrar", () => {
     // Quem normaliza para comparar é a A1. Aqui o nome sai como está escrito,
     // para a pergunta "criar regra para Fulana de Tal?" não sair gritando.
-    expect(pessoaDe('Pix enviado: "Cp :123-Fulana de Tal"')).toBe("Fulana de Tal");
+    expect(pessoaDe('Pix enviado: "Cp :123-Fulana de Tal"')).toBe(
+      "Fulana de Tal",
+    );
   });
 
   it("arruma só o espaço sobrando", () => {

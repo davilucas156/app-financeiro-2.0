@@ -180,7 +180,9 @@ describe("reconhecer — erros", () => {
 
   it("cabeçalho depois do limite de busca é ignorado", () => {
     const lixo = Array(35).fill("nada").join("\n");
-    const r = reconhecer(bytes(`${lixo}\nData Lançamento;Descrição;Valor\na;b;c`));
+    const r = reconhecer(
+      bytes(`${lixo}\nData Lançamento;Descrição;Valor\na;b;c`),
+    );
     expect(r.ok).toBe(false);
   });
 });

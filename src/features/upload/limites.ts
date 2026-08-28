@@ -17,12 +17,16 @@ export const EXTENSOES_ACEITAS = [".csv"];
 
 export function formatarTamanho(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1).replace(".", ",")} KB`;
+  if (bytes < 1024 * 1024)
+    return `${(bytes / 1024).toFixed(1).replace(".", ",")} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
 }
 
 /** Devolve a mensagem de recusa, ou `null` se o arquivo serve. */
-export function recusar(arquivo: { name: string; size: number }): string | null {
+export function recusar(arquivo: {
+  name: string;
+  size: number;
+}): string | null {
   const nome = arquivo.name.toLowerCase();
 
   if (!EXTENSOES_ACEITAS.some((e) => nome.endsWith(e))) {

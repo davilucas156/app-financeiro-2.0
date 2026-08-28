@@ -17,7 +17,9 @@ describe("formatarTamanho", () => {
 
 describe("recusar", () => {
   it("aceita os arquivos reais do Davi", () => {
-    expect(recusar(arquivo("Extrato-02-06-2026-a-02-07-2026-CSV.csv", 1760))).toBeNull();
+    expect(
+      recusar(arquivo("Extrato-02-06-2026-a-02-07-2026-CSV.csv", 1760)),
+    ).toBeNull();
     expect(recusar(arquivo("fatura-inter-2026-07.csv", 3189))).toBeNull();
   });
 

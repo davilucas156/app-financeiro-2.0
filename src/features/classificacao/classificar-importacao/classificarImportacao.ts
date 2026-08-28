@@ -49,8 +49,7 @@ export type ResultadoDaClassificacao = {
  */
 export const VALOR_ALTO_CENTAVOS = 20_000;
 
-const MOTIVO_VALOR_ALTO =
-  "valor alto — confira se a categoria está certa";
+const MOTIVO_VALOR_ALTO = "valor alto — confira se a categoria está certa";
 
 export function classificarImportacao(
   preparados: LancamentoPreparado[],

@@ -4,15 +4,18 @@ import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { naFilaDeRevisao } from "@/features/classificacao/revisar-lancamento/filaDeRevisao";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
-import { coberturaDoMes, type Cobertura } from "@/features/painel/somar-o-mes/cobertura";
+import {
+  coberturaDoMes,
+  type Cobertura,
+} from "@/features/painel/somar-o-mes/cobertura";
 import { paresDeValorIdentico } from "@/features/painel/somar-o-mes/paresDeValorIdentico";
-import { somarOMes, type CategoriaComPote } from "@/features/painel/somar-o-mes/somarOMes";
+import {
+  somarOMes,
+  type CategoriaComPote,
+} from "@/features/painel/somar-o-mes/somarOMes";
 import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
-import type {
-  LancamentoNoPainel,
-  PoteNoPainel,
-} from "./poteNoPainel";
+import type { LancamentoNoPainel, PoteNoPainel } from "./poteNoPainel";
 
 /**
  * O que o painel lê (tarefas D1 e D3).
@@ -95,94 +98,95 @@ export async function dadosDoPainel(
    */
   const mes = mesPedido && meses.includes(mesPedido) ? mesPedido : padrao;
 
-  const [linhas, potesDoBanco, categoriasDoBanco, renda, [pendencia]] = await Promise.all([
-    db
-      .select({
-        id: transactions.id,
-        data: transactions.data,
-        descricao: transactions.descricaoOriginal,
-        valorCentavos: transactions.valorCentavos,
-        direcao: transactions.direcao,
-        status: transactions.status,
-        categoriaId: transactions.categoriaId,
-        classificadoPor: transactions.classificadoPor,
-        regraChave: transactions.regraChave,
-        fonteDaSugestao: transactions.fonteDaSugestao,
-      })
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.userId, userId),
-          eq(transactions.mesReferencia, mes),
+  const [linhas, potesDoBanco, categoriasDoBanco, renda, [pendencia]] =
+    await Promise.all([
+      db
+        .select({
+          id: transactions.id,
+          data: transactions.data,
+          descricao: transactions.descricaoOriginal,
+          valorCentavos: transactions.valorCentavos,
+          direcao: transactions.direcao,
+          status: transactions.status,
+          categoriaId: transactions.categoriaId,
+          classificadoPor: transactions.classificadoPor,
+          regraChave: transactions.regraChave,
+          fonteDaSugestao: transactions.fonteDaSugestao,
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            eq(transactions.mesReferencia, mes),
+          ),
+        )
+        .orderBy(asc(transactions.data), asc(transactions.id)),
+
+      /*
+       * ⚠ **Os potes vêm da tabela de potes** (tarefa B5 da spec 05).
+       *
+       * Até aqui eles saíam do `innerJoin` com `categories`, e com o seed isso
+       * nunca apareceu: todo pote tinha categoria. A B4 da spec 05 tornou o
+       * defeito alcançável — apagar a última categoria de um pote faria o join
+       * não devolver linha nenhuma para ele, e o pote sumiria da tela.
+       *
+       * A A3 desta spec é explícita em sentido contrário: **pote ausente da tela
+       * não é o mesmo que pote vazio.**
+       *
+       * Duas consultas e não um `leftJoin` porque uma seleção plana de duas
+       * tabelas num `leftJoin` não carrega a nulidade no tipo — o TypeScript
+       * prometeria colunas que viriam nulas. Estas duas já cabem no
+       * `Promise.all` que existe.
+       */
+      db
+        .select({
+          id: buckets.id,
+          slug: buckets.slug,
+          nome: buckets.nome,
+          emoji: buckets.emoji,
+          cor: buckets.cor,
+          tipo: buckets.tipo,
+          ordem: buckets.ordem,
+          percentual: buckets.percentualMeta,
+          observacao: buckets.observacao,
+        })
+        .from(buckets)
+        .where(eq(buckets.userId, userId))
+        .orderBy(asc(buckets.ordem)),
+
+      db
+        .select({
+          id: categories.id,
+          slug: categories.slug,
+          nome: categories.nome,
+          emoji: categories.emoji,
+          ordem: categories.ordem,
+          poteId: buckets.id,
+          poteSlug: buckets.slug,
+          poteNome: buckets.nome,
+          poteEmoji: buckets.emoji,
+          poteCor: buckets.cor,
+          poteTipo: buckets.tipo,
+          poteOrdem: buckets.ordem,
+        })
+        .from(categories)
+        .innerJoin(buckets, eq(buckets.id, categories.bucketId))
+        .where(eq(categories.userId, userId))
+        .orderBy(asc(buckets.ordem), asc(categories.ordem)),
+
+      rendaDoMes(userId, mes),
+
+      db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            eq(transactions.mesReferencia, mes),
+            naFilaDeRevisao(),
+          ),
         ),
-      )
-      .orderBy(asc(transactions.data), asc(transactions.id)),
-
-    /*
-     * ⚠ **Os potes vêm da tabela de potes** (tarefa B5 da spec 05).
-     *
-     * Até aqui eles saíam do `innerJoin` com `categories`, e com o seed isso
-     * nunca apareceu: todo pote tinha categoria. A B4 da spec 05 tornou o
-     * defeito alcançável — apagar a última categoria de um pote faria o join
-     * não devolver linha nenhuma para ele, e o pote sumiria da tela.
-     *
-     * A A3 desta spec é explícita em sentido contrário: **pote ausente da tela
-     * não é o mesmo que pote vazio.**
-     *
-     * Duas consultas e não um `leftJoin` porque uma seleção plana de duas
-     * tabelas num `leftJoin` não carrega a nulidade no tipo — o TypeScript
-     * prometeria colunas que viriam nulas. Estas duas já cabem no
-     * `Promise.all` que existe.
-     */
-    db
-      .select({
-        id: buckets.id,
-        slug: buckets.slug,
-        nome: buckets.nome,
-        emoji: buckets.emoji,
-        cor: buckets.cor,
-        tipo: buckets.tipo,
-        ordem: buckets.ordem,
-        percentual: buckets.percentualMeta,
-        observacao: buckets.observacao,
-      })
-      .from(buckets)
-      .where(eq(buckets.userId, userId))
-      .orderBy(asc(buckets.ordem)),
-
-    db
-      .select({
-        id: categories.id,
-        slug: categories.slug,
-        nome: categories.nome,
-        emoji: categories.emoji,
-        ordem: categories.ordem,
-        poteId: buckets.id,
-        poteSlug: buckets.slug,
-        poteNome: buckets.nome,
-        poteEmoji: buckets.emoji,
-        poteCor: buckets.cor,
-        poteTipo: buckets.tipo,
-        poteOrdem: buckets.ordem,
-      })
-      .from(categories)
-      .innerJoin(buckets, eq(buckets.id, categories.bucketId))
-      .where(eq(categories.userId, userId))
-      .orderBy(asc(buckets.ordem), asc(categories.ordem)),
-
-    rendaDoMes(userId, mes),
-
-    db
-      .select({ n: sql<number>`count(*)::int` })
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.userId, userId),
-          eq(transactions.mesReferencia, mes),
-          naFilaDeRevisao(),
-        ),
-      ),
-  ]);
+    ]);
 
   const paraSomar: CategoriaComPote[] = categoriasDoBanco.map((c) => ({
     id: c.id,

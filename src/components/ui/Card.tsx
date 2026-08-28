@@ -7,16 +7,10 @@ import { cn } from "@/lib/cn";
  * `className` serve para **acrescentar** (espaçamento, largura, grid), não para
  * repintar — cor e borda vêm dos tokens.
  */
-export function Card({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<"div">) {
+export function Card({ className, ...props }: ComponentPropsWithoutRef<"div">) {
   return (
     <div
-      className={cn(
-        "rounded-card border border-border bg-card p-5",
-        className,
-      )}
+      className={cn("rounded-card border border-border bg-card p-5", className)}
       {...props}
     />
   );

@@ -66,7 +66,8 @@ export function avisoDeApagar(
    */
   if (o.lancamentos === 0 && o.regras === 0) {
     return {
-      frase: "Nada está usando esta categoria. Apagar não mexe em lançamento nenhum.",
+      frase:
+        "Nada está usando esta categoria. Apagar não mexe em lançamento nenhum.",
       alerta: null,
     };
   }

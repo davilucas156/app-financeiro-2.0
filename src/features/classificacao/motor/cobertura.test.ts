@@ -73,7 +73,11 @@ const ESPERADO = {
 const idPorChave = new Map<string, string>(
   POTES_PADRAO.flatMap((pote) =>
     pote.categorias.map(
-      (c) => [`${pote.slug}/${c.slug}`, `id:${pote.slug}/${c.slug}`] as [string, string],
+      (c) =>
+        [`${pote.slug}/${c.slug}`, `id:${pote.slug}/${c.slug}`] as [
+          string,
+          string,
+        ],
     ),
   ),
 );
@@ -105,7 +109,9 @@ function medir() {
   const decisao = classificarImportacao(preparados, regras);
 
   const pendentes = preparados.filter(
-    (l) => l.marcacao === "normal" && !decisao.porImpressao.get(l.impressao)?.categoriaId,
+    (l) =>
+      l.marcacao === "normal" &&
+      !decisao.porImpressao.get(l.impressao)?.categoriaId,
   );
   const classificados = decisao.classificados;
 

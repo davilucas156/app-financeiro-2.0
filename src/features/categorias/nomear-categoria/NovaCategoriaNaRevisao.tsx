@@ -55,8 +55,8 @@ export function NovaCategoriaNaRevisao({
   return (
     <Card>
       <p className="text-xs leading-relaxed text-dim">
-        Para quando este lançamento não cabe em nenhuma das de cima. Ela nasce no
-        pote que você escolher e já recebe este lançamento.
+        Para quando este lançamento não cabe em nenhuma das de cima. Ela nasce
+        no pote que você escolher e já recebe este lançamento.
       </p>
 
       <p className="mt-2 text-2xs leading-relaxed text-dim2">

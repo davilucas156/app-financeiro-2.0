@@ -70,10 +70,34 @@ export const POTES_PADRAO: PotePadrao[] = [
     metaReferenciaCentavos: 36000,
     ordem: 1,
     categorias: [
-      { slug: "telefonia", nome: "Telefonia", emoji: "📱", tagVisual: "t-fix", ordem: 1 },
-      { slug: "academia", nome: "Academia", emoji: "🏋", tagVisual: "t-fix", ordem: 2 },
-      { slug: "assinaturas", nome: "Assinaturas", emoji: "💳", tagVisual: "t-fix", ordem: 3 },
-      { slug: "barbearia", nome: "Barbearia", emoji: "💈", tagVisual: "t-fix", ordem: 4 },
+      {
+        slug: "telefonia",
+        nome: "Telefonia",
+        emoji: "📱",
+        tagVisual: "t-fix",
+        ordem: 1,
+      },
+      {
+        slug: "academia",
+        nome: "Academia",
+        emoji: "🏋",
+        tagVisual: "t-fix",
+        ordem: 2,
+      },
+      {
+        slug: "assinaturas",
+        nome: "Assinaturas",
+        emoji: "💳",
+        tagVisual: "t-fix",
+        ordem: 3,
+      },
+      {
+        slug: "barbearia",
+        nome: "Barbearia",
+        emoji: "💈",
+        tagVisual: "t-fix",
+        ordem: 4,
+      },
     ],
   },
   {
@@ -87,8 +111,20 @@ export const POTES_PADRAO: PotePadrao[] = [
     metaReferenciaCentavos: 30000,
     ordem: 2,
     categorias: [
-      { slug: "aportes", nome: "Aportes", emoji: "📈", tagVisual: "t-inv", ordem: 1 },
-      { slug: "reserva", nome: "Reserva de emergência", emoji: "🏦", tagVisual: "t-inv", ordem: 2 },
+      {
+        slug: "aportes",
+        nome: "Aportes",
+        emoji: "📈",
+        tagVisual: "t-inv",
+        ordem: 1,
+      },
+      {
+        slug: "reserva",
+        nome: "Reserva de emergência",
+        emoji: "🏦",
+        tagVisual: "t-inv",
+        ordem: 2,
+      },
     ],
   },
   {
@@ -102,10 +138,34 @@ export const POTES_PADRAO: PotePadrao[] = [
     metaReferenciaCentavos: 18000,
     ordem: 3,
     categorias: [
-      { slug: "assinaturas", nome: "Assinaturas", emoji: "🎧", tagVisual: "t-laz", ordem: 1 },
-      { slug: "compras-online", nome: "Compras online", emoji: "📦", tagVisual: "t-laz", ordem: 2 },
-      { slug: "alimentacao-fora", nome: "Alimentação fora", emoji: "🍦", tagVisual: "t-laz", ordem: 3 },
-      { slug: "saidas-eventos", nome: "Saídas e eventos", emoji: "🎟", tagVisual: "t-laz", ordem: 4 },
+      {
+        slug: "assinaturas",
+        nome: "Assinaturas",
+        emoji: "🎧",
+        tagVisual: "t-laz",
+        ordem: 1,
+      },
+      {
+        slug: "compras-online",
+        nome: "Compras online",
+        emoji: "📦",
+        tagVisual: "t-laz",
+        ordem: 2,
+      },
+      {
+        slug: "alimentacao-fora",
+        nome: "Alimentação fora",
+        emoji: "🍦",
+        tagVisual: "t-laz",
+        ordem: 3,
+      },
+      {
+        slug: "saidas-eventos",
+        nome: "Saídas e eventos",
+        emoji: "🎟",
+        tagVisual: "t-laz",
+        ordem: 4,
+      },
     ],
   },
   {
@@ -121,7 +181,13 @@ export const POTES_PADRAO: PotePadrao[] = [
     // Uma categoria só porque é o que existe hoje no painel. Inventar uma
     // segunda para "ficar simétrico" seria criar dado que você não usa.
     categorias: [
-      { slug: "giulia", nome: "Giulia", emoji: "★", tagVisual: "t-met", ordem: 1 },
+      {
+        slug: "giulia",
+        nome: "Giulia",
+        emoji: "★",
+        tagVisual: "t-met",
+        ordem: 1,
+      },
     ],
   },
   {
@@ -135,10 +201,28 @@ export const POTES_PADRAO: PotePadrao[] = [
     metaReferenciaCentavos: 12000,
     ordem: 5,
     categorias: [
-      { slug: "gasolina", nome: "Gasolina", emoji: "⛽", tagVisual: "t-gas", ordem: 1 },
-      { slug: "onibus", nome: "Ônibus", emoji: "🚌", tagVisual: "t-tra", ordem: 2 },
+      {
+        slug: "gasolina",
+        nome: "Gasolina",
+        emoji: "⛽",
+        tagVisual: "t-gas",
+        ordem: 1,
+      },
+      {
+        slug: "onibus",
+        nome: "Ônibus",
+        emoji: "🚌",
+        tagVisual: "t-tra",
+        ordem: 2,
+      },
       { slug: "apps", nome: "Apps", emoji: "🚕", tagVisual: "t-tra", ordem: 3 },
-      { slug: "estacionamento", nome: "Estacionamento", emoji: "🅿", tagVisual: "t-tra", ordem: 4 },
+      {
+        slug: "estacionamento",
+        nome: "Estacionamento",
+        emoji: "🅿",
+        tagVisual: "t-tra",
+        ordem: 4,
+      },
     ],
   },
   {
@@ -152,8 +236,20 @@ export const POTES_PADRAO: PotePadrao[] = [
     metaReferenciaCentavos: 6000,
     ordem: 6,
     categorias: [
-      { slug: "cursos", nome: "Cursos", emoji: "🎓", tagVisual: "t-con", ordem: 1 },
-      { slug: "conteudo-ferramentas", nome: "Conteúdo e ferramentas", emoji: "📚", tagVisual: "t-con", ordem: 2 },
+      {
+        slug: "cursos",
+        nome: "Cursos",
+        emoji: "🎓",
+        tagVisual: "t-con",
+        ordem: 1,
+      },
+      {
+        slug: "conteudo-ferramentas",
+        nome: "Conteúdo e ferramentas",
+        emoji: "📚",
+        tagVisual: "t-con",
+        ordem: 2,
+      },
     ],
   },
   // Os dois abaixo existem no painel com cor, card e barra próprios, mas
@@ -171,8 +267,20 @@ export const POTES_PADRAO: PotePadrao[] = [
     observacao: "eventual",
     ordem: 7,
     categorias: [
-      { slug: "manutencao-veicular", nome: "Manutenção veicular", emoji: "🔧", tagVisual: "t-mec", ordem: 1 },
-      { slug: "pecas", nome: "Peças", emoji: "⚙", tagVisual: "t-mec", ordem: 2 },
+      {
+        slug: "manutencao-veicular",
+        nome: "Manutenção veicular",
+        emoji: "🔧",
+        tagVisual: "t-mec",
+        ordem: 1,
+      },
+      {
+        slug: "pecas",
+        nome: "Peças",
+        emoji: "⚙",
+        tagVisual: "t-mec",
+        ordem: 2,
+      },
     ],
   },
   {
@@ -187,9 +295,27 @@ export const POTES_PADRAO: PotePadrao[] = [
     observacao: "sem meta",
     ordem: 8,
     categorias: [
-      { slug: "repasses", nome: "Repasses e empréstimos", emoji: "🔁", tagVisual: "t-out", ordem: 1 },
-      { slug: "avulsos", nome: "Avulsos", emoji: "·", tagVisual: "t-out", ordem: 2 },
-      { slug: "multas", nome: "Multas", emoji: "⚠", tagVisual: "t-out", ordem: 3 },
+      {
+        slug: "repasses",
+        nome: "Repasses e empréstimos",
+        emoji: "🔁",
+        tagVisual: "t-out",
+        ordem: 1,
+      },
+      {
+        slug: "avulsos",
+        nome: "Avulsos",
+        emoji: "·",
+        tagVisual: "t-out",
+        ordem: 2,
+      },
+      {
+        slug: "multas",
+        nome: "Multas",
+        emoji: "⚠",
+        tagVisual: "t-out",
+        ordem: 3,
+      },
     ],
   },
   // ── O nono, e o único que não vem do painel original ──────────────────────
@@ -217,9 +343,27 @@ export const POTES_PADRAO: PotePadrao[] = [
     observacao: "o que entra",
     ordem: 9,
     categorias: [
-      { slug: "salario", nome: "Salário", emoji: "💼", tagVisual: "t-out", ordem: 1 },
-      { slug: "renda-extra", nome: "Renda extra", emoji: "💰", tagVisual: "t-out", ordem: 2 },
-      { slug: "repasse-recebido", nome: "Repasse recebido", emoji: "🔁", tagVisual: "t-out", ordem: 3 },
+      {
+        slug: "salario",
+        nome: "Salário",
+        emoji: "💼",
+        tagVisual: "t-out",
+        ordem: 1,
+      },
+      {
+        slug: "renda-extra",
+        nome: "Renda extra",
+        emoji: "💰",
+        tagVisual: "t-out",
+        ordem: 2,
+      },
+      {
+        slug: "repasse-recebido",
+        nome: "Repasse recebido",
+        emoji: "🔁",
+        tagVisual: "t-out",
+        ordem: 3,
+      },
     ],
   },
 ];

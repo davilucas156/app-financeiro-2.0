@@ -5,7 +5,9 @@ import {
   type ContagemDaImportacao,
 } from "./contagemDaImportacao";
 
-const contagem = (p: Partial<ContagemDaImportacao> = {}): ContagemDaImportacao => ({
+const contagem = (
+  p: Partial<ContagemDaImportacao> = {},
+): ContagemDaImportacao => ({
   importados: 0,
   classificados: 0,
   pendentes: 0,
@@ -60,7 +62,9 @@ describe("tudoResolvido", () => {
   });
 
   it("um par que se anula também impede", () => {
-    expect(tudoResolvido(contagem({ classificados: 40, pares: 1 }))).toBe(false);
+    expect(tudoResolvido(contagem({ classificados: 40, pares: 1 }))).toBe(
+      false,
+    );
   });
 
   it("importação vazia não conta como pendência", () => {

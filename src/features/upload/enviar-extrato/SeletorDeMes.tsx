@@ -17,8 +17,12 @@ export function mesesDisponiveis(hoje = new Date(), quantos = 18): string[] {
   const lista: string[] = [];
 
   for (let i = 0; i < quantos; i++) {
-    const d = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() - i, 1));
-    lista.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`);
+    const d = new Date(
+      Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() - i, 1),
+    );
+    lista.push(
+      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`,
+    );
   }
 
   return lista;

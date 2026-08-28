@@ -26,7 +26,10 @@ const pendente = (p: Partial<LancamentoPendente>): LancamentoPendente => ({
 describe("criterioDaCorrecao", () => {
   it("no cartão vira `descricao_contem` com o trecho estável", () => {
     expect(
-      criterioDaCorrecao("PADARIA CEU AZUL       BETIM         BRA", "csv_cartao"),
+      criterioDaCorrecao(
+        "PADARIA CEU AZUL       BETIM         BRA",
+        "csv_cartao",
+      ),
     ).toEqual({ tipo: "descricao_contem", termo: "PADARIA CEU AZUL BETIM" });
   });
 
@@ -34,7 +37,10 @@ describe("criterioDaCorrecao", () => {
     // Uma regra amarrada ao número da conta falharia na segunda vez: a mesma
     // contraparte apareceu no mesmo mês com dois números diferentes (A3).
     expect(
-      criterioDaCorrecao('Pix enviado: "Cp :00000000-Fulana de Tal"', "csv_conta"),
+      criterioDaCorrecao(
+        'Pix enviado: "Cp :00000000-Fulana de Tal"',
+        "csv_conta",
+      ),
     ).toEqual({ tipo: "pessoa", nome: "Fulana de Tal" });
   });
 
@@ -72,10 +78,10 @@ describe("o que a tela mostra é o que o banco guarda", () => {
 
   for (const descricao of casos) {
     it(`${descricao.slice(0, 20).trim()}`, () => {
-      const [naTela] = prepararRevisao(
-        [pendente({ descricao })],
-        { historico: [], idPorChave: new Map() },
-      );
+      const [naTela] = prepararRevisao([pendente({ descricao })], {
+        historico: [],
+        idPorChave: new Map(),
+      });
 
       const criterio = criterioDaCorrecao(descricao, "csv_cartao")!;
 

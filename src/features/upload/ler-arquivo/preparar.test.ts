@@ -78,16 +78,26 @@ describe("impressaoDigital", () => {
   it("muda com data, valor, direção, descrição, origem e ocorrência", () => {
     const base = impressaoDigital("csv_conta", lancamento(), 1);
 
-    expect(impressaoDigital("csv_conta", lancamento({ data: "2026-06-03" }), 1)).not.toBe(base);
-    expect(impressaoDigital("csv_conta", lancamento({ valorCentavos: 1201 }), 1)).not.toBe(base);
-    expect(impressaoDigital("csv_conta", lancamento({ direcao: "entrada" }), 1)).not.toBe(base);
-    expect(impressaoDigital("csv_conta", lancamento({ descricao: "OUTRA" }), 1)).not.toBe(base);
+    expect(
+      impressaoDigital("csv_conta", lancamento({ data: "2026-06-03" }), 1),
+    ).not.toBe(base);
+    expect(
+      impressaoDigital("csv_conta", lancamento({ valorCentavos: 1201 }), 1),
+    ).not.toBe(base);
+    expect(
+      impressaoDigital("csv_conta", lancamento({ direcao: "entrada" }), 1),
+    ).not.toBe(base);
+    expect(
+      impressaoDigital("csv_conta", lancamento({ descricao: "OUTRA" }), 1),
+    ).not.toBe(base);
     expect(impressaoDigital("csv_cartao", lancamento(), 1)).not.toBe(base);
     expect(impressaoDigital("csv_conta", lancamento(), 2)).not.toBe(base);
   });
 
   it("ignora diferença só de espaçamento e caixa", () => {
-    expect(impressaoDigital("csv_conta", lancamento({ descricao: "LOJA  X" }), 1)).toBe(
+    expect(
+      impressaoDigital("csv_conta", lancamento({ descricao: "LOJA  X" }), 1),
+    ).toBe(
       impressaoDigital("csv_conta", lancamento({ descricao: "Loja X" }), 1),
     );
   });
@@ -140,7 +150,9 @@ describe("ocorrência — o que salva a pendência 2", () => {
 describe("pagamento de fatura", () => {
   it("é detectado no extrato da conta", () => {
     const preparados = prepararLancamentos([deArquivo(EXTRATO_INTER)]);
-    const pagamento = preparados.find((l) => l.descricao.includes("Pagamento fatura"));
+    const pagamento = preparados.find((l) =>
+      l.descricao.includes("Pagamento fatura"),
+    );
 
     expect(pagamento?.marcacao).toBe("excluido");
     expect(pagamento?.motivo).toContain("pagamento da fatura");
@@ -148,7 +160,9 @@ describe("pagamento de fatura", () => {
 
   it("é detectado na fatura do cartão", () => {
     const preparados = prepararLancamentos([deArquivo(FATURA_INTER)]);
-    const pagamento = preparados.find((l) => l.descricao === "PAGAMENTO ON LINE");
+    const pagamento = preparados.find(
+      (l) => l.descricao === "PAGAMENTO ON LINE",
+    );
 
     expect(pagamento?.marcacao).toBe("excluido");
   });
@@ -181,8 +195,19 @@ describe("par que se anula", () => {
       {
         origem: "csv_conta",
         lancamentos: [
-          lancamento({ data: dias[0], direcao: "saida", valorCentavos: 43529, linha: 2 }),
-          lancamento({ data: dias[1], direcao: "entrada", valorCentavos: 43529, descricao: "VOLTOU", linha: 3 }),
+          lancamento({
+            data: dias[0],
+            direcao: "saida",
+            valorCentavos: 43529,
+            linha: 2,
+          }),
+          lancamento({
+            data: dias[1],
+            direcao: "entrada",
+            valorCentavos: 43529,
+            descricao: "VOLTOU",
+            linha: 3,
+          }),
         ],
       },
     ]);
@@ -217,7 +242,12 @@ describe("par que se anula", () => {
         origem: "csv_conta",
         lancamentos: [
           lancamento({ valorCentavos: 5000, direcao: "saida", linha: 2 }),
-          lancamento({ valorCentavos: 5000, direcao: "saida", descricao: "OUTRA", linha: 3 }),
+          lancamento({
+            valorCentavos: 5000,
+            direcao: "saida",
+            descricao: "OUTRA",
+            linha: 3,
+          }),
         ],
       },
     ]);
@@ -230,7 +260,12 @@ describe("par que se anula", () => {
         origem: "csv_conta",
         lancamentos: [
           lancamento({ valorCentavos: 0, direcao: "saida", linha: 2 }),
-          lancamento({ valorCentavos: 0, direcao: "entrada", descricao: "B", linha: 3 }),
+          lancamento({
+            valorCentavos: 0,
+            direcao: "entrada",
+            descricao: "B",
+            linha: 3,
+          }),
         ],
       },
     ]);
@@ -243,9 +278,24 @@ describe("par que se anula", () => {
       {
         origem: "csv_conta",
         lancamentos: [
-          lancamento({ valorCentavos: 5000, direcao: "saida", descricao: "A", linha: 2 }),
-          lancamento({ valorCentavos: 5000, direcao: "entrada", descricao: "B", linha: 3 }),
-          lancamento({ valorCentavos: 5000, direcao: "entrada", descricao: "C", linha: 4 }),
+          lancamento({
+            valorCentavos: 5000,
+            direcao: "saida",
+            descricao: "A",
+            linha: 2,
+          }),
+          lancamento({
+            valorCentavos: 5000,
+            direcao: "entrada",
+            descricao: "B",
+            linha: 3,
+          }),
+          lancamento({
+            valorCentavos: 5000,
+            direcao: "entrada",
+            descricao: "C",
+            linha: 4,
+          }),
         ],
       },
     ]);
@@ -258,9 +308,27 @@ describe("par que se anula", () => {
       {
         origem: "csv_conta",
         lancamentos: [
-          lancamento({ data: "2026-06-09", direcao: "saida", valorCentavos: 5000, descricao: "A", linha: 2 }),
-          lancamento({ data: "2026-06-12", direcao: "entrada", valorCentavos: 5000, descricao: "LONGE", linha: 3 }),
-          lancamento({ data: "2026-06-09", direcao: "entrada", valorCentavos: 5000, descricao: "PERTO", linha: 4 }),
+          lancamento({
+            data: "2026-06-09",
+            direcao: "saida",
+            valorCentavos: 5000,
+            descricao: "A",
+            linha: 2,
+          }),
+          lancamento({
+            data: "2026-06-12",
+            direcao: "entrada",
+            valorCentavos: 5000,
+            descricao: "LONGE",
+            linha: 3,
+          }),
+          lancamento({
+            data: "2026-06-09",
+            direcao: "entrada",
+            valorCentavos: 5000,
+            descricao: "PERTO",
+            linha: 4,
+          }),
         ],
       },
     ]);
@@ -286,7 +354,9 @@ describe("bordas", () => {
   });
 
   it("arquivo sem lançamentos devolve vazio", () => {
-    expect(prepararLancamentos([{ origem: "csv_conta", lancamentos: [] }])).toEqual([]);
+    expect(
+      prepararLancamentos([{ origem: "csv_conta", lancamentos: [] }]),
+    ).toEqual([]);
   });
 
   it("preserva tudo que a A3 produziu", () => {

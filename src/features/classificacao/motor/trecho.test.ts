@@ -67,7 +67,9 @@ describe("extrato · o conteúdo fica, o tipo do evento sai", () => {
     // `pessoa` (A3). Devolver `CP :00000000-FULANA` amarraria a regra ao
     // número da conta, que muda de banco para banco.
     expect(conta('Pix enviado: "Cp :00000000-Fulana de Tal"')).toBeNull();
-    expect(conta('Pix recebido: "Cp :12345678-Empresa Exemplo Ltda"')).toBeNull();
+    expect(
+      conta('Pix recebido: "Cp :12345678-Empresa Exemplo Ltda"'),
+    ).toBeNull();
     expect(conta('Pix enviado: "00000 11112222 FULANO SOUZA"')).toBeNull();
   });
 

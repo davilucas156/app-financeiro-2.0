@@ -66,7 +66,9 @@ export function agruparParaGerir(
     .sort((a, b) => a.ordem - b.ordem)
     .map((pote) => ({
       pote,
-      categorias: (porPote.get(pote.id) ?? []).sort((a, b) => a.ordem - b.ordem),
+      categorias: (porPote.get(pote.id) ?? []).sort(
+        (a, b) => a.ordem - b.ordem,
+      ),
     }));
 }
 
@@ -96,7 +98,9 @@ export function oQueDependeDela(categoria: CategoriaNaGestao): string {
   }
 
   if (categoria.regras > 0) {
-    partes.push(`${categoria.regras} ${categoria.regras === 1 ? "regra" : "regras"}`);
+    partes.push(
+      `${categoria.regras} ${categoria.regras === 1 ? "regra" : "regras"}`,
+    );
   }
 
   return partes.join(" · ");

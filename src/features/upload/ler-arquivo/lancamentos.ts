@@ -76,7 +76,8 @@ export function paraCentavos(
   // banco que exporta em en-US escreve `$1,200.50`.
   let limpo = texto
     .replace(/R\$/gi, "")
-    .replace(/\$/g, "").replace(/[\s  ]/g, "");
+    .replace(/\$/g, "")
+    .replace(/[\s  ]/g, "");
   if (limpo === "") return null;
 
   let negativo = false;
@@ -142,7 +143,10 @@ export function paraCentavos(
  */
 const CAMPOS_DA_DATA: Record<
   FormatoDeData,
-  { padrao: RegExp; ordem: readonly ["dia" | "mes" | "ano", ...("dia" | "mes" | "ano")[]] }
+  {
+    padrao: RegExp;
+    ordem: readonly ["dia" | "mes" | "ano", ...("dia" | "mes" | "ano")[]];
+  }
 > = {
   "dd/mm/aaaa": {
     padrao: /^(\d{2})\/(\d{2})\/(\d{4})$/,

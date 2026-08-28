@@ -44,7 +44,10 @@ const noHistorico = (p: Partial<Classificado>): Classificado => ({
 describe("fonte 1 · você já classificou assim", () => {
   it("é a mais forte, e vem primeiro", () => {
     const s = sugerir(
-      { descricao: "LOJA DO ZE           BETIM         BRA", origem: "csv_cartao" },
+      {
+        descricao: "LOJA DO ZE           BETIM         BRA",
+        origem: "csv_cartao",
+      },
       contexto([noHistorico({ categoriaId: IDS.onibus })]),
     );
 
@@ -69,7 +72,10 @@ describe("fonte 1 · você já classificou assim", () => {
     // própria. É o erro barulhento de sempre: a sugestão não aparece, você
     // escolhe na lista, e nada foi classificado errado em silêncio.
     const s = sugerir(
-      { descricao: "LOJA DO ZE           CONTAGEM      BRA", origem: "csv_cartao" },
+      {
+        descricao: "LOJA DO ZE           CONTAGEM      BRA",
+        origem: "csv_cartao",
+      },
       contexto([noHistorico({ categoriaId: IDS.onibus })]),
     );
 
@@ -78,7 +84,10 @@ describe("fonte 1 · você já classificou assim", () => {
 
   it("não confunde lojas diferentes", () => {
     const s = sugerir(
-      { descricao: "OUTRA LOJA           BETIM         BRA", origem: "csv_cartao" },
+      {
+        descricao: "OUTRA LOJA           BETIM         BRA",
+        origem: "csv_cartao",
+      },
       contexto([noHistorico({})]),
     );
 
@@ -147,7 +156,11 @@ describe("fonte 3 · a categoria do banco", () => {
     // sugestão — pior que silêncio, porque convida ao toque distraído.
     for (const generica of ["OUTROS", "COMPRAS", "SERVICOS", "PAGAMENTOS"]) {
       const s = sugerir(
-        { descricao: "ALGO NOVO", origem: "csv_cartao", categoriaDoBanco: generica },
+        {
+          descricao: "ALGO NOVO",
+          origem: "csv_cartao",
+          categoriaDoBanco: generica,
+        },
         contexto(),
       );
       expect(s, generica).toEqual([]);
@@ -156,7 +169,11 @@ describe("fonte 3 · a categoria do banco", () => {
 
   it("categoria do banco que eu nunca vi não quebra nada", () => {
     const s = sugerir(
-      { descricao: "ALGO NOVO", origem: "csv_cartao", categoriaDoBanco: "COISA NOVA" },
+      {
+        descricao: "ALGO NOVO",
+        origem: "csv_cartao",
+        categoriaDoBanco: "COISA NOVA",
+      },
       contexto(),
     );
 
@@ -175,13 +192,28 @@ describe("fonte 4 · o pote do banco, desempatado pelo histórico", () => {
     const s = sugerir(
       alvo,
       contexto([
-        noHistorico({ descricao: "A", categoriaId: IDS.onibus, chaveDaCategoria: "transporte/onibus" }),
-        noHistorico({ descricao: "B", categoriaId: IDS.onibus, chaveDaCategoria: "transporte/onibus" }),
-        noHistorico({ descricao: "C", categoriaId: IDS.gasolina, chaveDaCategoria: "transporte/gasolina" }),
+        noHistorico({
+          descricao: "A",
+          categoriaId: IDS.onibus,
+          chaveDaCategoria: "transporte/onibus",
+        }),
+        noHistorico({
+          descricao: "B",
+          categoriaId: IDS.onibus,
+          chaveDaCategoria: "transporte/onibus",
+        }),
+        noHistorico({
+          descricao: "C",
+          categoriaId: IDS.gasolina,
+          chaveDaCategoria: "transporte/gasolina",
+        }),
       ]),
     );
 
-    expect(s[0]).toMatchObject({ categoriaId: IDS.onibus, fonte: "pote-do-banco" });
+    expect(s[0]).toMatchObject({
+      categoriaId: IDS.onibus,
+      fonte: "pote-do-banco",
+    });
   });
 
   it("sem histórico no pote, não inventa qual das quatro categorias é", () => {
@@ -249,9 +281,9 @@ describe("juntando as fontes", () => {
   });
 
   it("sem nada, devolve lista vazia — e a tela vai direto para a lista completa", () => {
-    expect(sugerir({ descricao: "ALGO NOVO", origem: "csv_cartao" }, contexto())).toEqual(
-      [],
-    );
+    expect(
+      sugerir({ descricao: "ALGO NOVO", origem: "csv_cartao" }, contexto()),
+    ).toEqual([]);
   });
 });
 

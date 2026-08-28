@@ -117,9 +117,7 @@ function AvisoDoVoltar({ voltar }: { voltar: PodeVoltar | null }) {
   const aviso = avisoDoVoltar(voltar);
   if (!aviso) return null;
 
-  return (
-    <p className="mt-2 text-2xs leading-relaxed text-dim">↩ {aviso}</p>
-  );
+  return <p className="mt-2 text-2xs leading-relaxed text-dim">↩ {aviso}</p>;
 }
 
 /**
@@ -251,7 +249,9 @@ function Revisando({
           <Sugestoes
             sugestoes={atual.sugestoes}
             porId={catalogo}
-            aoEscolher={(categoria, fonte) => setEscolhida({ categoria, fonte })}
+            aoEscolher={(categoria, fonte) =>
+              setEscolhida({ categoria, fonte })
+            }
           />
           <ListaDeCategorias
             categorias={categorias}
@@ -289,4 +289,3 @@ function CaminhoParaCategorias() {
     </p>
   );
 }
-

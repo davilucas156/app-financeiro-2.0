@@ -26,10 +26,7 @@ export type DadosUsuario = {
 };
 
 export type ResultadoSalvar =
-  | "criado"
-  | "atualizado"
-  | "ignorado_nao_convidado"
-  | "ignorado_sem_email";
+  "criado" | "atualizado" | "ignorado_nao_convidado" | "ignorado_sem_email";
 
 export async function salvarUsuario(dados: DadosUsuario): Promise<{
   resultado: ResultadoSalvar;
@@ -66,7 +63,10 @@ export async function salvarUsuario(dados: DadosUsuario): Promise<{
     // de "criado" o que caísse dentro de um segundo. Isso classificava errado
     // toda atualização logo após a criação — que é justamente o caso comum,
     // porque o webhook costuma chegar segundos depois da D5 já ter gravado.
-    .returning({ ...getTableColumns(users), inserido: sql<boolean>`(xmax = 0)` });
+    .returning({
+      ...getTableColumns(users),
+      inserido: sql<boolean>`(xmax = 0)`,
+    });
 
   if (!linha) return { resultado: "atualizado", usuario: null };
 

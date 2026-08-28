@@ -61,7 +61,9 @@ export function CartaoDaCategoria({
 
       {modo === "vendo" && (
         <div className="mt-3 flex flex-wrap gap-2">
-          <Secundario onClick={() => setModo("renomeando")}>Renomear</Secundario>
+          <Secundario onClick={() => setModo("renomeando")}>
+            Renomear
+          </Secundario>
 
           {/*
             ⚠ **Mover só quando vazia** (B2, descoberta 4). A tela não esconde o

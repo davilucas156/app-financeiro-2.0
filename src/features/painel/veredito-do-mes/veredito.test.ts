@@ -236,8 +236,16 @@ describe("degrau 3 — o pote que destoou", () => {
     const r = vereditoDoMes(
       mes({
         potes: [
-          pote({ nome: "Primeiro", metaCentavos: 100_000, totalCentavos: 200_000 }),
-          pote({ nome: "Segundo", metaCentavos: 300_000, totalCentavos: 400_000 }),
+          pote({
+            nome: "Primeiro",
+            metaCentavos: 100_000,
+            totalCentavos: 200_000,
+          }),
+          pote({
+            nome: "Segundo",
+            metaCentavos: 300_000,
+            totalCentavos: 400_000,
+          }),
         ],
       }),
     );

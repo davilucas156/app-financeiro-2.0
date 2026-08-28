@@ -65,7 +65,10 @@ const PARECE_PESSOA = [
 /** Curto demais para ser específico: casaria com meio extrato. */
 const MINIMO = 4;
 
-export function trechoEstavel(descricao: string, origem: Origem): string | null {
+export function trechoEstavel(
+  descricao: string,
+  origem: Origem,
+): string | null {
   // ⚠ O cartão recebe o texto **cru**. `normalizarDescricao` colapsa espaços
   // repetidos, e são justamente eles que separam as colunas da fatura — passar
   // o texto normalizado aqui destrói a estrutura antes de eu poder usá-la.

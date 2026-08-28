@@ -27,8 +27,7 @@ import { comTextoNovo } from "./regrasNaTela";
 
 export type ResultadoDeMexer = { ok: true } | { ok: false; erro: string };
 
-const NAO_ENCONTRADA =
-  "Essa regra não existe mais. Recarregue a tela.";
+const NAO_ENCONTRADA = "Essa regra não existe mais. Recarregue a tela.";
 
 /**
  * A mensagem que o schema da C1 já tinha escrito para este dia.
@@ -68,10 +67,7 @@ export async function editarRegra(
     .select({ id: categories.id })
     .from(categories)
     .where(
-      and(
-        eq(categories.id, dados.categoriaId),
-        eq(categories.userId, userId),
-      ),
+      and(eq(categories.id, dados.categoriaId), eq(categories.userId, userId)),
     )
     .limit(1);
 
@@ -154,4 +150,3 @@ export async function apagarRegra(
 
   return apagada ? { ok: true } : { ok: false, erro: NAO_ENCONTRADA };
 }
-

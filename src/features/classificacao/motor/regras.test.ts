@@ -35,7 +35,9 @@ describe("regraValida", () => {
 
   it("recusa faixa de valor sem nenhum limite", () => {
     // Sem mínimo nem máximo isso é "toda saída" — não é regra, é apagão.
-    expect(regraValida({ tipo: "valor_direcao", direcao: "saida" })).toBe(false);
+    expect(regraValida({ tipo: "valor_direcao", direcao: "saida" })).toBe(
+      false,
+    );
   });
 
   it("recusa faixa invertida", () => {
@@ -51,12 +53,18 @@ describe("regraValida", () => {
 
   it("aceita faixa aberta de um lado só", () => {
     expect(
-      regraValida({ tipo: "valor_direcao", direcao: "entrada", minimoCentavos: 100000 }),
+      regraValida({
+        tipo: "valor_direcao",
+        direcao: "entrada",
+        minimoCentavos: 100000,
+      }),
     ).toBe(true);
   });
 
   it("regra inválida nunca casa, mesmo parecendo casar", () => {
-    expect(casarRegra([regra({ tipo: "descricao_contem", termo: "" })], alvo())).toBeNull();
+    expect(
+      casarRegra([regra({ tipo: "descricao_contem", termo: "" })], alvo()),
+    ).toBeNull();
   });
 });
 
@@ -66,9 +74,9 @@ describe("casarRegra · descricao_contem", () => {
     expect(casarRegra([r], alvo())?.id).toBe(r.id);
 
     const comAcento = regra({ tipo: "descricao_contem", termo: "farmácia" });
-    expect(casarRegra([comAcento], alvo({ descricao: "DROGARIA FARMACIA SP" }))?.id).toBe(
-      comAcento.id,
-    );
+    expect(
+      casarRegra([comAcento], alvo({ descricao: "DROGARIA FARMACIA SP" }))?.id,
+    ).toBe(comAcento.id);
   });
 
   it("não casa o que não está lá", () => {
@@ -80,7 +88,12 @@ describe("casarRegra · descricao_contem", () => {
   it("termo maior que a descrição não casa nem estoura", () => {
     expect(
       casarRegra(
-        [regra({ tipo: "descricao_contem", termo: "PAGAR ME ESTACIONAMENTO LTDA E MAIS" })],
+        [
+          regra({
+            tipo: "descricao_contem",
+            termo: "PAGAR ME ESTACIONAMENTO LTDA E MAIS",
+          }),
+        ],
         alvo(),
       ),
     ).toBeNull();
@@ -112,7 +125,11 @@ describe("casarRegra · pessoa", () => {
   // passagem, e o que entra pode ser renda; e uma empresa que te paga por Pix
   // não vira "renda" quando é você quem paga ela.
   it("com direção, só casa naquele sentido", () => {
-    const r = regra({ tipo: "pessoa", nome: "Fulana de Tal", direcao: "entrada" });
+    const r = regra({
+      tipo: "pessoa",
+      nome: "Fulana de Tal",
+      direcao: "entrada",
+    });
 
     const recebido = alvo({ pessoa: "Fulana de Tal", direcao: "entrada" });
     const enviado = alvo({ pessoa: "Fulana de Tal", direcao: "saida" });
@@ -142,15 +159,18 @@ describe("casarRegra · valor_direcao", () => {
 
   it("exige a direção certa", () => {
     expect(
-      casarRegra([regra(entradaAlta)], alvo({ direcao: "saida", valorCentavos: 500000 })),
+      casarRegra(
+        [regra(entradaAlta)],
+        alvo({ direcao: "saida", valorCentavos: 500000 }),
+      ),
     ).toBeNull();
   });
 
   it("o limite é inclusivo — 'R$ 1.000 ou mais' é como se fala", () => {
     const r = regra(entradaAlta);
-    expect(casarRegra([r], alvo({ direcao: "entrada", valorCentavos: 100000 }))?.id).toBe(
-      r.id,
-    );
+    expect(
+      casarRegra([r], alvo({ direcao: "entrada", valorCentavos: 100000 }))?.id,
+    ).toBe(r.id);
     expect(
       casarRegra([r], alvo({ direcao: "entrada", valorCentavos: 99999 })),
     ).toBeNull();

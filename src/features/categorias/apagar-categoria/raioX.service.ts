@@ -112,9 +112,7 @@ export async function raioXDaCategoria(
       })
       .from(categories)
       .innerJoin(buckets, eq(buckets.id, categories.bucketId))
-      .where(
-        and(eq(categories.userId, userId), ne(categories.id, categoriaId)),
-      )
+      .where(and(eq(categories.userId, userId), ne(categories.id, categoriaId)))
       .orderBy(asc(buckets.ordem), asc(categories.ordem)),
   ]);
 

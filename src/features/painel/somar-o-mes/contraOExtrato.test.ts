@@ -86,7 +86,8 @@ const CATEGORIAS: CategoriaComPote[] = POTES_PADRAO.flatMap((pote) =>
 const idPorChave = new Map<string, string>(
   POTES_PADRAO.flatMap((pote) =>
     pote.categorias.map(
-      (c) => [`${pote.slug}/${c.slug}`, idDe(pote.slug, c.slug)] as [string, string],
+      (c) =>
+        [`${pote.slug}/${c.slug}`, idDe(pote.slug, c.slug)] as [string, string],
     ),
   ),
 );
@@ -126,92 +127,96 @@ function comoNoBanco(): LancamentoDoMes[] {
   });
 }
 
-describe.skipIf(!TEM_OS_ARQUIVOS)("a conta do painel contra o extrato real", () => {
-  const lancamentos = TEM_OS_ARQUIVOS ? comoNoBanco() : [];
-  const soma = somarOMes(lancamentos, CATEGORIAS);
+describe.skipIf(!TEM_OS_ARQUIVOS)(
+  "a conta do painel contra o extrato real",
+  () => {
+    const lancamentos = TEM_OS_ARQUIVOS ? comoNoBanco() : [];
+    const soma = somarOMes(lancamentos, CATEGORIAS);
 
-  it("o recorte NÃO é o mesmo da A6, e é de propósito", () => {
-    // 54 no arquivo, 3 pagamentos de fatura fora, 51 na conta do painel.
-    // Os 4 do par que se anula ficam: sao `revisao_pendente`, nao `excluido`.
-    expect(soma.lancamentos).toBe(ESPERADO.lancamentosNaConta);
-  });
+    it("o recorte NÃO é o mesmo da A6, e é de propósito", () => {
+      // 54 no arquivo, 3 pagamentos de fatura fora, 51 na conta do painel.
+      // Os 4 do par que se anula ficam: sao `revisao_pendente`, nao `excluido`.
+      expect(soma.lancamentos).toBe(ESPERADO.lancamentosNaConta);
+    });
 
-  it("a cobertura em dinheiro bate com a medição da spec", () => {
-    const c = coberturaDoMes(soma);
+    it("a cobertura em dinheiro bate com a medição da spec", () => {
+      const c = coberturaDoMes(soma);
 
-    expect(c.saiuPct).toBe(ESPERADO.saiuPct);
-    expect(c.entrouPct).toBe(ESPERADO.entrouPct);
-    expect(c.completa).toBe(false);
-  });
+      expect(c.saiuPct).toBe(ESPERADO.saiuPct);
+      expect(c.entrouPct).toBe(ESPERADO.entrouPct);
+      expect(c.completa).toBe(false);
+    });
 
-  it("⚠ o motor cobre o gasto e quase não cobre a renda", () => {
-    /*
-     * A descoberta 1 da spec, virando teste: é ela que justifica a renda
-     * **declarada**. Uma meta calculada sobre a renda medida seria 30% de 10%
-     * da verdade. Se um dia isto inverter, a decisão merece ser revista.
-     */
-    const c = coberturaDoMes(soma);
+    it("⚠ o motor cobre o gasto e quase não cobre a renda", () => {
+      /*
+       * A descoberta 1 da spec, virando teste: é ela que justifica a renda
+       * **declarada**. Uma meta calculada sobre a renda medida seria 30% de 10%
+       * da verdade. Se um dia isto inverter, a decisão merece ser revista.
+       */
+      const c = coberturaDoMes(soma);
 
-    expect(c.saiuPct!).toBeGreaterThan(c.entrouPct! * 3);
-  });
+      expect(c.saiuPct!).toBeGreaterThan(c.entrouPct! * 3);
+    });
 
-  it("um pote de gasto fica vazio, e não é culpa do Davi", () => {
-    /*
-     * `metas-sonhos`: a regra que o alimentaria está em `FORA_DE_PROPOSITO` na
-     * A5 — o readme pede duas camadas decididas pela conta destino, e nenhum
-     * critério do MVP lê conta destino.
-     *
-     * A tela precisa distinguir isto de "não guardei nada", e é para isso que
-     * a cobertura acima existe.
-     */
-    const comMovimento = new Set(soma.potes.map((p) => p.poteId));
+    it("um pote de gasto fica vazio, e não é culpa do Davi", () => {
+      /*
+       * `metas-sonhos`: a regra que o alimentaria está em `FORA_DE_PROPOSITO` na
+       * A5 — o readme pede duas camadas decididas pela conta destino, e nenhum
+       * critério do MVP lê conta destino.
+       *
+       * A tela precisa distinguir isto de "não guardei nada", e é para isso que
+       * a cobertura acima existe.
+       */
+      const comMovimento = new Set(soma.potes.map((p) => p.poteId));
 
-    const vazios = POTES_PADRAO.filter(
-      (p) => p.tipo === "gasto" && !comMovimento.has(p.slug),
-    );
-
-    expect(vazios.length).toBe(ESPERADO.potesDeGastoVazios);
-  });
-
-  it("nenhuma entrada caiu em pote de gasto neste mês", () => {
-    // O estorno da decisão 2 ainda não aconteceu. A conta já sabe abater
-    // (`somarOMes.test.ts`); aqui o número diz que o caso é raro, não morto.
-    const entradas = soma.potes
-      .filter((p) => p.tipo === "gasto")
-      .reduce((s, p) => s + p.entradaCentavos, 0);
-
-    expect(entradas).toBe(ESPERADO.entradasEmPoteDeGasto);
-  });
-
-  it("nenhum par de valor idêntico dentro de um pote", () => {
-    // Consequência do anterior: sem entrada em pote de gasto, não há o que
-    // parear. O teste existe para o mês em que houver.
-    for (const p of soma.potes.filter((p) => p.tipo === "gasto")) {
-      const doPote = lancamentos.filter(
-        (l) =>
-          l.status !== "excluido" &&
-          l.categoriaId !== null &&
-          CATEGORIAS.find((c) => c.id === l.categoriaId)?.pote.id === p.poteId,
+      const vazios = POTES_PADRAO.filter(
+        (p) => p.tipo === "gasto" && !comMovimento.has(p.slug),
       );
 
-      expect(paresDeValorIdentico(doPote).size).toBe(0);
-    }
-  });
+      expect(vazios.length).toBe(ESPERADO.potesDeGastoVazios);
+    });
 
-  it("com a renda de referência, as metas saem inteiras", () => {
-    // R$ 1.200 — a base do painel HTML do Davi. Nenhum pote com percentual
-    // produz meta quebrada nem meta nula.
-    for (const pote of POTES_PADRAO.filter((p) => p.percentual !== null)) {
-      const soma100 = soma.potes.find((p) => p.poteId === pote.slug);
+    it("nenhuma entrada caiu em pote de gasto neste mês", () => {
+      // O estorno da decisão 2 ainda não aconteceu. A conta já sabe abater
+      // (`somarOMes.test.ts`); aqui o número diz que o caso é raro, não morto.
+      const entradas = soma.potes
+        .filter((p) => p.tipo === "gasto")
+        .reduce((s, p) => s + p.entradaCentavos, 0);
 
-      const meta = metaDoPote({
-        percentual: pote.percentual,
-        rendaDeclaradaCentavos: 120_000,
-        totalCentavos: soma100?.totalCentavos ?? 0,
-        lancamentos: soma100?.lancamentos ?? 0,
-      });
+      expect(entradas).toBe(ESPERADO.entradasEmPoteDeGasto);
+    });
 
-      expect(meta.metaCentavos).toBe(pote.metaReferenciaCentavos);
-    }
-  });
-});
+    it("nenhum par de valor idêntico dentro de um pote", () => {
+      // Consequência do anterior: sem entrada em pote de gasto, não há o que
+      // parear. O teste existe para o mês em que houver.
+      for (const p of soma.potes.filter((p) => p.tipo === "gasto")) {
+        const doPote = lancamentos.filter(
+          (l) =>
+            l.status !== "excluido" &&
+            l.categoriaId !== null &&
+            CATEGORIAS.find((c) => c.id === l.categoriaId)?.pote.id ===
+              p.poteId,
+        );
+
+        expect(paresDeValorIdentico(doPote).size).toBe(0);
+      }
+    });
+
+    it("com a renda de referência, as metas saem inteiras", () => {
+      // R$ 1.200 — a base do painel HTML do Davi. Nenhum pote com percentual
+      // produz meta quebrada nem meta nula.
+      for (const pote of POTES_PADRAO.filter((p) => p.percentual !== null)) {
+        const soma100 = soma.potes.find((p) => p.poteId === pote.slug);
+
+        const meta = metaDoPote({
+          percentual: pote.percentual,
+          rendaDeclaradaCentavos: 120_000,
+          totalCentavos: soma100?.totalCentavos ?? 0,
+          lancamentos: soma100?.lancamentos ?? 0,
+        });
+
+        expect(meta.metaCentavos).toBe(pote.metaReferenciaCentavos);
+      }
+    });
+  },
+);

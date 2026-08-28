@@ -79,11 +79,7 @@ export type PoteNoPainel = {
  * comparar com a meta que não existe.
  */
 export type EstadoDoPote =
-  | "vazio"
-  | "sem-meta"
-  | "negativo"
-  | "estourado"
-  | "normal";
+  "vazio" | "sem-meta" | "negativo" | "estourado" | "normal";
 
 export function estadoDoPote(
   pote: Pick<PoteNoPainel, "percentual" | "totalCentavos" | "lancamentos">,

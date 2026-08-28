@@ -19,9 +19,7 @@ import {
  * é ler o formato do evento do Clerk e decidir o que cada tipo significa.
  */
 export type ResultadoSincronizacao =
-  | ResultadoSalvar
-  | "removido"
-  | "ignorado_evento";
+  ResultadoSalvar | "removido" | "ignorado_evento";
 
 /** Extrai o que interessa do payload do Clerk, sem confiar no formato. */
 export function extrairDados(data: unknown): DadosUsuario | null {
@@ -40,7 +38,8 @@ export function extrairDados(data: unknown): DadosUsuario | null {
 
   const email =
     typeof principal === "object" && principal !== null
-      ? ((principal as Record<string, unknown>).email_address as string) ?? null
+      ? (((principal as Record<string, unknown>).email_address as string) ??
+        null)
       : null;
 
   const nome =

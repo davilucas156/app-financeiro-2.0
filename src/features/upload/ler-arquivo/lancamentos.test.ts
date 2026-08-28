@@ -142,7 +142,9 @@ describe("direção — o mesmo sinal significa o oposto nos dois arquivos", () 
 
   it("na fatura, o negativo é o pagamento que abate — entrada", () => {
     const { lancamentos } = ler(FATURA_INTER);
-    const pagamento = lancamentos.find((l) => l.descricao === "PAGAMENTO ON LINE");
+    const pagamento = lancamentos.find(
+      (l) => l.descricao === "PAGAMENTO ON LINE",
+    );
 
     expect(pagamento?.direcao).toBe("entrada");
     expect(pagamento?.valorCentavos).toBe(31819);
@@ -161,7 +163,10 @@ describe("direção — o mesmo sinal significa o oposto nos dois arquivos", () 
 
 describe("valor é sempre positivo; o sentido fica em direcao", () => {
   it("nenhum lançamento tem valor negativo", () => {
-    const todos = [...ler(EXTRATO_INTER).lancamentos, ...ler(FATURA_INTER).lancamentos];
+    const todos = [
+      ...ler(EXTRATO_INTER).lancamentos,
+      ...ler(FATURA_INTER).lancamentos,
+    ];
     expect(todos.every((l) => l.valorCentavos >= 0)).toBe(true);
   });
 });

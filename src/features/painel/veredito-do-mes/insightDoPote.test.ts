@@ -37,10 +37,9 @@ describe("a distância da meta, em dinheiro", () => {
 
   it("pote de renda troca 'meta' por 'previsto'", () => {
     // Sinal, não julgamento: acima é bom aqui, e a frase não comemora nem cobra.
-    const r = insightDoPote(
-      pote({ tipo: "renda", totalCentavos: 180_000 }),
-      { metaCentavos: 100_000 },
-    );
+    const r = insightDoPote(pote({ tipo: "renda", totalCentavos: 180_000 }), {
+      metaCentavos: 100_000,
+    });
 
     expect(r).toBe("R$ 800,00 acima do previsto");
   });

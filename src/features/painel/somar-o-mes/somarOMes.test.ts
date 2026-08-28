@@ -129,7 +129,13 @@ describe("pote de gasto", () => {
 describe("pote de renda — o sinal inverte", () => {
   it("entrada soma", () => {
     const soma = somarOMes(
-      [l({ direcao: "entrada", valorCentavos: 120_000, categoriaId: "cat-salario" })],
+      [
+        l({
+          direcao: "entrada",
+          valorCentavos: 120_000,
+          categoriaId: "cat-salario",
+        }),
+      ],
       CATEGORIAS,
     );
 
@@ -144,8 +150,16 @@ describe("pote de renda — o sinal inverte", () => {
      */
     const soma = somarOMes(
       [
-        l({ direcao: "entrada", valorCentavos: 100_000, categoriaId: "cat-salario" }),
-        l({ direcao: "saida", valorCentavos: 30_000, categoriaId: "cat-salario" }),
+        l({
+          direcao: "entrada",
+          valorCentavos: 100_000,
+          categoriaId: "cat-salario",
+        }),
+        l({
+          direcao: "saida",
+          valorCentavos: 30_000,
+          categoriaId: "cat-salario",
+        }),
       ],
       CATEGORIAS,
     );
@@ -178,8 +192,16 @@ describe("por categoria, dentro do pote", () => {
   it("a categoria também abate", () => {
     const soma = somarOMes(
       [
-        l({ categoriaId: "cat-compras", valorCentavos: 9_000, direcao: "saida" }),
-        l({ categoriaId: "cat-compras", valorCentavos: 9_000, direcao: "entrada" }),
+        l({
+          categoriaId: "cat-compras",
+          valorCentavos: 9_000,
+          direcao: "saida",
+        }),
+        l({
+          categoriaId: "cat-compras",
+          valorCentavos: 9_000,
+          direcao: "entrada",
+        }),
       ],
       CATEGORIAS,
     );
@@ -227,9 +249,17 @@ describe("o dinheiro classificado, para a cobertura da A2", () => {
   it("conta separado por direção, e só o que caiu num pote", () => {
     const soma = somarOMes(
       [
-        l({ direcao: "saida", valorCentavos: 6_000, categoriaId: "cat-comida" }),
+        l({
+          direcao: "saida",
+          valorCentavos: 6_000,
+          categoriaId: "cat-comida",
+        }),
         l({ direcao: "saida", valorCentavos: 4_000, categoriaId: null }),
-        l({ direcao: "entrada", valorCentavos: 90_000, categoriaId: "cat-salario" }),
+        l({
+          direcao: "entrada",
+          valorCentavos: 90_000,
+          categoriaId: "cat-salario",
+        }),
         l({ direcao: "entrada", valorCentavos: 10_000, categoriaId: null }),
       ],
       CATEGORIAS,
@@ -243,7 +273,13 @@ describe("o dinheiro classificado, para a cobertura da A2", () => {
 
   it("o excluído não conta nem como classificado nem como total", () => {
     const soma = somarOMes(
-      [l({ valorCentavos: 8_000, status: "excluido", categoriaId: "cat-comida" })],
+      [
+        l({
+          valorCentavos: 8_000,
+          status: "excluido",
+          categoriaId: "cat-comida",
+        }),
+      ],
       CATEGORIAS,
     );
 

@@ -56,9 +56,10 @@ export function TelaDeRegras({
               ? "1 regra classificando por você."
               : `${regras.length} regras classificando por você.`}
           </strong>{" "}
-          Mexer aqui vale <strong className="text-text">daqui para frente</strong> —
-          o que uma regra já classificou fica como está, e continua explicado
-          pelo texto que o pegou.
+          Mexer aqui vale{" "}
+          <strong className="text-text">daqui para frente</strong> — o que uma
+          regra já classificou fica como está, e continua explicado pelo texto
+          que o pegou.
         </p>
       </Card>
 

@@ -32,7 +32,11 @@ import { validarCategoria } from "./validar";
  */
 const SUGERIDOS = ["🍔", "🚗", "🏠", "💊", "🎁", "📚", "🐶", "✈️", "🔧", "💡"];
 
-export type ValoresDaCategoria = { nome: string; emoji: string; poteId: string };
+export type ValoresDaCategoria = {
+  nome: string;
+  emoji: string;
+  poteId: string;
+};
 
 export function FormularioDeCategoria({
   inicial,
@@ -54,9 +58,7 @@ export function FormularioDeCategoria({
 }) {
   const [nome, setNome] = useState(inicial?.nome ?? "");
   const [emoji, setEmoji] = useState(inicial?.emoji ?? "");
-  const [poteId, setPoteId] = useState(
-    inicial?.poteId ?? potes?.[0]?.id ?? "",
-  );
+  const [poteId, setPoteId] = useState(inicial?.poteId ?? potes?.[0]?.id ?? "");
 
   const valida = validarCategoria({ nome, emoji });
   // Em branco não é erro, é ainda-não-preenchido: a mensagem só aparece
@@ -151,7 +153,10 @@ export function FormularioDeCategoria({
       <div className="mt-4 flex gap-2">
         <button
           type="button"
-          onClick={() => valida.ok && aoSalvar({ nome: valida.nome, emoji: valida.emoji, poteId })}
+          onClick={() =>
+            valida.ok &&
+            aoSalvar({ nome: valida.nome, emoji: valida.emoji, poteId })
+          }
           disabled={!pronto || salvando}
           aria-busy={salvando || undefined}
           className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-4 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"

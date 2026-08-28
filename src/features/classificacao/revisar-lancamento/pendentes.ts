@@ -1,4 +1,7 @@
-import { casarRegra, type Criterio } from "@/features/classificacao/motor/regras";
+import {
+  casarRegra,
+  type Criterio,
+} from "@/features/classificacao/motor/regras";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import { textoDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
 import { criterioDaCorrecao } from "./criterioDaCorrecao";

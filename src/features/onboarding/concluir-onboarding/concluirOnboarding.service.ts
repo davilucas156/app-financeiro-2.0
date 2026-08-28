@@ -87,7 +87,10 @@ export async function concluirOnboarding(
  * onboarding de novo não pode devolvê-la ao que eu escrevi. Seed é ponto de
  * partida, não autoridade: quem olhou o lançamento foi ele.
  */
-async function semearRegras(tx: TransacaoDoBanco, userId: string): Promise<void> {
+async function semearRegras(
+  tx: TransacaoDoBanco,
+  userId: string,
+): Promise<void> {
   const [dono] = await tx
     .select({ email: users.email, nome: users.nome })
     .from(users)

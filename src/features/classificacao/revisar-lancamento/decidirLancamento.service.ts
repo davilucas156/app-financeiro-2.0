@@ -10,7 +10,10 @@ import { getDb } from "@/lib/db";
 import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { VALOR_ALTO_CENTAVOS } from "@/features/classificacao/classificar-importacao/classificarImportacao";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
-import { casarRegra, type Criterio } from "@/features/classificacao/motor/regras";
+import {
+  casarRegra,
+  type Criterio,
+} from "@/features/classificacao/motor/regras";
 import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
 import { criterioDaCorrecao } from "./criterioDaCorrecao";
@@ -134,7 +137,9 @@ export async function decidirNaTransacao(
           // A procedência da sugestão só existe quando a escolha veio de uma
           // (`transactions_fonte_sugestao_ck`).
           fonteDaSugestao:
-            decisao.fonte === "sugestao" ? (decisao.fonteDaSugestao ?? null) : null,
+            decisao.fonte === "sugestao"
+              ? (decisao.fonteDaSugestao ?? null)
+              : null,
           /*
            * ⚠ **A procedência da regra sai.** Encontrado pela verificação da
            * D6, no caminho "Ou troque a categoria" da tela: um valor alto que
@@ -434,7 +439,10 @@ async function aplicarAosIrmaos(
         motivo: alto ? MOTIVO_VALOR_ALTO : null,
       })
       .where(
-        and(eq(transactions.userId, dados.userId), inArray(transactions.id, ids)),
+        and(
+          eq(transactions.userId, dados.userId),
+          inArray(transactions.id, ids),
+        ),
       );
   }
 

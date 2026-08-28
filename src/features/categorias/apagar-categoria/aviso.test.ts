@@ -73,7 +73,9 @@ describe("avisoDeApagar — devolver à revisão", () => {
   });
 
   it("nunca alerta sobre pote — devolver não manda dinheiro para lugar nenhum", () => {
-    expect(avisoDeApagar({ lancamentos: 12, regras: 2 }, revisao).alerta).toBeNull();
+    expect(
+      avisoDeApagar({ lancamentos: 12, regras: 2 }, revisao).alerta,
+    ).toBeNull();
   });
 });
 
@@ -88,7 +90,9 @@ describe("avisoDeApagar — o alerta de outro pote", () => {
   });
 
   it("cala quando o destino é do mesmo pote", () => {
-    expect(avisoDeApagar({ lancamentos: 12, regras: 0 }, mover).alerta).toBeNull();
+    expect(
+      avisoDeApagar({ lancamentos: 12, regras: 0 }, mover).alerta,
+    ).toBeNull();
   });
 
   it("cala quando não há lançamento para mover", () => {
@@ -175,7 +179,10 @@ describe("avisoDeApagar — os que estão fora do cálculo", () => {
   });
 
   it("não muda nada no mover — o excluído vai junto e continua excluído", () => {
-    const com = avisoDeApagar({ lancamentos: 12, foraDoCalculo: 3, regras: 0 }, mover);
+    const com = avisoDeApagar(
+      { lancamentos: 12, foraDoCalculo: 3, regras: 0 },
+      mover,
+    );
     const sem = avisoDeApagar({ lancamentos: 12, regras: 0 }, mover);
 
     expect(com).toEqual(sem);

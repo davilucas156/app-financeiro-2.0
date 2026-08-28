@@ -116,7 +116,10 @@ describe("o motor não toca no que a spec 02 já resolveu", () => {
       lanc({ descricao: "PAGAMENTO ON LINE", valorCentavos: 31819 }),
     ]);
     const r = classificarImportacao(preparados, [
-      { ...REGRA_PADARIA, criterio: { tipo: "descricao_contem", termo: "PAGAMENTO" } },
+      {
+        ...REGRA_PADARIA,
+        criterio: { tipo: "descricao_contem", termo: "PAGAMENTO" },
+      },
     ]);
     const d = r.porImpressao.get(preparados[0].impressao)!;
 

@@ -71,7 +71,10 @@ export async function criar(entrada: {
 
   return comRevalidacao(
     (userId) => criarCategoria(userId, entrada),
-    { ok: false, erro: "Não conseguimos criar. Nada foi salvo — tente de novo." },
+    {
+      ok: false,
+      erro: "Não conseguimos criar. Nada foi salvo — tente de novo.",
+    },
     "falha ao criar",
   );
 }

@@ -29,8 +29,7 @@ import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
  */
 
 export type DestinoEscolhido =
-  | { tipo: "mover"; categoriaId: string }
-  | { tipo: "revisao" };
+  { tipo: "mover"; categoriaId: string } | { tipo: "revisao" };
 
 export type ResultadoDeApagar =
   | { ok: true; lancamentos: number; regras: number }
@@ -62,9 +61,7 @@ export async function apagarCategoria(
     const [alvo] = await tx
       .select({ id: categories.id, nome: categories.nome })
       .from(categories)
-      .where(
-        and(eq(categories.id, categoriaId), eq(categories.userId, userId)),
-      )
+      .where(and(eq(categories.id, categoriaId), eq(categories.userId, userId)))
       .for("update")
       .limit(1);
 

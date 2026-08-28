@@ -27,8 +27,9 @@ describe("a meta sai da renda declarada", () => {
   });
 
   it("centavos inteiros, mesmo com renda quebrada", () => {
-    expect(m({ percentual: 15, rendaDeclaradaCentavos: 333_333 }).metaCentavos)
-      .toBe(50_000);
+    expect(
+      m({ percentual: 15, rendaDeclaradaCentavos: 333_333 }).metaCentavos,
+    ).toBe(50_000);
   });
 });
 

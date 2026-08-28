@@ -18,7 +18,9 @@ describe("os quatro estados que a tela distingue sem ler o número (B2)", () => 
   });
 
   it("negativo: devolveram mais do que saiu", () => {
-    expect(estadoDoPote(pote({ totalCentavos: -2_000 }), META)).toBe("negativo");
+    expect(estadoDoPote(pote({ totalCentavos: -2_000 }), META)).toBe(
+      "negativo",
+    );
   });
 
   it("sem meta: o pote não tem percentual", () => {
@@ -26,7 +28,9 @@ describe("os quatro estados que a tela distingue sem ler o número (B2)", () => 
   });
 
   it("estourado: passou da meta", () => {
-    expect(estadoDoPote(pote({ totalCentavos: 45_000 }), META)).toBe("estourado");
+    expect(estadoDoPote(pote({ totalCentavos: 45_000 }), META)).toBe(
+      "estourado",
+    );
   });
 
   it("normal: dentro da meta", () => {

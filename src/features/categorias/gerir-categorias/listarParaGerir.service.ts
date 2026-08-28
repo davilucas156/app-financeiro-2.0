@@ -1,6 +1,11 @@
 import "server-only";
 import { asc, eq, sql } from "drizzle-orm";
-import { buckets, categories, classificationRules, transactions } from "@/db/schema";
+import {
+  buckets,
+  categories,
+  classificationRules,
+  transactions,
+} from "@/db/schema";
 import { getDb } from "@/lib/db";
 import type { CategoriaNaGestao, PoteNaGestao } from "./categoriasNaTela";
 

@@ -13,7 +13,11 @@ import { AGUARDANDO_C2, REGRAS_BASE, regrasSemente } from "./semente";
 const idPorChave = new Map<string, string>(
   POTES_PADRAO.flatMap((pote) =>
     pote.categorias.map(
-      (c) => [`${pote.slug}/${c.slug}`, `id:${pote.slug}/${c.slug}`] as [string, string],
+      (c) =>
+        [`${pote.slug}/${c.slug}`, `id:${pote.slug}/${c.slug}`] as [
+          string,
+          string,
+        ],
     ),
   ),
 );
@@ -119,15 +123,27 @@ describe("os termos são os do arquivo, não os da memória", () => {
     ["TRANSFACIL BHBUS 4110  BELO HORIZONT BRA", "transporte/onibus"],
     ["DL UberRides           Sao Paulo     BRA", "transporte/apps"],
     ["ALLPARK SHOPP MT CARMO Betim         BRA", "transporte/estacionamento"],
-    ["FerautoAlinhament      BETIM         BRA", "manutencao/manutencao-veicular"],
+    [
+      "FerautoAlinhament      BETIM         BRA",
+      "manutencao/manutencao-veicular",
+    ],
     ["TOTALPASS              SAO PAULO     BRA", "custos-fixos/academia"],
     ["CONTA VIVO             SAO PAULO     BRA", "custos-fixos/telefonia"],
     ["EBN          SPOTIFY   CURITIBA      BRA", "conforto-lazer/assinaturas"],
     ["AmazonPrimeBR          SAO PAULO     BRA", "conforto-lazer/assinaturas"],
     ["APPLE COM BILL         SAO PAULO     BRA", "conforto-lazer/assinaturas"],
-    ["MERCADOLIVRE MERCADOL  Osasco        BRA", "conforto-lazer/compras-online"],
-    ["Zed   Investidor10     Rio de Janeir BRA", "conhecimento/conteudo-ferramentas"],
-    ['Aplicacao: "CDB Porq Obj BANCO EXEMPLO SA"', "liberdade-financeira/aportes"],
+    [
+      "MERCADOLIVRE MERCADOL  Osasco        BRA",
+      "conforto-lazer/compras-online",
+    ],
+    [
+      "Zed   Investidor10     Rio de Janeir BRA",
+      "conhecimento/conteudo-ferramentas",
+    ],
+    [
+      'Aplicacao: "CDB Porq Obj BANCO EXEMPLO SA"',
+      "liberdade-financeira/aportes",
+    ],
     ["IOF INTERNACIONAL", "outros-repasses/avulsos"],
   ];
 
@@ -143,25 +159,33 @@ describe("os termos curtos que ficaram de fora", () => {
     // O readme manda classificar `99` como Transporte/Apps. No mês medido ele
     // casa com o app de corrida, com um restaurante e com o número da conta.
     expect(
-      chaveEscolhida(alvo({ descricao: "99SABORES LANCHES     BETIM         BRA" })),
+      chaveEscolhida(
+        alvo({ descricao: "99SABORES LANCHES     BETIM         BRA" }),
+      ),
     ).toBe(null);
   });
 
   it("`Epar` não pega uma oficina de reparo", () => {
     expect(
-      chaveEscolhida(alvo({ descricao: "REPARO AUTOMOTIVO     BETIM         BRA" })),
+      chaveEscolhida(
+        alvo({ descricao: "REPARO AUTOMOTIVO     BETIM         BRA" }),
+      ),
     ).toBe(null);
   });
 
   it("`Prime` não pega a palavra primeira", () => {
     expect(
-      chaveEscolhida(alvo({ descricao: "PRIMEIRA LOJA         BETIM         BRA" })),
+      chaveEscolhida(
+        alvo({ descricao: "PRIMEIRA LOJA         BETIM         BRA" }),
+      ),
     ).toBe(null);
   });
 
   it("`Posto` não pega posto de saúde", () => {
     expect(
-      chaveEscolhida(alvo({ descricao: "POSTO DE SAUDE        BETIM         BRA" })),
+      chaveEscolhida(
+        alvo({ descricao: "POSTO DE SAUDE        BETIM         BRA" }),
+      ),
     ).toBe(null);
   });
 });
@@ -183,7 +207,10 @@ describe("regras de contraparte", () => {
     // contraparte, ou seja, só em transferência.
     expect(
       chaveEscolhida(
-        alvo({ descricao: "PAGARME PAGAMENTOS    BETIM         BRA", pessoa: null }),
+        alvo({
+          descricao: "PAGARME PAGAMENTOS    BETIM         BRA",
+          pessoa: null,
+        }),
       ),
     ).toBe(null);
   });
@@ -221,7 +248,10 @@ describe("direção na regra de contraparte", () => {
   it("compra no cartão para ela fica pendente, como o readme pede", () => {
     expect(
       chaveEscolhida(
-        alvo({ descricao: "CADILLAC MONTE CARMO  BETIM         BRA", pessoa: null }),
+        alvo({
+          descricao: "CADILLAC MONTE CARMO  BETIM         BRA",
+          pessoa: null,
+        }),
       ),
     ).toBe(null);
   });
@@ -276,7 +306,9 @@ describe("prioridade", () => {
     // A D5 cria regra a partir de uma correção dele. Correção de quem olhou o
     // lançamento tem de ganhar do que eu semeei de longe.
     for (const r of REGRAS_BASE) {
-      expect(r.prioridade, JSON.stringify(r.criterio)).toBeGreaterThanOrEqual(20);
+      expect(r.prioridade, JSON.stringify(r.criterio)).toBeGreaterThanOrEqual(
+        20,
+      );
     }
   });
 
@@ -284,6 +316,8 @@ describe("prioridade", () => {
     // O tipo existe e a spec diz que ele nasceria "só do seed do Davi". Nada
     // na seção 7 é faixa de valor. O `> R$ 200` do readme é a marca de
     // "revisar mesmo tendo batido", e quem aplica é a D1.
-    expect(REGRAS_BASE.some((r) => r.criterio.tipo === "valor_direcao")).toBe(false);
+    expect(REGRAS_BASE.some((r) => r.criterio.tipo === "valor_direcao")).toBe(
+      false,
+    );
   });
 });

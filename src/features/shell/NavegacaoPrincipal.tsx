@@ -35,9 +35,7 @@ export function NavegacaoPrincipal({
       aria-label="Navegação principal"
       style={style}
       className={cn(
-        variante === "inferior"
-          ? "border-t border-border bg-surface"
-          : "gap-1",
+        variante === "inferior" ? "border-t border-border bg-surface" : "gap-1",
         "flex items-center",
         className,
       )}

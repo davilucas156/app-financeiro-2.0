@@ -47,102 +47,107 @@ export type DadosDaRevisao = {
  */
 const TETO_DE_HISTORICO = 400;
 
-export async function listarPendentes(
-  userId: string,
-): Promise<DadosDaRevisao> {
+export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
   const db = getDb();
 
-  const [linhas, potesDoBanco, categoriasDoBanco, historico, sombra] = await Promise.all([
-    db
-      .select({
-        id: transactions.id,
-        descricao: transactions.descricaoOriginal,
-        valorCentavos: transactions.valorCentavos,
-        direcao: transactions.direcao,
-        data: transactions.data,
-        origem: transactions.origem,
-        parcela: transactions.parcela,
-        categoriaDoBanco: transactions.categoriaDoBanco,
-        motivo: transactions.motivo,
-        categoriaId: transactions.categoriaId,
-        regraChave: transactions.regraChave,
-      })
-      .from(transactions)
-      .where(
-        // ⚠ **A definição da fila mora em `filaDeRevisao.ts`** desde a D8. O
-        // painel conta com o mesmo critério, e as duas cópias divergiriam no
-        // dia em que alguém ajustasse uma delas.
-        and(eq(transactions.userId, userId), naFilaDeRevisao()),
-      )
-      .orderBy(asc(transactions.data), asc(transactions.id)),
+  const [linhas, potesDoBanco, categoriasDoBanco, historico, sombra] =
+    await Promise.all([
+      db
+        .select({
+          id: transactions.id,
+          descricao: transactions.descricaoOriginal,
+          valorCentavos: transactions.valorCentavos,
+          direcao: transactions.direcao,
+          data: transactions.data,
+          origem: transactions.origem,
+          parcela: transactions.parcela,
+          categoriaDoBanco: transactions.categoriaDoBanco,
+          motivo: transactions.motivo,
+          categoriaId: transactions.categoriaId,
+          regraChave: transactions.regraChave,
+        })
+        .from(transactions)
+        .where(
+          // ⚠ **A definição da fila mora em `filaDeRevisao.ts`** desde a D8. O
+          // painel conta com o mesmo critério, e as duas cópias divergiriam no
+          // dia em que alguém ajustasse uma delas.
+          and(eq(transactions.userId, userId), naFilaDeRevisao()),
+        )
+        .orderBy(asc(transactions.data), asc(transactions.id)),
 
-    db
-      .select({
-        id: buckets.id,
-        slug: buckets.slug,
-        nome: buckets.nome,
-        emoji: buckets.emoji,
-        cor: buckets.cor,
-        tipo: buckets.tipo,
-        ordem: buckets.ordem,
-      })
-      .from(buckets)
-      .where(eq(buckets.userId, userId))
-      .orderBy(asc(buckets.ordem)),
+      db
+        .select({
+          id: buckets.id,
+          slug: buckets.slug,
+          nome: buckets.nome,
+          emoji: buckets.emoji,
+          cor: buckets.cor,
+          tipo: buckets.tipo,
+          ordem: buckets.ordem,
+        })
+        .from(buckets)
+        .where(eq(buckets.userId, userId))
+        .orderBy(asc(buckets.ordem)),
 
-    db
-      .select({
-        id: categories.id,
-        slug: categories.slug,
-        nome: categories.nome,
-        emoji: categories.emoji,
-        ordem: categories.ordem,
-        poteId: buckets.id,
-        poteSlug: buckets.slug,
-        poteNome: buckets.nome,
-        poteEmoji: buckets.emoji,
-        poteCor: buckets.cor,
-        poteTipo: buckets.tipo,
-        poteOrdem: buckets.ordem,
-      })
-      .from(categories)
-      .innerJoin(buckets, eq(buckets.id, categories.bucketId))
-      .where(eq(categories.userId, userId)),
+      db
+        .select({
+          id: categories.id,
+          slug: categories.slug,
+          nome: categories.nome,
+          emoji: categories.emoji,
+          ordem: categories.ordem,
+          poteId: buckets.id,
+          poteSlug: buckets.slug,
+          poteNome: buckets.nome,
+          poteEmoji: buckets.emoji,
+          poteCor: buckets.cor,
+          poteTipo: buckets.tipo,
+          poteOrdem: buckets.ordem,
+        })
+        .from(categories)
+        .innerJoin(buckets, eq(buckets.id, categories.bucketId))
+        .where(eq(categories.userId, userId)),
 
-    db
-      .select({
-        descricao: transactions.descricaoOriginal,
-        origem: transactions.origem,
-        categoriaId: transactions.categoriaId,
-        categoriaSlug: categories.slug,
-        poteSlug: buckets.slug,
-      })
-      .from(transactions)
-      .innerJoin(categories, eq(categories.id, transactions.categoriaId))
-      .innerJoin(buckets, eq(buckets.id, categories.bucketId))
-      .where(
-        and(eq(transactions.userId, userId), isNotNull(transactions.categoriaId)),
-      )
-      .limit(TETO_DE_HISTORICO),
+      db
+        .select({
+          descricao: transactions.descricaoOriginal,
+          origem: transactions.origem,
+          categoriaId: transactions.categoriaId,
+          categoriaSlug: categories.slug,
+          poteSlug: buckets.slug,
+        })
+        .from(transactions)
+        .innerJoin(categories, eq(categories.id, transactions.categoriaId))
+        .innerJoin(buckets, eq(buckets.id, categories.bucketId))
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            isNotNull(transactions.categoriaId),
+          ),
+        )
+        .limit(TETO_DE_HISTORICO),
 
-    /*
-     * O que o "Voltar" reabriria (D6).
-     *
-     * `innerJoin` e não uma leitura solta: a descrição vem do lançamento vivo,
-     * não de uma cópia congelada. Se ele deixou de existir, o join não devolve
-     * nada e o botão apaga — que é a resposta certa.
-     */
-    db
-      .select({
-        descricao: transactions.descricaoOriginal,
-        regraCriada: decisionUndo.regraCriada,
-        irmaos: decisionUndo.irmaos,
-      })
-      .from(decisionUndo)
-      .innerJoin(transactions, eq(transactions.id, decisionUndo.transactionId))
-      .where(eq(decisionUndo.userId, userId))
-      .limit(1),
-  ]);
+      /*
+       * O que o "Voltar" reabriria (D6).
+       *
+       * `innerJoin` e não uma leitura solta: a descrição vem do lançamento vivo,
+       * não de uma cópia congelada. Se ele deixou de existir, o join não devolve
+       * nada e o botão apaga — que é a resposta certa.
+       */
+      db
+        .select({
+          descricao: transactions.descricaoOriginal,
+          regraCriada: decisionUndo.regraCriada,
+          irmaos: decisionUndo.irmaos,
+        })
+        .from(decisionUndo)
+        .innerJoin(
+          transactions,
+          eq(transactions.id, decisionUndo.transactionId),
+        )
+        .where(eq(decisionUndo.userId, userId))
+        .limit(1),
+    ]);
 
   const categoriasEscolhiveis: CategoriaEscolhivel[] = categoriasDoBanco.map(
     (c) => ({
@@ -173,17 +178,15 @@ export async function listarPendentes(
     voltar: sombra[0] ?? null,
     pendentes: prepararRevisao(linhas as LancamentoPendente[], {
       idPorChave,
-      historico: historico.map(
-        (h): Classificado => ({
-          descricao: h.descricao,
-          origem: h.origem,
-          // A fonte "mesma contraparte" da A4 depende disto: sem o nome, um
-          // Pix nunca lembraria como voce classificou a mesma pessoa antes.
-          pessoa: pessoaDe(h.descricao),
-          categoriaId: h.categoriaId!,
-          chaveDaCategoria: `${h.poteSlug}/${h.categoriaSlug}`,
-        }),
-      ),
+      historico: historico.map((h): Classificado => ({
+        descricao: h.descricao,
+        origem: h.origem,
+        // A fonte "mesma contraparte" da A4 depende disto: sem o nome, um
+        // Pix nunca lembraria como voce classificou a mesma pessoa antes.
+        pessoa: pessoaDe(h.descricao),
+        categoriaId: h.categoriaId!,
+        chaveDaCategoria: `${h.poteSlug}/${h.categoriaSlug}`,
+      })),
     }),
   };
 }

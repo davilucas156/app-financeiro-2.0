@@ -51,7 +51,12 @@ describe("paraGrade — sem tratamento de aspas (extrato)", () => {
   it("mantém a linha em branco, que a A2 usa para achar o cabeçalho", () => {
     const grade = paraGrade(EXTRATO_INTER, PONTO_E_VIRGULA);
     expect(grade[4]).toEqual([""]);
-    expect(grade[5]).toEqual(["Data Lançamento", "Descrição", "Valor", "Saldo"]);
+    expect(grade[5]).toEqual([
+      "Data Lançamento",
+      "Descrição",
+      "Valor",
+      "Saldo",
+    ]);
   });
 
   it("não apara espaço — 'Extrato Conta Corrente' chega inteiro", () => {

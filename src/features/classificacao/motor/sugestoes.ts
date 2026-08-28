@@ -101,7 +101,10 @@ export function sugerir(
   const encontradas: Sugestao[] = [];
   const jaTem = new Set<string>();
 
-  const somar = (categoriaId: string | null | undefined, sugestao: Omit<Sugestao, "categoriaId">) => {
+  const somar = (
+    categoriaId: string | null | undefined,
+    sugestao: Omit<Sugestao, "categoriaId">,
+  ) => {
     if (!categoriaId || jaTem.has(categoriaId)) return;
     jaTem.add(categoriaId);
     encontradas.push({ categoriaId, ...sugestao });
@@ -150,7 +153,10 @@ export function sugerir(
   if (pote) {
     somar(maisUsadaNoPote(contexto.historico, pote), {
       fonte: "pote-do-banco",
-      porque: "O banco diz que é " + doBanco.toLowerCase() + ", e é o que você mais usa aí",
+      porque:
+        "O banco diz que é " +
+        doBanco.toLowerCase() +
+        ", e é o que você mais usa aí",
     });
   }
 

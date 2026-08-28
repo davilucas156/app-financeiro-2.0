@@ -20,21 +20,18 @@ import { validarCategoria } from "@/features/categorias/nomear-categoria/validar
  */
 
 export type ResultadoDeMexer =
-  | { ok: true }
-  | { ok: false; erro: string; campo?: "nome" | "emoji" };
+  { ok: true } | { ok: false; erro: string; campo?: "nome" | "emoji" };
 
 export type ResultadoDeCriar =
   | { ok: true; categoria: CategoriaEscolhivel }
   | { ok: false; erro: string; campo?: "nome" | "emoji" };
 
 /** A mesma mensagem para "não existe" e "não é seu" — a régua da D5 da spec 02. */
-const NAO_ENCONTRADA =
-  "Essa categoria não existe mais. Recarregue a tela.";
+const NAO_ENCONTRADA = "Essa categoria não existe mais. Recarregue a tela.";
 
 const POTE_NAO_ENCONTRADO = "Esse pote não existe mais. Recarregue a tela.";
 
-const NOME_REPETIDO =
-  "Já existe uma categoria com esse nome neste pote.";
+const NOME_REPETIDO = "Já existe uma categoria com esse nome neste pote.";
 
 /**
  * ⚠ Frase **própria**, e não a de nome repetido.
@@ -193,9 +190,7 @@ export async function renomearCategoria(
     const [mexida] = await getDb()
       .update(categories)
       .set({ nome: valida.nome, emoji: valida.emoji })
-      .where(
-        and(eq(categories.id, categoriaId), eq(categories.userId, userId)),
-      )
+      .where(and(eq(categories.id, categoriaId), eq(categories.userId, userId)))
       .returning({ id: categories.id });
 
     return mexida ? { ok: true } : { ok: false, erro: NAO_ENCONTRADA };
@@ -222,9 +217,7 @@ export async function moverCategoria(
     const [categoria] = await tx
       .select({ id: categories.id, bucketId: categories.bucketId })
       .from(categories)
-      .where(
-        and(eq(categories.id, categoriaId), eq(categories.userId, userId)),
-      )
+      .where(and(eq(categories.id, categoriaId), eq(categories.userId, userId)))
       .for("update")
       .limit(1);
 
@@ -270,9 +263,13 @@ export async function moverCategoria(
     }
 
     const [ultima] = await tx
-      .select({ maior: sql<number>`coalesce(max(${categories.ordem}), 0)::int` })
+      .select({
+        maior: sql<number>`coalesce(max(${categories.ordem}), 0)::int`,
+      })
       .from(categories)
-      .where(and(eq(categories.bucketId, poteId), eq(categories.userId, userId)));
+      .where(
+        and(eq(categories.bucketId, poteId), eq(categories.userId, userId)),
+      );
 
     try {
       await tx

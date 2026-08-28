@@ -1,5 +1,9 @@
 import { createHash } from "node:crypto";
-import { FORMATOS, type Formato, type Origem } from "@/features/upload/ler-arquivo/formatos";
+import {
+  FORMATOS,
+  type Formato,
+  type Origem,
+} from "@/features/upload/ler-arquivo/formatos";
 import type { Lancamento } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
@@ -128,7 +132,9 @@ function acharPassagem(l: Lancamento, formato?: Formato): string | null {
   if (!formato) return null;
 
   const descricao = normalizarDescricao(l.descricao);
-  const achado = formato.padroesDePassagem.find((p) => p.padrao.test(descricao));
+  const achado = formato.padroesDePassagem.find((p) =>
+    p.padrao.test(descricao),
+  );
 
   return achado ? achado.motivo : null;
 }
@@ -191,6 +197,8 @@ function marcarPar(l: LancamentoPreparado, outro: LancamentoPreparado): void {
 
 /** Dias inteiros entre duas datas `YYYY-MM-DD`. */
 function distanciaEmDias(a: string, b: string): number {
-  const ms = Math.abs(Date.parse(`${a}T00:00:00Z`) - Date.parse(`${b}T00:00:00Z`));
+  const ms = Math.abs(
+    Date.parse(`${a}T00:00:00Z`) - Date.parse(`${b}T00:00:00Z`),
+  );
   return Math.round(ms / 86_400_000);
 }

@@ -115,7 +115,9 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
             key={a.rotulo}
             className="flex items-center justify-between gap-3 rounded-pote border border-border bg-card px-4 py-3"
           >
-            <span className="min-w-0 truncate text-xs font-bold">{a.rotulo}</span>
+            <span className="min-w-0 truncate text-xs font-bold">
+              {a.rotulo}
+            </span>
             <span className="shrink-0 font-mono text-2xs text-dim">
               {a.entraram} lançamentos
             </span>

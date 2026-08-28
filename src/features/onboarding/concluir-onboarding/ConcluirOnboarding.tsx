@@ -1,9 +1,6 @@
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { AcaoComecar } from "@/features/onboarding/concluir-onboarding/AcaoComecar";
-import {
-  POTES_DE_GASTO,
-  rotuloMeta,
-} from "@/features/onboarding/potes-padrao";
+import { POTES_DE_GASTO, rotuloMeta } from "@/features/onboarding/potes-padrao";
 
 /**
  * Tela de boas-vindas do primeiro acesso.

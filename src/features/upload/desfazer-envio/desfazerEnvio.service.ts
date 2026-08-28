@@ -63,7 +63,10 @@ export async function desfazerImportacao(
     const apagados = await tx
       .delete(transactions)
       .where(
-        and(eq(transactions.importId, importId), eq(transactions.userId, userId)),
+        and(
+          eq(transactions.importId, importId),
+          eq(transactions.userId, userId),
+        ),
       )
       .returning({ id: transactions.id });
 

@@ -29,8 +29,7 @@ import { getDb } from "@/lib/db";
  */
 
 export type ResultadoDoDesfazer =
-  | { ok: true; descricao: string }
-  | { ok: false; erro: string };
+  { ok: true; descricao: string } | { ok: false; erro: string };
 
 const NADA_PARA_DESFAZER =
   "Não há nada para desfazer. Recarregue a tela se ela parecer atrasada.";

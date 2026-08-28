@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
-import { casarRegra, type Criterio } from "@/features/classificacao/motor/regras";
+import {
+  casarRegra,
+  type Criterio,
+} from "@/features/classificacao/motor/regras";
 import {
   comTextoNovo,
   oQueEstaRegraProcura,
@@ -14,7 +17,11 @@ const pessoaEntrando: Criterio = {
   nome: "EMPRESA IMAGINARIA",
   direcao: "entrada",
 };
-const porValor: Criterio = { tipo: "valor_direcao", direcao: "saida", minimoCentavos: 100 };
+const porValor: Criterio = {
+  tipo: "valor_direcao",
+  direcao: "saida",
+  minimoCentavos: 100,
+};
 
 describe("o que dá para corrigir (D9)", () => {
   it("texto é editável nos dois tipos que têm texto", () => {
@@ -54,7 +61,12 @@ describe("trocar o texto preserva o resto do critério", () => {
     });
 
     // E a prova de que a direção continua fazendo efeito no motor:
-    const regra = { id: "r", criterio: novo!, categoriaId: "c", prioridade: 10 };
+    const regra = {
+      id: "r",
+      criterio: novo!,
+      categoriaId: "c",
+      prioridade: 10,
+    };
     const alvo = {
       descricao: "",
       valorCentavos: 1000,
