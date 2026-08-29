@@ -79,12 +79,16 @@ tela para isso.
 
 ## O que ainda não existe
 
-### Fase 2 do `readme.md`, intacta
+### Fase 2 do `readme.md` — menos um item
+
+> **Metas por pote configuráveis saiu daqui na spec 13.** A renda já era
+> editável desde a spec 04; o rateio passou a ser, na `/categorias`. Custou
+> zero migration: `percentual_meta` existia desde a spec 03 e só o seed
+> escrevia nela.
+
 
 - Parsing de fatura em **PDF**
 - **Notificações/lembretes** mensais ("já subiu o extrato desse mês?")
-- **Metas por pote configuráveis** — a renda virou editável na spec 04; o
-  rateio entre os potes, não
 - **Multi-conta** bancária
 - **Exportação** (PDF/Excel) do relatório mensal
 
@@ -121,7 +125,7 @@ pessoas.
 | `/revisao`              | Decidir um lançamento por vez, com desfazer                     | 03      |
 | `/regras`               | Ver, corrigir e apagar o que o motor aprendeu                   | 03      |
 | `/dashboard`            | Veredito, potes com insight, comparativo                        | 04 e 06 |
-| `/categorias`           | Criar, renomear, mover e apagar categoria (recolhível por pote) | 05 e 09 |
+| `/categorias`           | Criar, renomear, mover e apagar categoria (recolhível por pote), e **a meta de cada pote** | 05, 09 e 13 |
 | `/comparativo`          | Os potes mês a mês num ano, com os cartões de topo              | 09 e 12 |
 | `/configuracoes`        | Aparência (escuro/claro/sistema) e tamanho da letra             | 08 e 10 |
 | `/passos`               | Como pegar o extrato no banco                                   | 09      |

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import { somaDasMetas } from "./somaDasMetas";
+import { VoltarAoPadrao } from "./VoltarAoPadrao";
 
 /**
  * Quanto os potes somam, e o aviso de quem ainda não declarou renda (C3).
@@ -32,6 +33,8 @@ export function ResumoDasMetas({
       <p className="mt-4 font-mono text-2xs leading-relaxed text-dim">
         {frase}
       </p>
+
+      <VoltarAoPadrao />
 
       {!temRenda && (
         <Card className="mt-2 border-gold/30 bg-gold/8">

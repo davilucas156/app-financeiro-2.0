@@ -271,6 +271,16 @@ que desfaz. Por isso o `.sql` gerado precisa ser lido antes de aplicar.
   Outros/Repasses), e `observacao` guarda o que a tela mostra no lugar —
   "0%" leria como meta zerada. Percentual é inteiro: o produto usa
   percentuais cheios, e aceitar 12,5% na fase 2 exigirá migration de tipo.
+
+  ⚠ **`percentual_meta` tem dois escritores desde a spec 13**, e é a coluna
+  mais fácil de procurar no lugar errado: o **seed** do onboarding a semeia
+  com 30/25/15/15/10/5, e a **`/categorias`** a reescreve
+  (`categorias/definir-meta/`). Quem for atrás de "de onde veio este número"
+  precisa saber que a semente é o ponto de partida, e não a resposta.
+
+  `valor_meta_centavos` **continua sem nenhum leitor** — a spec 13 decidiu
+  não acordá-la (Pendência 2): meta em reais conviveria com o percentual e
+  pediria uma regra de precedência em toda tela.
 - **`categories`** — subcategorias dentro de um pote. `emoji` é coluna própria
   porque no painel a categoria aparece como "⛽ Gasolina" — o emoji é parte do
   rótulo, e embuti-lo no `nome` sujaria o dado que o usuário vai editar.

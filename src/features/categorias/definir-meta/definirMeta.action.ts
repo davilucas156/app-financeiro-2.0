@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { definirMeta, type ResultadoDaMeta } from "./definirMeta.service";
+import {
+  restaurarMetasDoPadrao,
+  type ResultadoDaRestauracao,
+} from "./restaurarMetas.service";
 
 /**
  * O que o campo de meta chama (tarefa B2).
@@ -46,6 +50,27 @@ export async function salvarMeta(
     // ⚠ O erro do Postgres nomeia tabela e coluna: fica no log do servidor, e
     // a tela recebe uma frase.
     console.error("[metas] falhou ao gravar o percentual", erro);
+
+    return { ok: false, erro: DEU_RUIM };
+  }
+}
+
+/**
+ * Voltar ao rateio de fábrica (tarefa D1).
+ *
+ * Mesma revalidação da escrita avulsa: o que mudou foi o mesmo campo, oito
+ * vezes.
+ */
+export async function restaurarMetas(): Promise<ResultadoDaRestauracao> {
+  const usuario = await garantirUsuario();
+
+  try {
+    const resultado = await restaurarMetasDoPadrao(usuario.id);
+    if (resultado.ok) revalidarOndeAMetaAparece();
+
+    return resultado;
+  } catch (erro) {
+    console.error("[metas] falhou ao restaurar o padrão", erro);
 
     return { ok: false, erro: DEU_RUIM };
   }

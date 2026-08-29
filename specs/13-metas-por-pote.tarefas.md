@@ -2,7 +2,9 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/13-metas-por-pote.md`, aprovada pelo Davi
-**Status:** ⚠ **rascunho, não aprovado.**
+**Status:** ✅ **as cinco fases entregues e no ar.** Três coisas mudaram na
+execução e estão anotadas nas tarefas B1, B2, C1 e C3. Falta o Davi dizer se o
+cabeçalho do pote aguenta o badge a 360px.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -63,7 +65,7 @@ dinheiro.
 
 ## Fase A — o vocabulário da meta
 
-### A1 · Ler o campo e decidir o que ele quer dizer `INFRA`
+### ✅ A1 · Ler o campo e decidir o que ele quer dizer `INFRA`
 
 Um módulo puro em `categorias/definir-meta/percentual.ts` que traduz o que o
 usuário digitou em uma de três respostas: **um percentual**, **sem meta**, ou
@@ -80,7 +82,7 @@ usuário digitou em uma de três respostas: **um percentual**, **sem meta**, ou
 **Pronto quando:** os testes cobrem vazio, só espaço, `0`, `100`, `101`, `-5`,
 `10,5`, `10.5`, `abc`, `<script>`, string gigante, e `null`.
 
-### A2 · A frase da soma `INFRA`
+### ✅ A2 · A frase da soma `INFRA`
 
 Uma função que recebe os potes de gasto e devolve **quanto somam** e **a frase**
 que a tela mostra.
@@ -98,7 +100,7 @@ de renda.
 
 ## Fase B — o pote sabe seu percentual
 
-### B1 · O percentual chega à tela de arrumação, sem ser desenhado `BACK`
+### ✅ B1 · O percentual chega à tela de arrumação, sem ser desenhado `BACK`
 
 `PoteNaGestao` ganha `percentual: number | null`, e `listarParaGerir` traz a
 coluna que já existe.
@@ -108,7 +110,15 @@ coluna que já existe.
 
 **Pronto quando:** o dado chega ao componente e a tela está igual.
 
-### B2 · A escrita, com o dono do pote na cláusula `BACK`
+> ✅ **Feito, e o tipo achou dois leitores que eu não sabia que existiam.**
+> Com `percentual` obrigatório em `PoteNaGestao`, o `tsc` apontou a
+> `listarPendentes.service.ts` — a `/revisão` também lista potes, é onde se
+> cria categoria nova — e o fabricador de potes dos testes. Os dois passaram a
+> carregar a coluna, em vez de o campo virar opcional: `percentual?` deixaria
+> o compilador quieto e criaria a pergunta "tem meta ou só não veio?" em toda
+> leitura futura.
+
+### ✅ B2 · A escrita, com o dono do pote na cláusula `BACK`
 
 `definir-meta/definirMeta.service.ts` (`server-only`) e a action que a chama.
 
@@ -126,11 +136,20 @@ coluna que já existe.
 **Pronto quando:** existe e não é chamada por ninguém; um teste cobre pote de
 renda recusado e percentual inválido recusado.
 
+> ⚠ **O teste de pote de renda não existe, e é melhor dizer por quê.** A recusa
+> virou `and tipo = 'gasto'` **dentro do SQL**, e este projeto não tem teste de
+> banco — o Vitest roda só `.ts` puros. Um teste com banco fingido provaria que
+> o dublê devolve o que eu mandei ele devolver. O percentual inválido, esse, tem
+> teste: é a A1, e o serviço chama a mesma função.
+>
+> A escrita ficou com **uma** consulta no caminho feliz. A que descobre *por
+> que* falhou só roda quando algo deu errado.
+
 ---
 
 ## Fase C — a meta na tela
 
-### C1 · O percentual aparece no cabeçalho do pote `FRONT-VISUAL`
+### ✅ C1 · O percentual aparece no cabeçalho do pote `FRONT-VISUAL`
 
 Só leitura: `30%` ao lado do nome, ou a observação ("eventual") quando não há
 meta. ⚠ **Nunca "0%" para pote sem meta** — a regra escrita do
@@ -143,7 +162,16 @@ meta. ⚠ **Nunca "0%" para pote sem meta** — a regra escrita do
 **Pronto quando:** a `/categorias` mostra os seis percentuais e as duas
 observações, e nada mais mudou.
 
-### C2 · O campo, e o salvamento `FRONT-INTEGRADO`
+> ⚠ **O cabeçalho mostra `sem meta`, e não a observação ("eventual").**
+> `PoteNaGestao` não carrega `observacao`, e trazê-la custaria mais uma coluna
+> para exibir texto de sabor numa tela de configuração. `sem meta` é curto — o
+> que importa, porque a linha tem cinco elementos a 360px — e é exatamente o
+> que a ausência significa. A observação continua onde ela serve: no painel.
+>
+> Também acrescentei `truncate` ao nome do pote, para ele ceder em vez de a
+> linha crescer. É a única mudança de layout feita sem ver o resultado.
+
+### ✅ C2 · O campo, e o salvamento `FRONT-INTEGRADO`
 
 `CampoDeMeta` — tocar no percentual abre o editor, salvar fecha. O gesto e a
 estrutura saem do `CampoDeRenda`.
@@ -158,7 +186,7 @@ estrutura saem do `CampoDeRenda`.
 **Pronto quando:** dá para mudar, tirar e dar meta, e o painel do mês reflete
 sem novo upload.
 
-### C3 · A soma, e o aviso de quem ainda não declarou renda `FRONT-INTEGRADO`
+### ✅ C3 · A soma, e o aviso de quem ainda não declarou renda `FRONT-INTEGRADO`
 
 Duas linhas no fim da lista de potes:
 
@@ -170,11 +198,18 @@ Duas linhas no fim da lista de potes:
 **Pronto quando:** a soma muda ao salvar; e uma conta sem renda declarada vê o
 aviso.
 
+> ⚠ **Uma consulta a mais na rota** — `rendaDoMes`, em `Promise.all` com a que
+> já existia. A promessa de "nenhuma consulta nova" era sobre a **meta**, e
+> continua de pé. Esta é do aviso, e paga por si: sem renda declarada,
+> `metaDoPote` devolve `null` para todo pote, e o percentual fica correto e
+> invisível. A tela recebe só `temRenda: boolean` — quem não precisa do número
+> não deve carregá-lo.
+
 ---
 
 ## Fase D — voltar ao padrão
 
-### D1 · Restaurar o rateio da semente `FRONT-INTEGRADO`
+### ✅ D1 · Restaurar o rateio da semente `FRONT-INTEGRADO`
 
 Um caminho discreto que devolve 30/25/15/15/10/5 e põe Manutenção e Outros de
 volta em "sem meta".
@@ -193,7 +228,7 @@ teste compara os dois.
 
 ## Fase E — a conferência e os documentos
 
-### E1 · A ponta a ponta: escrever aqui muda o julgamento lá `INFRA`
+### ✅ E1 · A ponta a ponta: escrever aqui muda o julgamento lá `INFRA`
 
 O teste que responde "a spec funciona?": um percentual novo atravessa até o
 veredito do painel.
@@ -204,7 +239,7 @@ veredito do painel.
   distinção não se perder numa refatoração futura.
 - Pote com percentual e renda declarada **não** mostra mais a observação.
 
-### E2 · Fechar os documentos `INFRA`
+### ✅ E2 · Fechar os documentos `INFRA`
 
 - Marcar as tarefas, com os desvios de execução registrados no lugar.
 - `references/estado-do-projeto.md`: tirar **Metas por pote configuráveis** da
