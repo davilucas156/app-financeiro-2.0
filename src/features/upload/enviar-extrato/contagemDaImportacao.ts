@@ -11,9 +11,17 @@
  * `exibirEnvio.ts` na spec 02.
  */
 
+/**
+ * ⚠ **O total importado não está aqui, e não é esquecimento.** Ele esteve: era
+ * um campo escrito pela tela e lido por ninguém. As duas funções abaixo tratam
+ * da **fila de decisão**, e o total não entra nela.
+ *
+ * Quem distingue "nada foi importado" de "tudo classificado" é a tela, com o
+ * total que ela já tem em mãos — e tem de ser lá: `tudoResolvido` é verdadeiro
+ * nos dois casos, e mandar quem importou zero linhas para a `/revisao` seria o
+ * caminho inútil que a spec 02 consertou.
+ */
 export type ContagemDaImportacao = {
-  /** Lançamentos que entraram no banco. */
-  importados: number;
   /** O motor bateu regra (D1). */
   classificados: number;
   /** Nenhuma regra bateu: você escolhe a categoria. */

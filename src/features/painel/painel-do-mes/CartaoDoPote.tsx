@@ -130,16 +130,19 @@ export function CartaoDoPote({
  *
  * Estourado em vermelho **na barra e no número** — decisão do Davi: "numero
  * tambem". É o único sinal da tela que pede ação.
+ *
+ * ⚠ **A barra não está aqui, e é de propósito.** Esta tabela teve um campo
+ * `barra` que ninguém leu: a `Barra` sempre decidiu sozinha, porque a cor dela
+ * não é só uma classe — estourado troca para `bg-red` **e** deixa de aplicar o
+ * `estiloDoPote`. Uma string na tabela guardaria metade da regra, e a metade
+ * que ficasse de fora divergiria da que ficasse dentro.
  */
-const CORES: Record<
-  EstadoDoPote,
-  { valor: string; legenda: string; barra: string }
-> = {
-  vazio: { valor: "text-dim2", legenda: "text-dim2", barra: "" },
-  "sem-meta": { valor: "text-text", legenda: "text-dim", barra: "" },
-  negativo: { valor: "text-green", legenda: "text-green", barra: "" },
-  estourado: { valor: "text-red", legenda: "text-red", barra: "bg-red" },
-  normal: { valor: "text-text", legenda: "text-dim", barra: "" },
+const CORES: Record<EstadoDoPote, { valor: string; legenda: string }> = {
+  vazio: { valor: "text-dim2", legenda: "text-dim2" },
+  "sem-meta": { valor: "text-text", legenda: "text-dim" },
+  negativo: { valor: "text-green", legenda: "text-green" },
+  estourado: { valor: "text-red", legenda: "text-red" },
+  normal: { valor: "text-text", legenda: "text-dim" },
 };
 
 function Barra({

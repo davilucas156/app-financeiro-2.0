@@ -57,7 +57,6 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
   );
 
   const contagem: ContagemDaImportacao = {
-    importados: total,
     classificados: dados.classificados,
     pendentes: dados.pendentes,
     pares: dados.revisao,

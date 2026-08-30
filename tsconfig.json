@@ -5,6 +5,12 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    // `strict` NAO inclui estas duas, e sem elas codigo morto entra calado:
+    // variavel declarada e nao lida, parametro que ninguem usa. A varredura de
+    // 30/08/2026 passou limpa, entao ligar custou zero e o proximo ganha o
+    // aviso na hora de escrever, e nao numa limpeza seis meses depois.
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",

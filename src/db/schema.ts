@@ -76,8 +76,19 @@ export const users = pgTable("users", {
   removidoEm: timestamp("removido_em", { withTimezone: true }),
 });
 
+/*
+ * ⚠ **O tipo nasce quando alguém precisa dele, e não em par.**
+ *
+ * Havia 18 destes — `X` e `NovoX` para cada tabela, por reflexo — e **10 não
+ * eram lidos por ninguém**, nem pelos testes. Não custavam erro: custavam a
+ * impressão de que existe uma camada de tipos do banco, quando o que existe é
+ * o que cada consulta seleciona.
+ *
+ * `$inferSelect` e `$inferInsert` estão a uma linha de distância a qualquer
+ * momento. Escrever o par antes de precisar é o mesmo que a coluna dormindo:
+ * parece preparo e é só peso.
+ */
 export type Usuario = typeof users.$inferSelect;
-export type NovoUsuario = typeof users.$inferInsert;
 
 /**
  * Potes. Populados no onboarding a partir de
@@ -488,8 +499,6 @@ export const transactions = pgTable(
   ],
 );
 
-export type Importacao = typeof imports.$inferSelect;
-export type NovaImportacao = typeof imports.$inferInsert;
 export type Transacao = typeof transactions.$inferSelect;
 export type NovaTransacao = typeof transactions.$inferInsert;
 
@@ -610,7 +619,6 @@ export const classificationRules = pgTable(
   ],
 );
 
-export type RegraSalva = typeof classificationRules.$inferSelect;
 export type NovaRegraSalva = typeof classificationRules.$inferInsert;
 
 /**
@@ -700,9 +708,6 @@ export const decisionUndo = pgTable("decision_undo", {
     .defaultNow(),
 });
 
-export type DesfazerSalvo = typeof decisionUndo.$inferSelect;
-export type NovoDesfazerSalvo = typeof decisionUndo.$inferInsert;
-
 /**
  * A renda que o usuário **declara** para cada mês (tarefa C1 da spec 04).
  *
@@ -775,9 +780,6 @@ export const monthlyIncome = pgTable(
     check("monthly_income_valor_ck", sql`${t.rendaCentavos} >= 0`),
   ],
 );
-
-export type RendaDoMes = typeof monthlyIncome.$inferSelect;
-export type NovaRendaDoMes = typeof monthlyIncome.$inferInsert;
 
 /**
  * Os formatos de CSV que **o usuário** ensinou o app a ler (spec 11, tarefa B1).
@@ -891,6 +893,3 @@ export const userFormats = pgTable(
     ),
   ],
 );
-
-export type FormatoDoUsuario = typeof userFormats.$inferSelect;
-export type NovoFormatoDoUsuario = typeof userFormats.$inferInsert;

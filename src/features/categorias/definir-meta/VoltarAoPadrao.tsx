@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { restaurarMetas } from "./definirMeta.action";
+import { RATEIO_DO_PADRAO } from "./metasDoPadrao";
 
 /**
  * O caminho de volta (tarefa D1).
@@ -42,9 +43,9 @@ export function VoltarAoPadrao() {
         Devolver as metas ao padrão do método?
       </p>
       <p className="mt-1.5 text-3xs leading-relaxed text-dim">
-        Os seis potes do rateio voltam a{" "}
-        <strong className="font-bold">30/25/15/15/10/5</strong>, e Manutenção e
-        Outros voltam a <strong>não ter meta</strong>. Suas categorias, seus
+        Os potes do rateio voltam a{" "}
+        <strong className="font-bold">{RATEIO_DO_PADRAO}</strong>, e Manutenção
+        e Outros voltam a <strong>não ter meta</strong>. Suas categorias, seus
         lançamentos e os nomes dos potes{" "}
         <strong className="font-bold">não mudam</strong> — só os percentuais.
       </p>

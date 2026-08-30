@@ -35,3 +35,20 @@ export const METAS_DO_PADRAO: MetaDoPadrao[] = POTES_DE_GASTO.map((pote) => ({
   slug: pote.slug,
   percentual: pote.percentual,
 }));
+
+/**
+ * O rateio como a tela o anuncia: `"30/25/15/15/10/5"`.
+ *
+ * ⚠ **Existe porque a frase da confirmação tinha esses números escritos à
+ * mão** — o mesmo erro que o docblock acima recusa, cometido uma tela adiante.
+ * O botão lia a semente e a frase que o descreve não; bastava alguém mexer no
+ * `potes-padrao.ts` para a tela prometer um rateio e o botão aplicar outro.
+ *
+ * Só os que têm meta entram: Manutenção e Outros voltam a **não ter**, e a
+ * frase diz isso em palavras, do lado.
+ */
+export const RATEIO_DO_PADRAO: string = METAS_DO_PADRAO.filter(
+  (m) => m.percentual !== null,
+)
+  .map((m) => m.percentual)
+  .join("/");

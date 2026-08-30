@@ -8,7 +8,6 @@ import {
 const contagem = (
   p: Partial<ContagemDaImportacao> = {},
 ): ContagemDaImportacao => ({
-  importados: 0,
   classificados: 0,
   pendentes: 0,
   pares: 0,
@@ -21,7 +20,6 @@ describe("paraDecidir", () => {
   it("soma os três tipos de pendência, e não só quem não achou regra", () => {
     // Os números do mês real do Davi, medidos pela A6 e pela D1.
     const junho = contagem({
-      importados: 54,
       classificados: 30,
       pendentes: 17,
       pares: 4,
@@ -49,9 +47,7 @@ describe("paraDecidir", () => {
 
 describe("tudoResolvido", () => {
   it("mês em que o motor pegou tudo", () => {
-    expect(tudoResolvido(contagem({ importados: 40, classificados: 40 }))).toBe(
-      true,
-    );
+    expect(tudoResolvido(contagem({ classificados: 40 }))).toBe(true);
   });
 
   it("um valor alto sozinho já impede o 'tudo pronto'", () => {
