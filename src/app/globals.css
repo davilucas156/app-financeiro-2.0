@@ -165,15 +165,23 @@
     color-scheme: dark;
 
     /*
-      ⚠ **A cor do pote entra por aqui, e não pelo bloco de tokens.**
-      Ela vem de `buckets.cor`, no Postgres, e cada elemento pintado
-      carrega as duas versões em `--pote-escuro` e `--pote-claro`
-      (ver `features/aparencia/tema/estiloDoPote.ts`). Esta linha é o
-      ponteiro: ela é resolvida **no elemento**, que é onde as duas
-      existem, e é o único jeito de "seguir o sistema" funcionar sem
-      o servidor ter de adivinhar a configuração do aparelho.
+      ⚠ **A cor do pote não entra por aqui, e já entrou.** Ela vem de
+      `buckets.cor`, no Postgres, e cada elemento pintado carrega as
+      duas versões em `--pote-escuro` e `--pote-claro`
+      (`features/aparencia/tema/estiloDoPote.ts`).
+
+      Havia aqui um ponteiro — `--cor-do-pote: var(--pote-escuro)` —
+      e ele **não funcionava**: o `var()` de uma custom property é
+      substituído onde ela é **declarada**, e em `:root` não existe
+      `--pote-escuro`. A propriedade computava inválida, descia assim
+      por herança, e o `background-color` virava `transparent`. Nove
+      potes ficaram sem cor em oito telas, calados, entre a spec 08 e
+      30/08/2026.
+
+      Quem escolhe agora é `light-dark()`, resolvida **no elemento**,
+      que é onde as duas cores existem. É o `color-scheme` abaixo que
+      a comanda — mais uma razão para ele não ser enfeite.
     */
-    --cor-do-pote: var(--pote-escuro);
 
     /*
       A paleta clara, definida uma vez e ainda sem efeito nenhum.
@@ -238,11 +246,14 @@
     do CSS passa a ver o truque em vez do verde, e `bg-green/8` já
     lê o token para montar um `color-mix`. Um token de cor que não é
     uma cor é uma armadilha para a próxima pessoa.
+
+    ⚠ **A cor do pote é a exceção, e desde 30/08/2026 usa
+    `light-dark()`.** A recusa acima não vale lá: ela não é token do
+    Tailwind, ninguém a mistura, alimenta uma propriedade só, e é
+    escrita no atributo `style` — onde o Lightning CSS nem a vê.
   */
   :root[data-tema="claro"] {
     color-scheme: light;
-
-    --cor-do-pote: var(--pote-claro);
 
     --color-bg: var(--claro-bg);
     --color-surface: var(--claro-surface);
@@ -272,8 +283,6 @@
   @media (prefers-color-scheme: light) {
     :root[data-tema="sistema"] {
       color-scheme: light;
-
-      --cor-do-pote: var(--pote-claro);
 
       --color-bg: var(--claro-bg);
       --color-surface: var(--claro-surface);

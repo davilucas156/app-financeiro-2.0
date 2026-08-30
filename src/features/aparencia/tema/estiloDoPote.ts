@@ -13,19 +13,41 @@ import { corParaFundoClaro } from "./corNoTema";
  * Uma função que devolvesse "a cor certa" teria de adivinhar a configuração do
  * aparelho, e erraria em todo mundo que escolheu o sistema.
  *
- * Então ela devolve as duas e deixa a escolha para o CSS. O elemento carrega
- * `--pote-escuro` e `--pote-claro`; `--cor-do-pote`, definida em `globals.css`,
- * aponta para uma delas conforme o tema, e o `background-color` lê essa. A
- * substituição acontece **no elemento**, que é onde as duas cores existem.
+ * Então ela devolve as duas e deixa a escolha para o CSS, com `light-dark()`,
+ * que segue o `color-scheme` — e o `color-scheme` já está certo nos três
+ * estados do tema (`dark` na raiz, `light` em "claro" e em "sistema" sob
+ * `prefers-color-scheme: light`).
  *
- * ⚠ **Mudar o nome de qualquer uma das três variáveis quebra em silêncio.** Uma
- * `var()` que não resolve não derruba nada: ela simplesmente não pinta, e a
- * barra fica transparente. O par está em `globals.css`, na seção do tema claro.
+ * ## ⚠ O ponteiro em `:root` não funcionava, e falhava em silêncio
+ *
+ * Até 30/08/2026 isto era `backgroundColor: var(--cor-do-pote)`, com
+ * `--cor-do-pote: var(--pote-escuro)` declarada em `:root` no `globals.css`.
+ * Parecia certo e pintava **nada**: o `var()` de uma custom property é
+ * substituído **onde ela é declarada**, não onde é lida. Em `:root` não existe
+ * `--pote-escuro`, então `--cor-do-pote` já computava para o valor
+ * garantidamente inválido e descia assim por herança — e um
+ * `background-color` inválido em tempo de valor computado vira `transparent`.
+ *
+ * O efeito: **a cor do pote sumiu dos oito lugares** entre a spec 08 e a
+ * correção. Ninguém viu porque o único pote que continuava colorido era o
+ * estourado, que é pintado por classe do Tailwind (`bg-red`) e não passa por
+ * aqui.
+ *
+ * ⚠ **`light-dark()` foi medida e recusada na spec 08**, e a recusa **não vale
+ * aqui**: o motivo lá era que `--color-green` deixaria de valer uma cor para
+ * valer um par, e `bg-green/8` lê o token para montar um `color-mix`. A cor do
+ * pote não é token do Tailwind, ninguém a mistura, e ela alimenta uma
+ * propriedade só. Como o valor é escrito no atributo `style`, o Lightning CSS
+ * nem o vê — quem resolve é o navegador.
  */
 export function estiloDoPote(cor: string): CSSProperties {
   return {
     "--pote-escuro": cor,
     "--pote-claro": corParaFundoClaro(cor),
-    backgroundColor: "var(--cor-do-pote)",
+    /*
+     * Resolvido **no elemento**, que é onde as duas cores existem. Claro
+     * primeiro, escuro depois — é a ordem dos argumentos de `light-dark()`.
+     */
+    backgroundColor: "light-dark(var(--pote-claro), var(--pote-escuro))",
   } as CSSProperties;
 }
