@@ -110,7 +110,7 @@ o painel continua abrindo no mesmo mês de antes.
 
 ## Fase B — o que sai do mês, sem apagar nada
 
-### B1 · A conta do que sai, pura `INFRA`
+### ✅ B1 · A conta do que sai, pura `INFRA`
 
 `painel/remover-o-mes/oQueSaiDoMes.ts`: recebe as linhas cruas
 (`{ importId, nomeArquivo, origem, mes, lancamentos }[]` — um envio pode
@@ -133,7 +133,15 @@ caso comum, e uma frase vazia com "0 lançamentos" seria pior que nada.
 
 **Pronto quando:** existe, tem teste, e não é chamada por ninguém.
 
-### B2 · Perguntar ao banco quem formou o mês `BACK`
+> ✅ **Feito, e a frase precisou de um segundo parâmetro.** O plano previa
+> `fraseDoTransbordo(atingido)`, e o primeiro teste reprovou por um motivo que
+> valia a pena: `rotuloDeMes` é o rótulo da **aba** ("Julho / 2026"), ilegível
+> no meio de uma frase. O certo é o `nomeDoMes`, que existe exatamente para
+> isso — e ele pede o ano de referência, que aqui é o do mês removido. Ganhou
+> teste: remover janeiro anuncia "dezembro **de 2025** perde 3 lançamentos", e
+> não um "dezembro" que serviria para dois anos diferentes.
+
+### ✅ B2 · Perguntar ao banco quem formou o mês `BACK`
 
 `painel/remover-o-mes/enviosDoMes.service.ts`, `server-only`. Um `group by`
 por envio e mês, contando os lançamentos que existem agora, restrito aos envios

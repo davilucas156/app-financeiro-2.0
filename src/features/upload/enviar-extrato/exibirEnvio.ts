@@ -41,6 +41,18 @@ const ROTULO_DE_ORIGEM: Record<LinhaDeImportacao["origem"], string> = {
 };
 
 /**
+ * Exportada porque a confirmação de "remover o mês" (spec 14) também nomeia
+ * envios.
+ *
+ * ⚠ Escrever "conta"/"cartão" de novo lá seria a **segunda tradução da mesma
+ * coluna**: no dia em que uma delas mudasse, duas telas passariam a chamar a
+ * mesma coisa por nomes diferentes, sem nenhuma das duas estar errada.
+ */
+export function rotuloDeOrigem(origem: LinhaDeImportacao["origem"]): string {
+  return ROTULO_DE_ORIGEM[origem];
+}
+
+/**
  * O fuso é fixado, não herdado.
  *
  * A coluna é `timestamptz`, então o instante está certo no banco — mas a
@@ -76,7 +88,7 @@ export function paraEnvioExibido(linha: LinhaDeImportacao): EnvioExibido {
   return {
     id: linha.id,
     mes: linha.mesReferencia,
-    rotuloDeOrigem: ROTULO_DE_ORIGEM[linha.origem],
+    rotuloDeOrigem: rotuloDeOrigem(linha.origem),
     nomeArquivo: linha.nomeArquivo,
     lancamentos: linha.lancamentosImportados,
     ignoradas: linha.ignoradas,
