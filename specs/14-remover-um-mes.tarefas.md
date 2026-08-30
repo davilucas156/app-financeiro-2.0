@@ -2,7 +2,9 @@
 
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec de origem:** `specs/14-remover-um-mes.md`, aprovada pelo Davi
-**Status:** ⚠ **rascunho, não aprovado.**
+**Status:** ✅ **as cinco fases entregues.** Cinco coisas mudaram na execução e
+estão anotadas nas tarefas A2, B1, C1, D1 e D2. Falta o Davi fazer a
+conferência de aceitação — remover um mês e reenviar o arquivo corrigido.
 
 Legenda de camada: `INFRA` · `FRONT-VISUAL` · `FRONT-INTEGRADO` · `BACK` · `BANCO`
 
@@ -259,7 +261,7 @@ sobrou, e a `/upload` perdeu os envios correspondentes.
 
 ## Fase E — a conferência e os documentos
 
-### E1 · O mês que sai, e a fileira depois dele `INFRA`
+### ✅ E1 · O mês que sai, e a fileira depois dele `INFRA`
 
 Um teste que liga as duas metades da spec: tirar um mês da lista e passar o que
 sobrou pela `mesesEPadrao` — a fileira continua em ordem, e o padrão anda para o
@@ -274,7 +276,15 @@ conferência é do Davi**, e a fase E diz exatamente como fazer.
 
 **Pronto quando:** o teste existe e a suíte passa inteira.
 
-### E2 · Os documentos `INFRA`
+> ✅ **Feito, e ele achou uma consequência que nenhuma das duas fases decide
+> sozinha.** O transbordo pode **esvaziar** o mês vizinho: se julho só tinha os
+> lançamentos que vieram no extrato de junho, remover junho o deixa sem
+> movimento. Ele continua na fileira — existe — mas deixa de ser onde o painel
+> abre, pela regra de campo da spec 04. O teste prova nos dois sentidos: com
+> transbordo o padrão cai em maio, sem transbordo continua em julho. Mesmo mês,
+> mesma remoção; só muda o que o envio levava.
+
+### ✅ E2 · Os documentos `INFRA`
 
 - `references/estado-do-projeto.md`: a linha da `/dashboard` ganha a remoção do
   mês, e a da `/upload` continua sendo a do desfazer por envio — são duas

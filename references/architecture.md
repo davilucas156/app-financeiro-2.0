@@ -410,6 +410,27 @@ perderia um lançamento real por causa do primeiro.
 - **Apagar categoria faz `set null`, não `cascade`** — apagar uma categoria não
   pode apagar meses de histórico financeiro.
 
+> ⚠ **`imports` tem dois caminhos de deleção desde a spec 14**, e quem for atrás
+> de "por que este envio sumiu" precisa saber dos dois:
+>
+> - **por envio**, na `/upload` (`upload/desfazer-envio/`, spec 02) — a unidade é
+>   o arquivo, e o id vem do cliente, por isso há conferência de dono antes de
+>   apagar;
+> - **por mês**, no pé da `/dashboard` (`painel/remover-o-mes/`, spec 14) — a
+>   unidade é o mês, e ela apaga **os envios que o formaram**. Não há conferência
+>   de dono ali de propósito: um mês não é alça de nada, só vira linha depois de
+>   cruzar com o `user_id` da sessão.
+>
+> ⚠ **Remover o mês tem de apagar a linha de `imports`, não só os lançamentos.**
+> Com a linha viva, o `unique (user_id, hash)` recusaria o reenvio do arquivo
+> corrigido — que é a próxima coisa que se quer fazer depois de tirar um mês
+> errado. O botão viraria uma armadilha.
+>
+> ⚠ **E um envio pode alimentar dois meses**: `mesDoLancamento` arquiva
+> lançamento de conta pelo mês da **data**, então o extrato que cruza a virada
+> põe linhas no mês seguinte. Remover um mês leva essas linhas junto, e a tela
+> conta isso antes de confirmar.
+
 > ⚠ **O Drizzle envolve o erro do Postgres: o nome da constraint vive em
 > `error.cause`, não em `error.message`.** Um teste que só olha a mensagem
 > reporta falha justamente quando o banco fez o certo. Já me custou uma

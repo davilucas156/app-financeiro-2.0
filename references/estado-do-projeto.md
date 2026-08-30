@@ -1,6 +1,6 @@
 # Estado do projeto — o que o app é hoje
 
-**Atualizado em:** 27/08/2026, com as specs 06 a 12 no ar
+**Atualizado em:** 30/08/2026, com as specs 06 a 14 no ar
 **Contra:** `readme.md`, o pedido original
 **Para quê:** o `readme.md` é de antes de existir código. Seis specs depois,
 várias decisões dele foram revistas **de propósito** e com motivo registrado.
@@ -120,15 +120,21 @@ pessoas.
 | ----------------------- | --------------------------------------------------------------- | ------- |
 | `/entrar`, `/cadastrar` | Acesso, com allowlist                                           | 01      |
 | `/bem-vindo`            | Primeiro acesso, cria potes e categorias                        | 01      |
-| `/upload`               | Enviar extrato, histórico de envios, desfazer                   | 02      |
+| `/upload`               | Enviar extrato, histórico de envios, desfazer **um envio**       | 02      |
 | `/formatos`             | O que o app lê, e o que você ensinou a ele                      | 11      |
 | `/revisao`              | Decidir um lançamento por vez, com desfazer                     | 03      |
 | `/regras`               | Ver, corrigir e apagar o que o motor aprendeu                   | 03      |
-| `/dashboard`            | Veredito, potes com insight, comparativo                        | 04 e 06 |
+| `/dashboard`            | Veredito, potes com insight, comparativo, e **remover um mês inteiro** | 04, 06 e 14 |
 | `/categorias`           | Criar, renomear, mover e apagar categoria (recolhível por pote), e **a meta de cada pote** | 05, 09 e 13 |
 | `/comparativo`          | Os potes mês a mês num ano, com os cartões de topo              | 09 e 12 |
 | `/configuracoes`        | Aparência (escuro/claro/sistema) e tamanho da letra             | 08 e 10 |
 | `/passos`               | Como pegar o extrato no banco                                   | 09      |
+
+> ⚠ **Apagar dado importado tem duas unidades, e é de propósito.** A `/upload`
+> desfaz **um envio** — a unidade é o arquivo, e serve para quem sabe qual
+> arquivo errou. O painel remove **um mês** — a unidade é como o erro aparece,
+> e ele apaga os envios que formaram aquele mês (spec 14, Descoberta 4: deixar a
+> linha de `imports` viva trancaria o reenvio do arquivo corrigido).
 
 ## Instalável no celular
 

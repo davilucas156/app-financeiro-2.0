@@ -8,7 +8,7 @@ que mudou as abas de endereço
 **Pedido do Davi:** _"adiciona pra mim a opção de no painel remover um mês que
 importei errado e nas janelas dos meses organize da esquerda pra direita em
 ordem de tempo as janelas"_
-**Status:** ⚠ **rascunho, não aprovado.** Pendências decididas por mim — ver o
+**Status:** ✅ **aprovada pelo Davi e entregue.** Pendências decididas por mim — ver o
 fim do documento.
 
 > ⚠ Nenhum dado real neste documento. Os meses citados são exemplos, e os
