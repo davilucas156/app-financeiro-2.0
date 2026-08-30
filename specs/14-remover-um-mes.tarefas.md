@@ -155,7 +155,7 @@ que têm ao menos uma linha no mês pedido.
 
 ## Fase C — a remoção, ainda sem botão
 
-### C1 · Apagar os envios de um mês, numa transação `BACK`
+### ✅ C1 · Apagar os envios de um mês, numa transação `BACK`
 
 `painel/remover-o-mes/removerOMes.service.ts`, `server-only`. Recebe `userId` e
 o mês; descobre os envios (B2), apaga os lançamentos e depois as linhas de
@@ -175,7 +175,19 @@ URL. Devolve zero, como o "voltar ao padrão" faz com a conta vazia.
 
 **Pronto quando:** existe e não é chamada por ninguém.
 
-### C2 · As duas actions `BACK`
+> ⚠ **Desvio: ela não descobre os envios antes de apagar — apaga com a pergunta
+> dentro.** A tarefa dizia "descobre os envios (B2), apaga os lançamentos e
+> depois as linhas de `imports`". Entre a descoberta e a transação cabe um
+> envio novo (outra aba na `/upload`, um envio em voo), e sobraria meio mês.
+> Com a subconsulta dentro do `delete`, o conjunto é decidido e apagado sem
+> janela, e os `import_id` do `returning` são exatamente os envios a remover.
+>
+> ⚠ **E não há conferência de dono, ao contrário do `desfazerImportacao`.**
+> Aquele recebe um `importId`, que é alça global. Um mês não é alça de nada: só
+> vira linha depois de cruzar com o `user_id` da sessão. Uma consulta de dono
+> aqui não protegeria nada e daria a impressão de que protege.
+
+### ✅ C2 · As duas actions `BACK`
 
 `painel/remover-o-mes/removerOMes.action.ts`, com **duas** exportações:
 
