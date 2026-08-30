@@ -256,8 +256,14 @@ export const imports = pgTable(
      */
     hash: text("hash").notNull(),
 
-    /** Nulo até a D1 existir. */
-    urlNoBlob: text("url_no_blob"),
+    /* ⚠ Não há coluna para o arquivo original, e isso é decisão, não
+       esquecimento. Havia `url_no_blob`, prevista para a D1 da spec 02, e ela
+       ficou nula em toda linha: a C3 mediu o que se perdia sem o Blob e o que
+       faltava eram as **linhas ignoradas**, não o CSV — viraram `ignoradas`,
+       logo abaixo. Removida em 30/08/2026, sem nunca ter tido leitor nem
+       escritor. Ressuscitar o Blob é reabrir a D1 inteira, e não recriar uma
+       coluna: o envio grava, o desfazer apaga, e a remoção do mês apaga
+       junto. */
 
     /**
      * O resumo congelado no momento do envio. Fica guardado porque a tela de

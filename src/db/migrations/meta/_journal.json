@@ -85,6 +85,13 @@
       "when": 1787863262780,
       "tag": "0011_volatile_night_nurse",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788133462700,
+      "tag": "0012_misty_vulcan",
+      "breakpoints": true
     }
   ]
 }

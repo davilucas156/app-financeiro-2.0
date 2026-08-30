@@ -22,10 +22,15 @@ TypeScript **5**, sobre Node **20.17**.
   `drizzle-orm` 0.45 + driver `@neondatabase/serverless` 1.1; migrations com
   `drizzle-kit` 0.31.
 - **Auth:** Clerk.
-- **Storage de arquivos:** Vercel Blob (CSVs originais, privados, por usuário).
+- **Storage de arquivos:** nenhum. O CSV original **não é guardado** — spec
+  02, C3. O que faltava sem ele eram as linhas que o leitor não entendeu, e
+  essas moram em `imports.ignoradas`. A coluna `url_no_blob` foi removida em
+  30/08/2026 (migration 0012).
 - **LLM (fallback de classificação):** API Anthropic, chamada exclusivamente do
   servidor.
-- **Hospedagem/deploy:** Vercel, deploy contínuo a partir do GitHub.
+- **Hospedagem/deploy:** Vercel, por **CLI** — `npx vercel deploy --prod
+  --yes`. ⚠ O projeto **não** está conectado ao Git: `git push` é backup, e
+  não gatilho de deploy. Domínio estável: `app-financeiro-plum.vercel.app`.
 
 ## Estrutura de pastas
 
@@ -66,7 +71,7 @@ app-financeiro-2.0/
     ├── components/
     │   └── ui/                  # componentes reutilizáveis, sem regra de negócio
     ├── db/                      # schema, migrations e queries
-    └── lib/                     # clients server-only (db, clerk, anthropic, blob)
+    └── lib/                     # cliente do banco e utilitários sem dono
 ```
 
 > `src/features`, `src/components/ui`, `src/db` e `src/lib` existem com um

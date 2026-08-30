@@ -1,0 +1,1 @@
+ALTER TABLE "imports" DROP COLUMN "url_no_blob";

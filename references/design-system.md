@@ -45,10 +45,17 @@ Tema **dark único** (não há light mode no painel atual).
 | `--red` | `#ff4f4f` | Negativo / meta estourada |
 | `--gold` | `#ffc94d` | Metas / destaque |
 | `--blue` | `#3d8eff` | Informação |
-| `--cyan` | `#00c8d4` | — |
-| `--pink` | `#e040a0` | — |
-| `--purple` | `#a78bfa` | — |
-| `--orange` | `#ff9a3c` | — |
+| `--cyan` | `#00c8d4` | Reserva — o hex é o de 🚗 Transporte, servido por `--pote-tra` |
+| `--pink` | `#e040a0` | Reserva — o hex é o de 📚 Conhecimento, servido por `--pote-con` |
+| `--purple` | `#a78bfa` | Reserva — o hex é o de 💰 Renda, servido por `--pote-ren` |
+| `--orange` | `#ff9a3c` | Reserva — **a única cor da paleta sem nenhum uso hoje** |
+
+⚠ **As quatro "Reserva" ficam de propósito** (decisão do Davi, 30/08/2026).
+Uma varredura de tokens sem uso vai reencontrá-las: não são sujeira, são
+paleta. Três delas nem são cores paradas — o mesmo hex já pinta um pote, com
+outro nome de token; o que não se usa é o **apelido semântico**. `--orange` é
+a única cor que não aparece em lugar nenhum, e continua aqui para o dia em que
+faltar uma cor livre.
 
 ### Cores dos potes
 

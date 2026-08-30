@@ -53,3 +53,10 @@ next-env.d.ts
 *.xlsx
 *.ofx
 *.pdf
+
+# Reconstrucao local de extratos (30/08/2026)
+# O script e o LEIA-ME nao tem dado real, mas so servem para regerar os CSVs
+# desta maquina a partir dos extratos de verdade. Versionar convidaria a rodar
+# `git add .` na pasta que guarda a saida deles.
+scripts/reconstruir-extratos.mjs
+extratos-reconstruidos/
