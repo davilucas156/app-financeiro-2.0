@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { naFilaDeRevisao } from "@/features/classificacao/revisar-lancamento/filaDeRevisao";
@@ -13,6 +13,7 @@ import {
   somarOMes,
   type CategoriaComPote,
 } from "@/features/painel/somar-o-mes/somarOMes";
+import { mesesEPadrao } from "@/features/painel/navegar-entre-meses/mesesEPadrao";
 import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
 import type { LancamentoNoPainel, PoteNoPainel } from "./poteNoPainel";
@@ -64,31 +65,27 @@ export async function dadosDoPainel(
     .select({
       mes: transactions.mesReferencia,
       /*
-       * ⚠ **Contados só os que entram na conta.**
-       *
-       * Encontrado contra o banco real: a conta do Davi tinha um mês com
-       * **um** lançamento, e ele era um pagamento de fatura — `excluido` desde
-       * a spec 02. O painel abria ali e mostrava uma tela zerada, enquanto o
-       * mês anterior tinha 53 lançamentos.
-       *
-       * "Abre no mês atual lançado" quer dizer o mês que tem o que mostrar, e
-       * não o mês onde sobrou uma linha que a própria importação já tirou do
-       * cálculo.
+       * ⚠ **Contados só os que entram na conta**, porque é esta contagem que
+       * decide qual mês abre sozinho. O porquê está no docblock de
+       * `mesesEPadrao`, junto da regra que o usa.
        */
       comMovimento: sql<number>`count(*) filter (where ${transactions.status} <> 'excluido')::int`,
     })
     .from(transactions)
     .where(eq(transactions.userId, userId))
-    .groupBy(transactions.mesReferencia)
-    .orderBy(desc(transactions.mesReferencia));
+    .groupBy(transactions.mesReferencia);
 
-  if (porMes.length === 0) return null;
+  /*
+   * ⚠ **Sem `orderBy` de propósito** (tarefa A2 da spec 14). A ordem da fileira
+   * e a escolha do mês padrão querem ordens opostas, e as duas se decidem em
+   * `mesesEPadrao`, que ordena por dentro e tem teste. Uma cláusula aqui
+   * pareceria sustentar a correção sem sustentar — foi exatamente assim que a
+   * fileira ficou de trás para frente.
+   */
+  const navegacao = mesesEPadrao(porMes);
+  if (navegacao === null) return null;
 
-  // O seletor mostra **todos** os meses: um mês só de pagamento de fatura
-  // existe, e esconder da navegação seria negar que ele existe. O que muda é
-  // qual deles abre sozinho.
-  const meses = porMes.map((m) => m.mes);
-  const padrao = (porMes.find((m) => m.comMovimento > 0) ?? porMes[0]).mes;
+  const { meses, padrao } = navegacao;
 
   /*
    * ⚠ O mês vem da URL, e um mês inventado não pode virar consulta.
