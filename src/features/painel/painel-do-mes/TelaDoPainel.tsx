@@ -7,6 +7,7 @@ import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
 import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
+import { RemoverOMes } from "@/features/painel/remover-o-mes/RemoverOMes";
 import { metaDoPote } from "@/features/painel/somar-o-mes/meta";
 import { FaixaDoVeredito } from "@/features/painel/veredito-do-mes/FaixaDoVeredito";
 import { vereditoDoMes } from "@/features/painel/veredito-do-mes/veredito";
@@ -159,6 +160,15 @@ export function TelaDoPainel({
         </Link>
         .
       </p>
+
+      {/*
+        ⚠ **Depois do caminho até a `/categorias`, e não antes** (spec 14, D1).
+        Arrumar categoria é rotineiro e nasce de olhar os potes; remover um mês é
+        raro e destrutivo. O último item da tela é o que se encontra procurando,
+        não o que se esbarra rolando — e é a mesma razão de ele não ficar junto
+        das abas, onde o dedo passa todo dia.
+      */}
+      <RemoverOMes mes={mes} />
     </>
   );
 }

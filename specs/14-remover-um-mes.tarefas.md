@@ -210,7 +210,7 @@ mês). Do cliente vem **só o mês**; o `user_id` sai de `garantirUsuario()`.
 
 ## Fase D — a tela
 
-### D1 · A saída existe, e ainda não faz nada `FRONT-VISUAL`
+### ✅ D1 · A saída existe, e ainda não faz nada `FRONT-VISUAL`
 
 `painel/remover-o-mes/RemoverOMes.tsx`, no **pé** do `TelaDoPainel`, depois dos
 potes e da chamada do comparativo: a linha _"Este mês entrou errado?"_ e o botão
@@ -221,7 +221,13 @@ que se toca todo dia é erro de dedo esperando acontecer.
 
 **Pronto quando:** aparece no pé do painel, a 360px, e nada mais mudou.
 
-### D2 · A confirmação, e o que ela promete `FRONT-INTEGRADO`
+> ⚠ **Desvio: D1 e D2 saíram no mesmo componente e no mesmo commit.** Separá-las
+> exigiria um botão que não faz nada, e um botão morto no pé de uma tela é pior
+> que nenhum — quem tocasse acharia que o app travou. A conferência visual que a
+> D1 protegia continua possível, e é o estado fechado: a linha e o botão, que é
+> tudo o que existe até o dedo tocar.
+
+### ✅ D2 · A confirmação, e o que ela promete `FRONT-INTEGRADO`
 
 Tocar chama `resumoDaRemocao` e abre a confirmação, que mostra:
 
@@ -241,6 +247,13 @@ existem para fazer.
 
 **Pronto quando:** remover um mês tira ele da fileira, o painel abre no que
 sobrou, e a `/upload` perdeu os envios correspondentes.
+
+> ⚠ **A armadilha do `server-only` apareceu, e o `tsc` a pegou.** O
+> `ResultadoDaRemocao` mora no service, e importá-lo com `{ type X }` embutido
+> arrastaria o `import "server-only"` para dentro de um componente de cliente.
+> A forma de statement (`import type { … }`) é apagada inteira na compilação. É
+> o que a `LinhaDeEnvio` já fazia com o `ResultadoDesfazer` — o precedente
+> estava lá, e o erro veio de eu não ter copiado a linha inteira.
 
 ---
 
