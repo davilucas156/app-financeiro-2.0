@@ -321,6 +321,22 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   auto-hospedadas via `next/font/google`, expostas como `--font-syne` e
   `--font-dm-mono`. Regra visual: rótulo uppercase é `font-mono`, conteúdo é a
   fonte padrão.
+- **A cor do pote nos dois temas** — `src/features/aparencia/tema/` — a cor
+  vem de `buckets.cor`, no Postgres, e por isso **nenhuma variável de CSS a
+  alcança**. São duas funções, e a diferença entre elas é a régua:
+  - `corParaFundoClaro(hex)` — para **preenchimento** (barra, faixa, bolinha).
+    Mira **3**, que é o mínimo do WCAG para uma forma ser percebida.
+  - `corParaTexto(hex, fundo)` — para **letra** (spec 15). Mira **4.5**, e
+    recebe o fundo porque no escuro ela precisa clarear e no claro escurecer.
+
+  ⚠ **A régua muda com o uso, e não com o gosto.** Exigir 4.5 do preenchimento
+  escureceria os nove potes muito além do necessário; aceitar 3 na letra deixa
+  o número do cartão do ano ilegível. As duas preservam o matiz, porque a cor
+  **é** a identidade do pote.
+
+  Quem as leva ao elemento é `estiloDoPote` (fundo) e `estiloDoTextoDoPote`
+  (letra), cada uma com **nomes de variável próprios** — as duas versões da
+  mesma cor não são o mesmo valor, e um cartão pode ter as duas.
 - **`cn()`** — `src/lib/cn.ts` — junta classes ignorando valores falsos.
   Existe para não trazer `clsx`/`cva` neste tamanho de projeto.
 - **`Card`** — `src/components/ui/Card.tsx` — superfície padrão (`.panel`/`.sc`

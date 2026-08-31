@@ -33,8 +33,19 @@ Tema **dark único** (não há light mode no painel atual).
 | `--border` | `#1e1e26` | Borda padrão |
 | `--border2` | `#28282f` | Borda de destaque |
 | `--text` | `#e8e8f0` | Texto principal |
-| `--dim` | `#5a5a70` | Texto secundário / rótulos |
-| `--dim2` | `#3a3a4a` | Texto desabilitado |
+| `--dim` | `#7d7d96` | Texto secundário / rótulos — 5.06 `bg` · 4.70 `card` · 4.50 `card2` |
+| `--dim2` | `#3a3a4a` | Texto **desabilitado** — 1.69, reprova de propósito |
+
+⚠ **A regra dos dois cinzas, em uma frase: `dim` carrega texto; `dim2` não.**
+É por isso que só um deles passa dos 4.5 do WCAG. O tema claro já nascia
+assim (`--claro-dim` 5.19, `--claro-dim2` 2.38); o escuro só recebeu o mesmo
+tratamento na **spec 15**, quando `--dim` era `#5a5a70` e dava 2.81 sobre o
+card — o texto secundário do app inteiro, abaixo do mínimo de leitura. O
+valor novo é o **mesmo matiz**, clareado até passar.
+
+⚠ **`dim2` continua reprovando, e isso não é dívida.** Ele descreve o que
+está desligado. Usá-lo para conteúdo é o erro — e era o que a `/comparativo`
+fazia com a linha mês a mês dos cartões, a 9px.
 
 ### Semânticas
 

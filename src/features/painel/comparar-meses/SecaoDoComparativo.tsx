@@ -242,12 +242,25 @@ function BarraDoMes({
   );
 }
 
+/**
+ * A régua tracejada contra a qual as outras barras se leem.
+ *
+ * ⚠ **Ela estava em `dim2` — 1,69 de contraste — e isso era um erro de
+ * categoria** (tarefa C1 da spec 15). `dim2` é o token do **desabilitado**, e a
+ * média não é um enfeite: é o único número da linha que diz se a barra acima
+ * está alta ou baixa. Apagá-la até quase sumir esvaziava a comparação que dá
+ * nome à tela.
+ *
+ * A barra continua tracejada, e é ela que carrega a diferença de natureza —
+ * "isto não é um mês, é a régua". A distinção estava dita duas vezes, e uma das
+ * duas custava a leitura.
+ */
 function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
   const largura = teto === 0 ? 0 : Math.round((centavos / teto) * 100);
 
   return (
     <div className="flex items-center gap-2 pt-1">
-      <span className="w-[5.6em] shrink-0 font-mono text-3xs text-dim2">
+      <span className="w-[5.6em] shrink-0 font-mono text-3xs text-dim">
         média
       </span>
       <span className="h-2 flex-1 overflow-hidden rounded-full">
@@ -256,7 +269,7 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
           style={{ width: `${Math.max(0, Math.min(100, largura))}%` }}
         />
       </span>
-      <span className="w-[8em] shrink-0 text-right font-mono text-3xs text-dim2">
+      <span className="w-[8em] shrink-0 text-right font-mono text-3xs text-dim">
         {emReais(centavos)}
       </span>
     </div>

@@ -3,7 +3,8 @@
 **Etapa:** 2 (Break) do workflow `dev-workflow-davi`
 **Spec:** [15-comparativo-legivel.md](./15-comparativo-legivel.md) — ✅ aprovada
 pelo Davi
-**Status:** ⚠ **rascunho, não aprovado.**
+**Status:** ✅ **aprovada pelo Davi.** A, B, C e E entregues em 31/08/2026; a
+D segue aguardando decisão dele.
 
 > ⚠ Nenhum dado real neste documento.
 
@@ -98,9 +99,9 @@ pote mora em `buckets.cor`, no Postgres, e não acompanha o token.
 
 ---
 
-## Fase B · O cartão do ano
+## Fase B · O cartão do ano ✅
 
-### B1 · Os três níveis do `.cstat`
+### B1 · Os três níveis do `.cstat` ✅
 
 **Pronto quando:** `CartaoDoAnoNaTela` tem rótulo → valor → sub, na proporção do
 original, e **nenhum texto em `dim2`**.
@@ -117,7 +118,7 @@ de fechado.
 
 ⚠ **O ⚠ do mês pouco classificado continua**, na série e no cartão.
 
-### B2 · Três colunas a partir de `md`
+### B2 · Três colunas a partir de `md` ✅
 
 **Pronto quando:** a grade é `grid-cols-2` no celular e três colunas do `md`
 para cima, como o `repeat(3,1fr)` do original.
@@ -128,9 +129,9 @@ que estava errado era **parar em duas para sempre**.
 
 ---
 
-## Fase C · As barras pela mesma régua
+## Fase C · As barras pela mesma régua ✅
 
-### C1 · `dim2` sai do conteúdo da `SecaoDoComparativo`
+### C1 · `dim2` sai do conteúdo da `SecaoDoComparativo` ✅
 
 **Pronto quando:** a linha "média" — rótulo e valor — não está mais em `dim2`, e
 os rótulos de mês continuam distinguindo o mês atual dos outros.
@@ -165,9 +166,9 @@ lê.
 
 ---
 
-## Fase E · Os documentos
+## Fase E · Os documentos ✅
 
-### E1 · O que a régua nova precisa deixar escrito
+### E1 · O que a régua nova precisa deixar escrito ✅
 
 **Pronto quando:**
 
@@ -176,6 +177,23 @@ lê.
 - `estado-do-projeto.md` registra a spec 15.
 - `architecture.md` ganha a `corParaTexto` ao lado da `corParaFundoClaro`, com a
   diferença entre 3 e 4,5 dita uma vez.
+
+---
+
+## O que a Fase C encontrou e **não** consertou
+
+⚠ **`dim2` carrega conteúdo em mais 30 lugares do app.** A varredura depois da
+C1 mostrou que a `/comparativo` era o pior caso, não o único. Dois doem:
+
+- `CartaoDoPote.tsx:113` — **"meta R$ 360,00"**, no painel. O número contra o
+  qual a barra inteira se mede, no token do desabilitado.
+- `CartaoDoPote.tsx:256` — a **procedência** ("↳ uma regra procurava por…").
+  É a resposta a "por que isso caiu aqui?", que a spec 04 criou colunas no banco
+  para poder dar — e que a tela entrega ilegível.
+
+Não mexi: esta spec escreveu na tarefa C1 que o recorte era a `/comparativo`, e
+sair varrendo trinta arquivos por conta própria seria decidir sozinho o visual
+de todas as telas. Fica como pendência nomeada.
 
 ---
 
