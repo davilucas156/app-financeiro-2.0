@@ -9,7 +9,8 @@ degraus de tamanho de letra
 letras estão ilegíveis, precisa de os cards serem mais parecidos com a estrutura
 do arquivo html original"_ — junto de _"não quero que a meta mude de acordo com
 o que entrou no mês, quero que seja fixado de acordo com a renda declarada"_
-**Status:** ⚠ **rascunho, não aprovado.**
+**Status:** ✅ **aprovada e entregue** em 31/08/2026. As fases A, B, C e E
+foram ao ar; a D foi **recusada** pelo Davi — ver a Pendência 1.
 
 > ⚠ Nenhum dado real neste documento. Os valores do
 > `planejamento_anual_davi.html` aparecem como **estrutura** — tamanho, peso e
@@ -55,7 +56,14 @@ caminho inteiro antes de mexer em qualquer coisa:
 Ou seja: **não há correção de código a fazer neste ponto.** O que existe é um
 defeito de *régua*, e ele é a Descoberta 2.
 
-### Descoberta 2 — a régua está velha, e a tela não avisa
+### Descoberta 2 — a régua está velha, e a tela não avisa — ❌ **errada**
+
+> ⚠ **Esta descoberta foi refutada pelo Davi em 31/08/2026.** Os números estão
+> certos e o diagnóstico está errado: a renda declarada é o **salário**, e o que
+> entra acima dele é renda extra, que não é base de meta **por decisão**. A
+> diferença que eu li como régua envelhecida é o desenho funcionando. Fica
+> registrada porque foi ela que produziu a pergunta da Pendência 1 — e a
+> pergunta valeu a pena. Ver o docblock de `painel/somar-o-mes/meta.ts`.
 
 A renda declarada da conta foi informada duas vezes, com o mesmo valor, e esse
 valor é **o sugerido pelo campo** — `SUGERIDA_CENTAVOS` em `CampoDeRenda.tsx`,
@@ -230,14 +238,19 @@ escrito lá: a cor **é** a identidade do pote.
 
 ## Pendências para o Davi
 
-### 1 · A renda declarada está na sugestão de fábrica (Descoberta 2)
+### 1 · A renda declarada está na sugestão de fábrica (Descoberta 2) — ❌ recusada
 
 A régua das metas é o valor sugerido pelo campo, e a entrada real medida nos
 extratos é bem maior. Ele conserta isso digitando a renda certa no painel.
 
-**A pergunta é se o app deve avisar sozinho.** Hoje ele só avisa quando a renda
-é herdada de outro mês. Uma frase para o caso "esse é o valor que eu sugeri,
-não um que você decidiu" seria a mesma defesa, no outro buraco.
+**A pergunta era se o app deve avisar sozinho. O Davi respondeu que não, e o
+motivo desfaz a Descoberta 2:** a renda declarada é o **salário**, e o que entra
+acima dele é renda extra — que não é base de meta por decisão, não por
+esquecimento. A diferença que eu li como defeito é o desenho funcionando.
+
+⚠ **A Descoberta 2 acima está errada no diagnóstico e certa nos números.** Fica
+registrada como estava, com esta ressalva, porque apagá-la esconderia o
+raciocínio que levou à pergunta — e a pergunta valeu a pena.
 
 ### 2 · `--color-dim` reprova no app inteiro (Descoberta 3)
 

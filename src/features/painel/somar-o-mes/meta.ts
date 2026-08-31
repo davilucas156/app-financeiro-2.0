@@ -14,6 +14,28 @@
  * calculada; a coluna fica para o dia em que alguém quiser uma meta fixa que
  * sobreponha o percentual.
  *
+ * ## ⚠ A renda declarada é o **salário**, e a diferença para o que entrou é
+ * esperada
+ *
+ * Decisão do Davi em 31/08/2026, depois de a spec 15 propor um aviso para o
+ * caso: _"o que entra a mais do que é meu salário é renda extra e então não
+ * deve entrar nesse cálculo das metas"_.
+ *
+ * Isso **fecha** uma investigação que parece um defeito e não é. Quem comparar
+ * a renda declarada com o `entrouCentavos` do mesmo mês vai achar uma diferença
+ * grande — e ela é o desenho funcionando, não a régua envelhecida. Repasse
+ * recebido, renda extra e reembolso entram na conta do mês e **não** são base
+ * de meta: a base é o que se pode contar todo mês.
+ *
+ * Por isso a spec 15 **não** construiu o aviso "você declarou X e entraram Y".
+ * Ele dispararia todo mês em que houvesse qualquer entrada fora do salário, que
+ * é quase todo mês — e aviso que aparece sempre é aviso que ninguém lê.
+ *
+ * A defesa contra a régua envelhecer de verdade é outra, e já existe: o
+ * `CampoDeRenda` diz **"herdada de junho"** quando o número veio de outro mês.
+ * Aquilo responde "seu salário mudou?"; comparar com o extrato responderia
+ * outra pergunta, e responderia errado.
+ *
  * ## Quatro estados que a tela precisa distinguir sem ler o número
  *
  * Um `if` solto na tela erraria pelo menos um deles, e o erro seria mudo.

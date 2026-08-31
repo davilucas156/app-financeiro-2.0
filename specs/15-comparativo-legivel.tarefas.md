@@ -144,10 +144,29 @@ degraus de tamanho de letra da spec 10, e o motivo está no docblock.
 
 ---
 
-## Fase D · O aviso da renda ⚠ **só executo se você disser sim**
+## Fase D · O aviso da renda ❌ **cancelada pelo Davi**
 
-A Pendência 1 da spec ficou sem resposta, e ela não é pré-requisito de nada
-acima. Fica aqui, separada, para não entrar de carona numa aprovação de layout.
+**Respondida em 31/08/2026, e a resposta muda o entendimento do problema:**
+
+> _“calcular com o que eu informei de salário é o comportamento real. Quero
+> calcular as metas com a base do meu salário real. O que entra a mais do que
+> é meu salário é renda extra e então não deve entrar nesse cálculo das
+> metas.”_
+
+⚠ **A diferença entre a renda declarada e o que entrou não é a régua
+envelhecida: é renda extra, e ela está fora da base de propósito.** Eu tinha
+lido o contrário na Descoberta 2 da spec e recomendado que ele corrigisse o
+número — o número não estava errado.
+
+O aviso teria disparado em quase todo mês, porque quase todo mês tem alguma
+entrada fora do salário: repasse recebido, reembolso, renda extra. Aviso que
+aparece sempre é aviso que ninguém lê.
+
+A defesa contra o salário mudar sem ninguém notar **já existe e é a certa**: o
+`CampoDeRenda` diz “herdada de junho” quando o número veio de outro mês.
+
+A decisão ficou escrita no docblock de `painel/somar-o-mes/meta.ts`, e não só
+aqui — é lá que alguém vai bater ao achar que encontrou um defeito.
 
 ### D1 · O painel avisa quando a régua destoa do que entrou
 
