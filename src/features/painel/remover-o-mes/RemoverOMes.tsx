@@ -102,7 +102,7 @@ export function RemoverOMes({ mes }: { mes: string }) {
              * Texto, e não um botão desabilitado: ver o docblock. Nada clicável
              * nasce no lugar onde o vermelho vai aparecer.
              */
-            <p className="text-2xs text-dim2">Vendo o que sairia…</p>
+            <p className="text-2xs text-dim">Vendo o que sairia…</p>
           ) : (
             <Button
               variant="secondary"
@@ -145,7 +145,7 @@ export function RemoverOMes({ mes }: { mes: string }) {
               {resumo.envios.map((envio) => (
                 <li
                   key={envio.importId}
-                  className="truncate font-mono text-3xs text-dim2"
+                  className="truncate font-mono text-3xs text-dim"
                 >
                   {envio.nomeArquivo} · {envio.rotuloDeOrigem}
                 </li>

@@ -49,7 +49,7 @@ export function ConcluirOnboarding({ nome }: { nome?: string }) {
         ))}
       </div>
 
-      <p className="mt-3 font-mono text-3xs leading-relaxed text-dim2">
+      <p className="mt-3 font-mono text-3xs leading-relaxed text-dim">
         Os dois últimos ficam fora do rateio: manutenção é custo flutuante e
         repasses não são gasto seu. Dá para ajustar os percentuais depois.
       </p>

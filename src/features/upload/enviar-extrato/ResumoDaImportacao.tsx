@@ -215,7 +215,7 @@ function Numero({
       </p>
       <p
         className={`mt-1 font-mono text-2xl font-medium ${
-          destaque ? "text-green" : valor > 0 ? "text-text" : "text-dim2"
+          destaque ? "text-green" : valor > 0 ? "text-text" : "text-dim"
         }`}
       >
         {valor}

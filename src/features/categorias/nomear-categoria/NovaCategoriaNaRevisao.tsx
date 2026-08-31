@@ -59,7 +59,7 @@ export function NovaCategoriaNaRevisao({
         no pote que você escolher e já recebe este lançamento.
       </p>
 
-      <p className="mt-2 text-2xs leading-relaxed text-dim2">
+      <p className="mt-2 text-2xs leading-relaxed text-dim">
         O &ldquo;Voltar&rdquo; depois desfaz a classificação, mas não apaga a
         categoria — ela fica, como ficam as regras.
       </p>

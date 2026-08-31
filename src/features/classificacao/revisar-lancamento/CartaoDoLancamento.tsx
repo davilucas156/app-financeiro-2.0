@@ -64,7 +64,7 @@ export function CartaoDoLancamento({ l }: { l: PendenteParaRevisar }) {
           uma autoridade que ele não tem.
         */}
         {l.categoriaDoBanco && (
-          <span className="font-mono text-3xs tracking-[0.5px] text-dim2 uppercase">
+          <span className="font-mono text-3xs tracking-[0.5px] text-dim uppercase">
             banco diz: {l.categoriaDoBanco.toLowerCase()}
           </span>
         )}

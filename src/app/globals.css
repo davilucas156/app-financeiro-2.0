@@ -48,9 +48,18 @@
 
      ⚠ **`dim2` não muda, nos dois temas.** Ele está certo no que
      promete; o erro era usá-lo como conteúdo.
+
+     ⚠ **E hoje ele não tem nenhum uso.** A varredura da spec 15
+     tirou `text-dim2` dos 35 lugares onde ele carregava texto, e
+     em nenhum deles a resposta certa era outro tom de
+     desabilitado: era conteúdo, e conteúdo se lê. Ele fica —
+     como `--orange` fica — porque o dia em que existir algo
+     genuinamente desligado na tela, a cor dele já está escolhida
+     e medida. Uma varredura de tokens sem uso vai reencontrá-lo:
+     não é sujeira.
   ───────────────────────────────────────────────────────── */
   --color-dim: #7d7d96; /* 5.06 bg · 4.70 card · 4.50 card2 */
-  --color-dim2: #3a3a4a; /* desabilitado — reprova de propósito */
+  --color-dim2: #3a3a4a; /* desabilitado — sem uso hoje, ver acima */
 
   /* ── Semânticas ───────────────────────────────────────── */
   --color-primary: #ff5000;

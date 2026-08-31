@@ -29,7 +29,7 @@ export function LinhasIgnoradas({
           className="rounded-pote border border-border bg-card px-4 py-3"
         >
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="shrink-0 font-mono text-3xs tracking-[1px] text-dim2 uppercase">
+            <span className="shrink-0 font-mono text-3xs tracking-[1px] text-dim uppercase">
               linha {i.linha}
             </span>
             <span className="text-xs font-bold text-gold">{i.motivo}</span>
@@ -37,7 +37,7 @@ export function LinhasIgnoradas({
 
           {/* O conteúdo original é o que permite abrir o CSV e conferir.
               `break-all` porque a linha pode não ter espaço nenhum. */}
-          <p className="mt-1.5 font-mono text-3xs leading-relaxed break-all text-dim2">
+          <p className="mt-1.5 font-mono text-3xs leading-relaxed break-all text-dim">
             {i.conteudo}
           </p>
         </li>

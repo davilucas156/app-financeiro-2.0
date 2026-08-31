@@ -96,7 +96,7 @@ export function FormularioDeCategoria({
             disabled={salvando}
             placeholder="Gasolina"
             autoFocus
-            className="mt-1.5 min-h-11 w-full rounded-card border border-border2 bg-bg px-3 text-sm text-text placeholder:text-dim2 disabled:opacity-40"
+            className="mt-1.5 min-h-11 w-full rounded-card border border-border2 bg-bg px-3 text-sm text-text placeholder:text-dim disabled:opacity-40"
           />
         </label>
       </div>

@@ -93,7 +93,7 @@ function DeCodigo() {
           </p>
         </div>
       ))}
-      <p className="mt-3 text-3xs leading-relaxed text-dim2">
+      <p className="mt-3 text-3xs leading-relaxed text-dim">
         Estes vêm prontos e não mudam.
       </p>
     </Card>
@@ -118,7 +118,7 @@ function CartaoDoFormato({ formato }: { formato: FormatoNaTela }) {
 
       <p className="mt-1 text-xs text-dim">{formato.nome}</p>
 
-      <p className="mt-2 font-mono text-4xs leading-relaxed text-dim2">
+      <p className="mt-2 font-mono text-4xs leading-relaxed text-dim">
         Colunas: {colunas}
       </p>
 

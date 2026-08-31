@@ -101,7 +101,7 @@ export function SeletorDeTema({ escolhido }: { escolhido: Tema }) {
                   saber se funcionou ou se o botão está quebrado.
                 */}
                 {opcao === "sistema" && sistemaEstaClaro !== null && (
-                  <span className="text-dim2">
+                  <span className="text-dim">
                     {" "}
                     Agora ele pede {sistemaEstaClaro ? "claro" : "escuro"}.
                   </span>

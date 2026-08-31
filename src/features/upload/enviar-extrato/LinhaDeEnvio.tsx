@@ -37,12 +37,12 @@ export function LinhaDeEnvio({ envio }: { envio: EnvioExibido }) {
           espremeriam o nome do arquivo até sumir. */}
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="text-sm font-bold">{mes}</span>
-        <span className="font-mono text-4xs tracking-[1px] text-dim2 uppercase">
+        <span className="font-mono text-4xs tracking-[1px] text-dim uppercase">
           {envio.rotuloDeOrigem}
         </span>
       </div>
 
-      <p className="mt-1 truncate font-mono text-3xs text-dim2">
+      <p className="mt-1 truncate font-mono text-3xs text-dim">
         {envio.nomeArquivo}
       </p>
 
@@ -73,7 +73,7 @@ export function LinhaDeEnvio({ envio }: { envio: EnvioExibido }) {
       */}
       {envio.ignoradas.length > 0 && (
         <details className="mt-3 border-t border-border pt-3">
-          <summary className="cursor-pointer font-mono text-2xs text-gold marker:text-dim2">
+          <summary className="cursor-pointer font-mono text-2xs text-gold marker:text-dim">
             {rotuloDeIgnoradas(envio.ignoradas.length)}
           </summary>
           <LinhasIgnoradas linhas={envio.ignoradas} className="mt-2" />

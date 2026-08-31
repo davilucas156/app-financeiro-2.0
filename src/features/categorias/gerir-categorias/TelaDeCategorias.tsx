@@ -232,9 +232,7 @@ function PoteRecolhivel({
             {pote.percentual === null ? "sem meta" : `${pote.percentual}%`}
           </span>
         )}
-        <span className="shrink-0 font-mono text-3xs text-dim2">
-          {contagem}
-        </span>
+        <span className="shrink-0 font-mono text-3xs text-dim">{contagem}</span>
         {/*
           A seta gira em vez de trocar de desenho: quem já viu a de cima
           reconhece a de baixo como a mesma coisa virada, e não como outro

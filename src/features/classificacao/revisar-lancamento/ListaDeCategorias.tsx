@@ -107,7 +107,7 @@ export function ListaDeCategorias({
         onChange={(e) => setBusca(e.target.value)}
         placeholder="Buscar categoria ou pote"
         aria-label="Buscar categoria"
-        className="min-h-11 w-full rounded-card border border-border2 bg-card px-4 text-sm text-text placeholder:text-dim2 focus:border-primary focus:outline-none"
+        className="min-h-11 w-full rounded-card border border-border2 bg-card px-4 text-sm text-text placeholder:text-dim focus:border-primary focus:outline-none"
       />
 
       {encontradas ? (
@@ -202,7 +202,7 @@ function BotaoDeCategoria({
         </span>
       ) : (
         mostrarPote && (
-          <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim2 uppercase">
+          <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim uppercase">
             {categoria.pote.nome}
           </span>
         )

@@ -268,7 +268,7 @@ export function PainelDeMapeamento({
           de convenção contábil e ninguém sabe conferir a própria resposta; o
           que dá para conferir é o total, que muda ao vivo logo acima.
         */}
-        <p className="mt-2 text-3xs leading-relaxed text-dim2">
+        <p className="mt-2 text-3xs leading-relaxed text-dim">
           Na dúvida, olhe os totais lá em cima ao trocar esta opção. O certo é o
           que bate com o que você sabe do mês.
         </p>
@@ -296,7 +296,7 @@ export function PainelDeMapeamento({
         </Button>
       </div>
 
-      <p className="mt-3 font-mono text-3xs leading-relaxed text-dim2">
+      <p className="mt-3 font-mono text-3xs leading-relaxed text-dim">
         O arquivo é lido no servidor a cada ajuste, e nunca fica guardado.
       </p>
     </Card>
@@ -355,7 +355,7 @@ function Consequencia({
       <ConferenciaDoSaldo previa={previa} />
 
       {previa.amostra.length > 0 && (
-        <ul className="mt-3 space-y-1 font-mono text-4xs text-dim2">
+        <ul className="mt-3 space-y-1 font-mono text-4xs text-dim">
           {previa.amostra.map((l, i) => (
             <li key={i} className="flex gap-2">
               <span className="shrink-0">{l.data}</span>
@@ -383,7 +383,7 @@ function Consequencia({
 function ConferenciaDoSaldo({ previa }: { previa: Previa }) {
   if (!previa.saldo) {
     return (
-      <p className="mt-1.5 text-3xs leading-relaxed text-dim2">
+      <p className="mt-1.5 text-3xs leading-relaxed text-dim">
         Este arquivo não tem coluna de saldo, então não dá para conferir a
         leitura por fora. Confie nos totais acima.
       </p>
@@ -426,7 +426,7 @@ function EscolhaDeColuna({
     <label className="flex items-center gap-2">
       <span className="w-24 shrink-0 text-2xs text-dim">
         {ROTULOS_DO_PAPEL[papel]}
-        {!obrigatoria && <span className="text-dim2"> (opcional)</span>}
+        {!obrigatoria && <span className="text-dim"> (opcional)</span>}
       </span>
       <select
         value={escolhida ?? ""}

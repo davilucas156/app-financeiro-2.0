@@ -47,6 +47,24 @@ valor novo é o **mesmo matiz**, clareado até passar.
 está desligado. Usá-lo para conteúdo é o erro — e era o que a `/comparativo`
 fazia com a linha mês a mês dos cartões, a 9px.
 
+⚠ **Hoje `dim2` não tem nenhum uso, e isso é o resultado da varredura**, não
+um esquecimento. A spec 15 tirou `text-dim2` de **35 lugares em 19 arquivos**,
+e em nenhum a resposta certa era outro tom de desabilitado: era conteúdo, e
+conteúdo se lê. Entre eles estavam o `meta R$ …` embaixo da barra do pote e a
+procedência do lançamento (“↳ uma regra procurava por…”) — a resposta que a
+spec 04 criou colunas no banco para poder dar.
+
+Ele fica pelo mesmo motivo que `--orange` fica: no dia em que existir algo
+genuinamente desligado na tela, a cor já está escolhida e medida.
+
+⚠ **Duas vezes a varredura mostrou que a cor repetia o que a frase já dizia**,
+e aí a condição inteira saiu:
+
+| Onde | O que a cor dizia | O que a frase já dizia |
+|---|---|---|
+| `CartaoDaCategoria` | categoria sem uso, mais apagada | **“nunca foi usada”** |
+| `CartaoDoPote`, estado `vazio` | pote sem lançamento, mais apagado | **“nada caiu aqui este mês”** |
+
 ### Semânticas
 
 | Token | Hex | Uso |

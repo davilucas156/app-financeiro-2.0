@@ -65,7 +65,7 @@ export function CartaoDaRegra({
         <strong className="font-bold text-text">
           {regra.categoriaEmoji} {regra.categoriaNome}
         </strong>
-        <span className="text-dim2">· {regra.poteNome}</span>
+        <span className="text-dim">· {regra.poteNome}</span>
       </p>
 
       <p className="mt-2 text-xs text-dim">

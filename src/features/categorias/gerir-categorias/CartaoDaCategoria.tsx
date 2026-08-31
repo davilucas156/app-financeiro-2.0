@@ -44,7 +44,6 @@ export function CartaoDaCategoria({
   potes: PoteNaGestao[];
 }) {
   const [modo, setModo] = useState<Modo>("vendo");
-  const nunca = categoria.lancamentos === 0 && categoria.regras === 0;
 
   return (
     <Card className="mt-2">
@@ -52,9 +51,15 @@ export function CartaoDaCategoria({
         <span className="min-w-0 text-sm font-bold break-words text-text">
           {categoria.emoji} {categoria.nome}
         </span>
-        <span
-          className={`shrink-0 font-mono text-3xs ${nunca ? "text-dim2" : "text-dim"}`}
-        >
+        {/*
+          ⚠ **A cor dizia o que as palavras já dizem, e dizia ilegível.** Aqui
+          havia `nunca ? "text-dim2" : "text-dim"`: uma categoria sem uso ficava
+          mais apagada que as outras. Mas `oQueDependeDela` devolve literalmente
+          **"nunca foi usada"** nesse caso — a frase carrega o estado inteiro, e
+          a cor era a mesma informação repetida no token do desabilitado, a 1,69
+          de contraste (spec 15).
+        */}
+        <span className="shrink-0 font-mono text-3xs text-dim">
           {oQueDependeDela(categoria)}
         </span>
       </div>
@@ -81,7 +86,7 @@ export function CartaoDaCategoria({
       )}
 
       {modo === "vendo" && !podeMover(categoria) && (
-        <p className="mt-2 text-2xs leading-relaxed text-dim2">
+        <p className="mt-2 text-2xs leading-relaxed text-dim">
           Não dá para mover de pote com lançamento dentro: isso mudaria o rateio
           de todos os meses anteriores de uma vez.
         </p>

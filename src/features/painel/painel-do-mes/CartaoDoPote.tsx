@@ -110,7 +110,7 @@ export function CartaoDoPote({
             <span className={`font-mono text-3xs ${cor.legenda}`}>
               {legendaDoPote(estado, pote, meta.fracao)}
             </span>
-            <span className="shrink-0 font-mono text-3xs text-dim2">
+            <span className="shrink-0 font-mono text-3xs text-dim">
               {meta.metaCentavos !== null &&
                 `meta ${emReais(meta.metaCentavos)}`}
             </span>
@@ -136,9 +136,15 @@ export function CartaoDoPote({
  * não é só uma classe — estourado troca para `bg-red` **e** deixa de aplicar o
  * `estiloDoPote`. Uma string na tabela guardaria metade da regra, e a metade
  * que ficasse de fora divergiria da que ficasse dentro.
+ *
+ * ⚠ **`vazio` era `dim2` nos dois campos, e virou `dim` na spec 15.** O
+ * apagado extra dizia "não caiu nada aqui" pela segunda vez — a legenda já diz
+ * isso com todas as letras — e dizia a 1,69 de contraste. O estado continua
+ * distinto: `vazio` é o único cujo **valor** não é `text-text`, e é o valor que
+ * o olho lê primeiro.
  */
 const CORES: Record<EstadoDoPote, { valor: string; legenda: string }> = {
-  vazio: { valor: "text-dim2", legenda: "text-dim2" },
+  vazio: { valor: "text-dim", legenda: "text-dim" },
   "sem-meta": { valor: "text-text", legenda: "text-dim" },
   negativo: { valor: "text-green", legenda: "text-green" },
   estourado: { valor: "text-red", legenda: "text-red" },
@@ -213,7 +219,7 @@ function DentroDoPote({
             </span>
             <span className="shrink-0 font-mono text-xs text-dim">
               {emReais(c.totalCentavos)}
-              <span className="ml-2 text-dim2">({c.lancamentos})</span>
+              <span className="ml-2 text-dim">({c.lancamentos})</span>
             </span>
           </div>
         ))}
@@ -253,7 +259,7 @@ function DentroDoPote({
                   `regra_chave` e `fonte_da_sugestao` existirem. Guardar a
                   resposta num banco que ninguém consulta não responde nada.
                 */}
-                <span className="block text-dim2">↳ {l.procedencia}</span>
+                <span className="block text-dim">↳ {l.procedencia}</span>
               </span>
 
               {/* Ligado na D4: o botão esteve apagado desde a B3 porque

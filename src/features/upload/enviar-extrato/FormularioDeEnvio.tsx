@@ -165,7 +165,7 @@ export function FormularioDeEnvio({
             {enviando ? "Lendo o extrato…" : "Importar"}
           </Button>
 
-          <p className="mt-3 text-center font-mono text-3xs leading-relaxed text-dim2">
+          <p className="mt-3 text-center font-mono text-3xs leading-relaxed text-dim">
             O arquivo é lido no servidor. Nada é enviado para fora daqui.
           </p>
         </Card>

@@ -77,7 +77,7 @@ export function Sugestoes({
                   </span>
                 </span>
 
-                <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim2 uppercase">
+                <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim uppercase">
                   {ROTULO[s.fonte]}
                 </span>
               </button>
