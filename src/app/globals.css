@@ -23,8 +23,34 @@
   --color-border: #1e1e26;
   --color-border2: #28282f;
   --color-text: #e8e8f0;
-  --color-dim: #5a5a70;
-  --color-dim2: #3a3a4a;
+
+  /* ── Os dois cinzas, e a diferença entre eles ─────────────
+     ⚠ **`dim` carrega texto; `dim2` é o desabilitado.** O tema
+     claro já separa os dois assim, com o número ao lado de cada
+     um (`--claro-dim` 5.19, `--claro-dim2` 2.38 "baixo de
+     propósito"). O tema escuro nunca tinha recebido o mesmo
+     tratamento: os dois reprovavam.
+
+     `--color-dim` era `#5a5a70` — 3.02 sobre `--bg`, 2.81 sobre
+     `--card`, 2.69 sobre `--card2`, contra os 4.5 que o WCAG
+     pede para letra. Ele é o texto secundário do app inteiro, e
+     a queixa do Davi foi exatamente essa: "as letras estão
+     ilegíveis".
+
+     O valor novo é o **mesmo matiz**, clareado até passar — a
+     técnica já usada nas cores semânticas claras lá embaixo.
+
+     ⚠ **A régua é `--card2`, a superfície mais clara do tema
+     escuro.** É o pior caso para letra clara, do mesmo jeito que
+     o branco é o pior caso para letra escura em
+     `corNoTema.ts` — e é por isso que ali a referência é um
+     absoluto e aqui é um token.
+
+     ⚠ **`dim2` não muda, nos dois temas.** Ele está certo no que
+     promete; o erro era usá-lo como conteúdo.
+  ───────────────────────────────────────────────────────── */
+  --color-dim: #7d7d96; /* 5.06 bg · 4.70 card · 4.50 card2 */
+  --color-dim2: #3a3a4a; /* desabilitado — reprova de propósito */
 
   /* ── Semânticas ───────────────────────────────────────── */
   --color-primary: #ff5000;

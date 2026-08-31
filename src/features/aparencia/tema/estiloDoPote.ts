@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
-import { corParaFundoClaro } from "./corNoTema";
+import { BRANCO } from "./contraste";
+import { corParaFundoClaro, corParaTexto, FUNDO_ESCURO } from "./corNoTema";
 
 /**
  * O `style` de qualquer coisa pintada com a cor de um pote (tarefa D2 da
@@ -49,5 +50,34 @@ export function estiloDoPote(cor: string): CSSProperties {
      * primeiro, escuro depois — é a ordem dos argumentos de `light-dark()`.
      */
     backgroundColor: "light-dark(var(--pote-claro), var(--pote-escuro))",
+  } as CSSProperties;
+}
+
+/**
+ * O mesmo par, na cor da **letra** (tarefa A3 da spec 15).
+ *
+ * ## Por que não dá para reaproveitar o de cima
+ *
+ * ⚠ **As duas versões da mesma cor não são o mesmo valor.** A de preenchimento
+ * passa em 3, a de texto em 4.5 — e a segunda anda mais. Um cartão vai ter os
+ * dois estilos por perto: a barra pintada e o número escrito. Se os dois
+ * usassem `--pote-claro` / `--pote-escuro`, a última declaração venceria e um
+ * dos dois ficaria com a régua do outro, **sem erro nenhum na tela**.
+ *
+ * Daí os nomes próprios. Eles custam duas linhas e tornam a colisão impossível
+ * em vez de improvável.
+ *
+ * ## A escolha continua sendo do CSS, e não do servidor
+ *
+ * Mesmo motivo do `estiloDoPote`: o tema tem três estados e um deles é "seguir
+ * o sistema", que só o navegador de quem lê resolve. Quem escolhe é o
+ * `light-dark()`, que segue o `color-scheme`.
+ */
+export function estiloDoTextoDoPote(cor: string): CSSProperties {
+  return {
+    "--pote-texto-escuro": corParaTexto(cor, FUNDO_ESCURO),
+    "--pote-texto-claro": corParaTexto(cor, BRANCO),
+    /* Claro primeiro, escuro depois — a ordem dos argumentos de `light-dark()`. */
+    color: "light-dark(var(--pote-texto-claro), var(--pote-texto-escuro))",
   } as CSSProperties;
 }

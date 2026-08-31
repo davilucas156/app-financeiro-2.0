@@ -1,4 +1,4 @@
-import { BRANCO, contraste, emRgb, type Rgb } from "./contraste";
+import { BRANCO, contraste, emRgb, luminancia, type Rgb } from "./contraste";
 
 /**
  * A cor do pote num fundo claro (tarefa A3 da spec 08).
@@ -80,6 +80,100 @@ export function corParaFundoClaro(hex: string): string {
 
   return "#000000";
 }
+
+/**
+ * ⚠ **4.5, e não 3.** A régua do WCAG para **ler letra**. A constante acima
+ * existe porque a cor do pote nunca era texto; a spec 15 fez o número do cartão
+ * do ano receber a cor do pote, e a partir daí ela é.
+ */
+export const CONTRASTE_MINIMO_DE_TEXTO = 4.5;
+
+/**
+ * A superfície escura **mais clara** do app — `--color-card2` do `globals.css`.
+ *
+ * ⚠ **É um token, e não um absoluto, e a assimetria é real.** `BRANCO` serve de
+ * régua do lado claro porque existe um extremo: nada é mais claro que branco,
+ * logo é o pior caso para letra escura. Do lado escuro **não há extremo
+ * equivalente** — preto é o caso mais *fácil* para letra clara, não o mais
+ * difícil. O pior caso é a superfície escura mais clara que o app tem, e essa é
+ * uma escolha de paleta.
+ *
+ * Se o `globals.css` ganhar uma superfície escura mais clara que esta, este
+ * valor sobe junto.
+ */
+export const FUNDO_ESCURO: Rgb = [0x16, 0x16, 0x1c];
+
+/**
+ * A cor do pote quando ela vira **texto** (tarefa A2 da spec 15).
+ *
+ * ## Por que não dá para usar a `corParaFundoClaro`
+ *
+ * Duas diferenças, e nenhuma é de gosto:
+ *
+ * 1. **A régua é 4.5 e não 3.** Preenchimento precisa ser percebido; letra
+ *    precisa ser lida.
+ * 2. **Ela só sabe escurecer.** No tema escuro a cor precisa **clarear** — e
+ *    das nove do seed, uma reprova ali: `#5a5a70`, do pote Outros / Repasses,
+ *    que dá 2.81 sobre o cartão. Era o valor de `--color-dim` até a spec 15
+ *    clareá-lo pelo mesmo motivo.
+ *
+ * ## O fundo entra por parâmetro; a direção, não
+ *
+ * ⚠ **Quem chama diz contra o que vai medir, e não para que lado andar.** A
+ * direção sai da luminância do fundo, aqui dentro. Um parâmetro `clarear:
+ * boolean` deixaria a chamada errada ser escrita — e ela passaria, devolvendo
+ * uma cor que some no tema em que o outro estilo a mostra.
+ *
+ * ⚠ **O matiz fica**, pela mesma razão da irmã: a cor **é** a identidade do
+ * pote. Mexer no tom para "melhorar o número" trocaria o pote de cor, que é o
+ * único jeito de errar feio aqui.
+ *
+ * ⚠ **Hex ilegível volta intacto.** `buckets.cor` é `text` no Postgres.
+ */
+export function corParaTexto(hex: string, fundo: Rgb): string {
+  const rgb = emRgb(hex);
+  if (rgb === null) return hex;
+
+  if (contraste(rgb, fundo) >= CONTRASTE_MINIMO_DE_TEXTO) return hex;
+
+  const { matiz, saturacao, brilho } = emHsl(rgb);
+
+  /*
+   * Fundo escuro pede letra mais clara; fundo claro pede mais escura. O ponto
+   * de virada é a luminância que divide os dois casos do próprio WCAG.
+   */
+  const clareando = luminancia(fundo) < LUMINANCIA_DO_MEIO;
+  const passo = clareando ? 1 : -1;
+
+  /*
+   * Passo de 1%, busca linear, do brilho atual para o extremo. Termina sempre:
+   * branco dá 21 contra qualquer fundo escuro, e preto dá 21 contra qualquer
+   * fundo claro.
+   *
+   * ⚠ **Linear e não binária, igual à irmã, e pelo mesmo motivo:** o resultado
+   * é o **primeiro** brilho que passa. Uma busca binária pararia em outro ponto
+   * por um detalhe de arredondamento, e a cor do pote mudaria de tom entre dois
+   * deploys sem ninguém ter mexido em nada.
+   */
+  for (let b = Math.round(brilho * 100); b >= 0 && b <= 100; b += passo) {
+    const candidata = emRgbDeHsl(matiz, saturacao, b / 100);
+
+    if (contraste(candidata, fundo) >= CONTRASTE_MINIMO_DE_TEXTO) {
+      return emHex(candidata);
+    }
+  }
+
+  return clareando ? "#ffffff" : "#000000";
+}
+
+/**
+ * A luminância que separa "fundo escuro" de "fundo claro".
+ *
+ * Não é 0.5: luminância relativa não é linear no olho. `0.179` é o ponto em que
+ * branco e preto empatam em contraste sobre o mesmo fundo — a divisa que o
+ * próprio WCAG produz, e não um palpite.
+ */
+const LUMINANCIA_DO_MEIO = 0.179;
 
 /**
  * O matiz de uma cor, em graus (0 a 360) — ou `null` se o hex não der para ler.

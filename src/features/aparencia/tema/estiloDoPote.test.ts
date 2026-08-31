@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { corParaFundoClaro } from "./corNoTema";
-import { estiloDoPote } from "./estiloDoPote";
+import { BRANCO } from "./contraste";
+import { corParaFundoClaro, corParaTexto, FUNDO_ESCURO } from "./corNoTema";
+import { estiloDoPote, estiloDoTextoDoPote } from "./estiloDoPote";
 
 /**
  * A cor do pote chega ao elemento — as duas versões dela.
@@ -93,4 +94,62 @@ it("hex ilegível não quebra o estilo", () => {
   expect(e["--pote-escuro"]).toBe("nao-e-cor");
   expect(e["--pote-claro"]).toBe("nao-e-cor");
   expect(String(e.backgroundColor)).toMatch(/^light-dark\(/);
+});
+
+/**
+ * A cor do pote como letra chega ao elemento (tarefa A3 da spec 15).
+ *
+ * ⚠ **O terceiro teste é o que justifica a função existir.** Se um dia alguém
+ * "simplificar" fazendo o texto apontar para as variáveis de preenchimento, ele
+ * cai — e é o único jeito de perceber, porque a tela continuaria colorida, só
+ * que com a régua errada.
+ */
+
+const textoDoPote = (cor: string) =>
+  estiloDoTextoDoPote(cor) as Record<string, string | undefined>;
+
+describe("a cor do pote como letra chega ao elemento", () => {
+  it("carrega as duas versões de texto", () => {
+    expect(estiloDoTextoDoPote(VERDE)).toMatchObject({
+      "--pote-texto-escuro": corParaTexto(VERDE, FUNDO_ESCURO),
+      "--pote-texto-claro": corParaTexto(VERDE, BRANCO),
+    });
+  });
+
+  it("⚠ o color cita as duas variáveis que o próprio estilo define", () => {
+    /*
+     * O contrato que o defeito de seis dias do `--cor-do-pote` quebrou: um
+     * `var()` é substituído **onde a propriedade é declarada**. Citar uma
+     * variável que este objeto não declara faria a cor computar inválida — e
+     * uma cor inválida some sem avisar.
+     */
+    const { color } = textoDoPote(VERDE);
+
+    expect(color).toContain("var(--pote-texto-claro)");
+    expect(color).toContain("var(--pote-texto-escuro)");
+  });
+
+  it("⚠ não usa os nomes do preenchimento", () => {
+    // Se usasse, os dois estilos no mesmo cartão colidiriam e um deles ficaria
+    // com a régua do outro — 3 onde precisa de 4.5, sem erro na tela.
+    const texto = textoDoPote(VERDE);
+
+    expect(texto["--pote-claro"]).toBeUndefined();
+    expect(texto["--pote-escuro"]).toBeUndefined();
+    expect(texto.backgroundColor).toBeUndefined();
+  });
+
+  it("⚠ para o pote que reprova, texto e preenchimento são cores diferentes", () => {
+    /*
+     * `#5a5a70` passa em 3 e reprova em 4.5 sobre o cartão escuro. É o pote em
+     * que as duas réguas dão respostas diferentes — e a prova de que manter as
+     * duas funções não é preciosismo.
+     */
+    const preenchimento = estiloDoPote("#5a5a70") as Record<string, string>;
+    const texto = textoDoPote("#5a5a70");
+
+    expect(texto["--pote-texto-escuro"]).not.toBe(
+      preenchimento["--pote-escuro"],
+    );
+  });
 });
