@@ -341,6 +341,20 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   Existe para não trazer `clsx`/`cva` neste tamanho de projeto.
 - **`Card`** — `src/components/ui/Card.tsx` — superfície padrão (`.panel`/`.sc`
   do painel). Aceita `className` para espaçamento/largura, não para repintar.
+- **`Voltar`** — `src/components/ui/Voltar.tsx` — o caminho de volta das rotas
+  que ficam **fora da barra de navegação** (`/comparativo`, `/categorias`,
+  `/configuracoes`, `/formatos`, `/passos`). Recebe `para` e o nome do destino;
+  a seta é decorativa e o leitor de tela ouve “Voltar para …”.
+
+  ⚠ **Ele existe porque a mesma linha estava copiada cinco vezes e uma já
+  tinha divergido** — quatro telas em `text-3xs`, a `/configuracoes` em
+  `text-4xs`. Rota nova fora da barra usa este componente; não copie o
+  `<Link>` de uma tela vizinha.
+
+  ⚠ **Não confundir com o `AcaoDeVoltar` da `/revisao`**, que desfaz uma
+  classificação. Os dois dizem “← Voltar” e fazem coisas diferentes: um navega,
+  o outro age. A diferença de letra — mono em caixa alta contra texto normal —
+  é o que impede que se pareçam.
 - **`Badge`** — `src/components/ui/Badge.tsx` — pill uppercase DM Mono;
   variantes `green` | `gold` | `blue` | `dim`. As coloridas levam o ponto `●`
   (decorativo, `aria-hidden`); `dim` não leva.

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Voltar } from "@/components/ui/Voltar";
 import { FORMATOS } from "@/features/upload/ler-arquivo/formatos";
 import { EsquecerFormato } from "./EsquecerFormato";
 import type { FormatoNaTela } from "./formatosDoUsuario.service";
@@ -26,12 +27,7 @@ import type { FormatoNaTela } from "./formatosDoUsuario.service";
 export function TelaDeFormatos({ formatos }: { formatos: FormatoNaTela[] }) {
   return (
     <>
-      <Link
-        href="/upload"
-        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
-      >
-        ← Enviar extrato
-      </Link>
+      <Voltar para="/upload">Enviar extrato</Voltar>
 
       <SectionTitle className="mt-2">Formatos que eu leio</SectionTitle>
 

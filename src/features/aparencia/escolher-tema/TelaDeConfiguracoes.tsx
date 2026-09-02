@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { Voltar } from "@/components/ui/Voltar";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { SeletorDeLetra } from "@/features/aparencia/escolher-letra/SeletorDeLetra";
 import type { Tamanho } from "@/features/aparencia/letra/letra";
@@ -39,12 +39,7 @@ export function TelaDeConfiguracoes({
 }) {
   return (
     <>
-      <Link
-        href="/dashboard"
-        className="inline-flex min-h-11 items-center font-mono text-4xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
-      >
-        ← Painel
-      </Link>
+      <Voltar para="/dashboard">Painel</Voltar>
 
       <SectionTitle className="mt-2">Configurações</SectionTitle>
 

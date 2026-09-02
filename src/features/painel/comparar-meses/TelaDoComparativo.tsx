@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Voltar } from "@/components/ui/Voltar";
 import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
 import { CartoesDoAno } from "./CartoesDoAno";
 import { SecaoDoComparativo } from "./SecaoDoComparativo";
@@ -103,12 +104,9 @@ export function TelaDoComparativo({
         instalado não existe botão de voltar — sobra o gesto de borda, que
         funciona e não aparece. A fileira leva a um mês; esta leva "de volta".
       */}
-      <Link
-        href="/dashboard"
-        className="mt-4 inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
-      >
-        ← Painel
-      </Link>
+      <Voltar para="/dashboard" className="mt-4">
+        Painel
+      </Voltar>
 
       {/*
         ⚠ **O seletor fica embaixo do título, e não na mesma linha.** O

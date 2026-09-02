@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
+import { Voltar } from "@/components/ui/Voltar";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
@@ -53,12 +54,7 @@ export function TelaDeCategorias({
         entra aqui pelo rodapé do painel precisa de um caminho visível de
         volta, e não de saber que existe um gesto.
       */}
-      <Link
-        href="/dashboard"
-        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
-      >
-        ← Painel
-      </Link>
+      <Voltar para="/dashboard">Painel</Voltar>
 
       <SectionTitle className="mt-2">Categorias</SectionTitle>
 

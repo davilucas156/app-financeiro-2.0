@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { Voltar } from "@/components/ui/Voltar";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { EMAIL_CONTATO } from "@/features/autenticacao/contato";
 import { ajudaPorBanco, arquivosDoBanco } from "./passos";
@@ -29,12 +30,7 @@ export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
 
   return (
     <>
-      <Link
-        href={voltarPara}
-        className="inline-flex min-h-11 items-center font-mono text-3xs font-bold tracking-wider text-dim uppercase transition-colors hover:text-text"
-      >
-        ← Voltar
-      </Link>
+      <Voltar para={voltarPara}>Voltar</Voltar>
 
       <SectionTitle className="mt-2">Como pegar o extrato</SectionTitle>
 
