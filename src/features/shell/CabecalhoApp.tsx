@@ -60,7 +60,7 @@ export function CabecalhoApp({
           <Link
             href="/configuracoes"
             aria-label="Configurações"
-            className="flex size-11 items-center justify-center rounded-pote text-dim transition-colors hover:bg-card2 hover:text-text"
+            className="pressiona flex size-11 items-center justify-center rounded-pote text-dim hover:bg-card2 hover:text-text"
           >
             <Engrenagem />
           </Link>

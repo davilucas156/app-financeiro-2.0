@@ -33,7 +33,7 @@ export function SeletorDeAno({
           key={a}
           href={`/comparativo?ano=${a}`}
           aria-current={a === ano ? "page" : undefined}
-          className={`inline-flex min-h-11 items-center rounded-card border px-3 font-mono text-3xs font-bold transition-colors ${
+          className={`pressiona inline-flex min-h-11 items-center rounded-card border px-3 font-mono text-3xs font-bold ${
             a === ano
               ? "border-blue/40 bg-blue/10 text-blue"
               : "border-border2 bg-card text-dim hover:bg-card2 hover:text-text"

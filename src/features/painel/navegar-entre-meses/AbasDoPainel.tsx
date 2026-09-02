@@ -67,7 +67,7 @@ export function AbasDoPainel({
            * quando se está vendo o ano.
            */
           aria-current={aqui === "painel" && m === mes ? "page" : undefined}
-          className={`inline-flex min-h-11 items-center rounded-card border px-4 text-xs font-bold transition-colors ${
+          className={`pressiona inline-flex min-h-11 items-center rounded-card border px-4 text-xs font-bold ${
             aqui === "painel" && m === mes
               ? "border-primary/40 bg-primary/10 text-primary"
               : "border-border2 bg-card text-dim hover:bg-card2 hover:text-text"
@@ -117,7 +117,7 @@ function AbaDoComparativo({
       <Link
         href={`/comparativo?ano=${anoDoMes(mes)}`}
         aria-current={marcada ? "page" : undefined}
-        className={`inline-flex min-h-11 items-center gap-1.5 rounded-card border px-4 text-xs font-bold transition-colors ${
+        className={`pressiona inline-flex min-h-11 items-center gap-1.5 rounded-card border px-4 text-xs font-bold ${
           marcada
             ? "border-blue/40 bg-blue/10 text-blue"
             : "border-border2 bg-card text-dim hover:bg-card2 hover:text-text"

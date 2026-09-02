@@ -50,7 +50,7 @@ export function NavegacaoPrincipal({
             aria-current={ativo ? "page" : undefined}
             aria-label={rota.descricao}
             className={cn(
-              "flex min-h-11 items-center justify-center gap-2 transition-colors",
+              "pressiona flex min-h-11 items-center justify-center gap-2",
               variante === "inferior"
                 ? "flex-1 flex-col py-2 text-3xs"
                 : "rounded-card px-3 text-xs",

@@ -39,7 +39,7 @@ export function ChamadaDoComparativo({
     <Card className="mt-8 p-0">
       <Link
         href="/comparativo"
-        className="flex min-h-11 items-center gap-3 px-4 py-4 transition-colors hover:bg-card2"
+        className="pressiona flex min-h-11 items-center gap-3 px-4 py-4 hover:bg-card2"
       >
         <span className="min-w-0 flex-1">
           <span className="block font-mono text-4xs font-bold tracking-[1.5px] text-dim uppercase">

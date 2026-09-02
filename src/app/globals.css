@@ -406,3 +406,76 @@
     border-radius: 2px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   RESPOSTA AO TOQUE (spec 16)
+
+   ⚠ **Por enquanto só na navegação entre telas** — decisão do
+   Davi: "faça só dos botões de navegação de tela por enquanto".
+   São a `NavegacaoPrincipal`, o `Voltar`, as abas de mês, o
+   seletor de ano, a chamada do comparativo e a engrenagem do
+   cabeçalho. Todos são `<Link>`, todos têm forma de botão, e
+   nenhum é link dentro de frase — que é o caso em que encolher
+   quebraria a linha do texto (Descoberta 7 da spec).
+
+   ## Por que é uma classe e não uma regra em `button`
+
+   Uma regra base alcançaria os 127 clicáveis do app de uma vez,
+   e é para lá que isto vai quando o recorte crescer. Enquanto
+   ele é a navegação, a classe é o que o deixa **visível**: quem
+   lê o componente vê que ele responde ao toque, e quem escrever
+   a próxima rota copia a classe junto.
+
+   ## ⚠ `-webkit-tap-highlight-color` sai aqui, e não na raiz
+
+   O Safari pinta um retângulo cinza no toque que ignora o
+   `border-radius` e chega atrasado. Ele tem de sair de quem
+   ganhou resposta própria — senão são duas respostas
+   concorrendo, e a do sistema vem por cima.
+
+   Mas tirá-lo da **raiz** apagaria também o único retorno que os
+   outros 120 clicáveis têm hoje, sem dar nada em troca. Ele sai
+   junto com a resposta nova, elemento a elemento, e não antes.
+
+   ## A opacidade é a régua do iOS
+
+   O sistema marca botão pressionado **apagando**, não
+   escurecendo — e apagar é a única resposta que funciona nos
+   dois temas: escurecer no escuro some, clarear no claro some.
+
+   ⚠ **Sem transição na descida, com transição na volta.** O
+   `transition-duration: 0s` dentro do `:active` é isso: uma
+   animação de 140ms ao pressionar seria exatamente o atraso que
+   esta spec existe para tirar. Ao soltar, ela suaviza.
+
+   ⚠ **A `transition` está aqui inteira, com as cores junto.** Os
+   componentes que usam esta classe largaram o
+   `transition-colors` do Tailwind: duas declarações de
+   `transition-property` no mesmo elemento fariam a ordem do
+   arquivo decidir qual vale, e essa ordem ninguém controla.
+════════════════════════════════════════════════════════════ */
+
+@layer components {
+  .pressiona {
+    -webkit-tap-highlight-color: transparent;
+    transition-property:
+      color, background-color, border-color, opacity, transform;
+    transition-duration: 140ms;
+    transition-timing-function: ease;
+  }
+
+  .pressiona:active {
+    opacity: 0.65;
+    transform: scale(0.98);
+    transition-duration: 0s;
+  }
+
+  /* Movimento é o que sai; a resposta fica. A preferência existe
+     porque movimento na tela causa enjoo em algumas pessoas, e
+     apagar não é movimento. */
+  @media (prefers-reduced-motion: reduce) {
+    .pressiona:active {
+      transform: none;
+    }
+  }
+}

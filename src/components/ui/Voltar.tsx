@@ -55,7 +55,7 @@ export function Voltar({
       className={cn(
         "inline-flex min-h-11 items-center gap-2 rounded-card border border-border2 bg-card px-4",
         "font-mono text-2xs font-bold tracking-wider text-text uppercase",
-        "transition-colors hover:bg-card2",
+        "pressiona hover:bg-card2",
         className,
       )}
     >
