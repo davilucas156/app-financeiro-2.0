@@ -1,4 +1,4 @@
-import type { Criterio } from "./regras";
+import { temFaixaDeValor, type Criterio } from "./regras";
 
 /**
  * A identidade de um critério (tarefas C1, D5 e D7).
@@ -47,5 +47,38 @@ export function textoDoCriterio(criterio: Criterio): string {
  * serve para dizer.
  */
 export function chaveDoCriterio(criterio: Criterio): string {
-  return `${criterio.tipo}:${textoDoCriterio(criterio)}`;
+  return `${criterio.tipo}:${textoDoCriterio(criterio)}${sufixoDaFaixa(criterio)}`;
+}
+
+/**
+ * `@30000` para o valor exato, `@30000-50000` para a faixa, `@-50000` e
+ * `@30000-` quando só um dos limites existe.
+ *
+ * ## Duas coisas dependem de ele ser vazio quando não há faixa
+ *
+ * ⚠ **As regras que já estão no banco.** Um sufixo constante mudaria a chave
+ * de toda regra existente, e o `on conflict (user_id, chave)` que impede o
+ * seed e a correção de duplicarem passaria a não disparar contra elas: a
+ * primeira correção de cada regra antiga criaria uma **segunda** regra em vez
+ * de atualizar a que existe, e qual vence sairia do desempate da A1. É o
+ * "empate impossível de explicar" que este arquivo inteiro existe para evitar.
+ *
+ * ⚠ **A exceção precisa de chave diferente do padrão.** `Davi Lucas` e
+ * `Davi Lucas + R$ 300,00` são duas regras que têm de coexistir — sem o
+ * sufixo elas colidiriam no único do banco e a exceção sobrescreveria o padrão
+ * calada. É o oposto exato do parágrafo acima, e as duas coisas saem da mesma
+ * linha.
+ *
+ * De quebra conserta `valor_direcao`, cuja chave era só `valor_direcao:saida`:
+ * duas faixas de valor na mesma direção nunca puderam coexistir. Nenhuma regra
+ * desse tipo existe hoje — nem o seed nem a correção criam — então o conserto
+ * não mexe em linha nenhuma.
+ */
+function sufixoDaFaixa(criterio: Criterio): string {
+  if (!temFaixaDeValor(criterio)) return "";
+
+  const { minimoCentavos: min, maximoCentavos: max } = criterio;
+  if (min !== undefined && min === max) return `@${min}`;
+
+  return `@${min ?? ""}-${max ?? ""}`;
 }

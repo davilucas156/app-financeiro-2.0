@@ -45,6 +45,19 @@ export type Decisao =
        * Ausente = "só desta vez": nem regra, nem rascunho, nem lembrete.
        */
       sempre?: boolean;
+      /**
+       * A regra vale **só para este valor** — a exceção da spec do valor.
+       *
+       * Só faz sentido junto com `sempre`, e a tela só oferece quando há
+       * conflito (`regraQueConflita`). Ignorado sozinho.
+       *
+       * ⚠ **Booleano, e não o valor em centavos.** O valor é lido da linha do
+       * banco logo abaixo. Um número vindo do cliente criaria uma regra para
+       * uma quantia que o lançamento não tem, e a tela mostraria uma coisa
+       * enquanto a regra guardaria outra — o erro que a D5 existe para
+       * impedir (`references/architecture.md`, Thin Client / Fat Server).
+       */
+      comValor?: boolean;
     }
   | { tipo: "fora-do-calculo"; lancamentoId: string }
   /** O valor alto que uma regra classificou: você confirmou que está certo. */
@@ -190,6 +203,7 @@ export async function decidirNaTransacao(
     .select({
       id: transactions.id,
       descricao: transactions.descricaoOriginal,
+      valorCentavos: transactions.valorCentavos,
       origem: transactions.origem,
       mesReferencia: transactions.mesReferencia,
       categoriaId: transactions.categoriaId,
@@ -227,7 +241,12 @@ export async function decidirNaTransacao(
   let irmaos = 0;
 
   if (decisao.tipo === "categoria" && decisao.sempre) {
-    const criterio = criterioDaCorrecao(antes.descricao, antes.origem);
+    const criterio = criterioDaCorrecao(
+      antes.descricao,
+      antes.origem,
+      // O valor sai da linha do banco, nunca do cliente — ver `comValor`.
+      decisao.comValor ? antes.valorCentavos : undefined,
+    );
 
     // Sem trecho estável não há o que virar regra. A tela nem oferece a
     // pergunta nesse caso; aqui é a mesma decisão, do outro lado.

@@ -1,5 +1,6 @@
 import type { Criterio } from "@/features/classificacao/motor/regras";
 import { textoDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
+import { emReais } from "@/lib/dinheiro";
 
 /**
  * O que a tela de regras mostra e o que ela deixa mexer (tarefa D9).
@@ -92,11 +93,41 @@ export function rotuloDoTipo(criterio: Criterio): string {
  * de" e "enviado para" a mesma pessoa vão para potes diferentes.
  */
 export function oQueEstaRegraProcura(criterio: Criterio): string {
-  if (criterio.tipo === "pessoa" && criterio.direcao) {
-    return criterio.direcao === "entrada"
-      ? `recebido de ${criterio.nome}`
-      : `enviado para ${criterio.nome}`;
-  }
+  const quem =
+    criterio.tipo === "pessoa" && criterio.direcao
+      ? criterio.direcao === "entrada"
+        ? `recebido de ${criterio.nome}`
+        : `enviado para ${criterio.nome}`
+      : textoDoCriterio(criterio);
 
-  return textoDoCriterio(criterio);
+  return `${quem}${frasesDaFaixa(criterio)}`;
+}
+
+/**
+ * A faixa em palavras: `, de exatamente R$ 300,00`, `, de R$ 200,00 ou mais`.
+ *
+ * ⚠ **Ela não pode ficar de fora.** Uma regra `pessoa: Davi Lucas` restrita a
+ * R$ 300,00 apareceria na `/regras` idêntica a uma sem restrição, e as duas
+ * conviveriam na lista sem nada distinguindo uma da outra — você editaria a
+ * errada. A restrição faz parte do que a regra procura, então entra na frase
+ * que diz o que ela procura.
+ *
+ * Vazio para `valor_direcao`, onde a faixa **é** a regra e `textoDoCriterio`
+ * já devolve a direção: "saida, de R$ 200,00 ou mais" repetiria em prosa o que
+ * a própria tela mostra no rótulo do tipo.
+ */
+function frasesDaFaixa(criterio: Criterio): string {
+  if (criterio.tipo === "valor_direcao") return "";
+
+  const { minimoCentavos: min, maximoCentavos: max } = criterio;
+
+  if (min !== undefined && min === max)
+    return `, de exatamente ${emReais(min)}`;
+  if (min !== undefined && max !== undefined) {
+    return `, entre ${emReais(min)} e ${emReais(max)}`;
+  }
+  if (min !== undefined) return `, de ${emReais(min)} ou mais`;
+  if (max !== undefined) return `, de até ${emReais(max)}`;
+
+  return "";
 }

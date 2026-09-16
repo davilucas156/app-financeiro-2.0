@@ -101,3 +101,101 @@ describe("o que a tela diz que a regra procura", () => {
     );
   });
 });
+
+describe("a faixa de valor aparece na frase", () => {
+  /*
+   * ⚠ Sem isto, uma regra `pessoa: Fulana` restrita a R$ 300,00 apareceria na
+   * /regras idêntica a uma sem restrição. As duas convivem na lista de
+   * propósito — é o padrão e a exceção — e você editaria a errada.
+   */
+  it("valor exato", () => {
+    expect(
+      oQueEstaRegraProcura({
+        tipo: "pessoa",
+        nome: "Fulana de Tal",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      }),
+    ).toBe("Fulana de Tal, de exatamente R$ 300,00");
+  });
+
+  it("faixa dos dois lados", () => {
+    expect(
+      oQueEstaRegraProcura({
+        tipo: "descricao_contem",
+        termo: "PETROBRAS",
+        minimoCentavos: 10000,
+        maximoCentavos: 20000,
+      }),
+    ).toBe("PETROBRAS, entre R$ 100,00 e R$ 200,00");
+  });
+
+  it("aberta de um lado só", () => {
+    expect(
+      oQueEstaRegraProcura({
+        tipo: "descricao_contem",
+        termo: "PETROBRAS",
+        minimoCentavos: 10000,
+      }),
+    ).toBe("PETROBRAS, de R$ 100,00 ou mais");
+
+    expect(
+      oQueEstaRegraProcura({
+        tipo: "descricao_contem",
+        termo: "PETROBRAS",
+        maximoCentavos: 10000,
+      }),
+    ).toBe("PETROBRAS, de até R$ 100,00");
+  });
+
+  it("convive com a direção, que também faz parte do que a regra procura", () => {
+    expect(
+      oQueEstaRegraProcura({
+        tipo: "pessoa",
+        nome: "Fulana de Tal",
+        direcao: "entrada",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      }),
+    ).toBe("recebido de Fulana de Tal, de exatamente R$ 300,00");
+  });
+
+  it("em `valor_direcao` a faixa não vira prosa — lá ela é a regra inteira", () => {
+    // `textoDoCriterio` já devolve a direção, e o rótulo do tipo já diz "por
+    // valor". Repetir em prosa seria dizer a mesma coisa três vezes.
+    expect(
+      oQueEstaRegraProcura({
+        tipo: "valor_direcao",
+        direcao: "saida",
+        minimoCentavos: 20000,
+      }),
+    ).toBe("saida");
+  });
+
+  it("sem faixa, a frase é exatamente a de antes", () => {
+    expect(
+      oQueEstaRegraProcura({ tipo: "descricao_contem", termo: "PETROBRAS" }),
+    ).toBe("PETROBRAS");
+  });
+
+  it("editar o texto preserva a faixa", () => {
+    // Mesma lição da direção: perder a restrição ao corrigir uma letra do nome
+    // faria a exceção virar padrão em silêncio.
+    expect(
+      comTextoNovo(
+        {
+          tipo: "pessoa",
+          nome: "Fulana",
+          minimoCentavos: 30000,
+          maximoCentavos: 30000,
+        },
+        "Fulana de Tal",
+      ),
+    ).toEqual({
+      tipo: "pessoa",
+      nome: "Fulana de Tal",
+      minimoCentavos: 30000,
+      maximoCentavos: 30000,
+    });
+  });
+});

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Regra } from "@/features/classificacao/motor/regras";
 import { prepararRevisao, type LancamentoPendente } from "./pendentes";
 
 /** ⚠ Nenhum nome real: as formas medidas, com comerciantes inventados. */
@@ -158,5 +159,110 @@ describe("sugestões", () => {
     // É o caso de 15 em 17 no primeiro mês (A6): a lista completa é o caminho.
     const [r] = prepararRevisao([pendente()], contexto);
     expect(r.sugestoes).toEqual([]);
+  });
+});
+
+/**
+ * O ingrediente do conflito que faz a tela oferecer a regra por valor.
+ *
+ * ⚠ Aqui sai só o **fato** — qual regra já pega o lançamento. O conflito é "e
+ * ela manda para outro lugar", e o outro lugar é a categoria que você acabou
+ * de tocar, que ainda não existia quando esta função rodou.
+ */
+describe("a regra que já pega o lançamento", () => {
+  const PIX = 'Pix enviado: "Cp :00000000-Fulana de Tal"';
+
+  const paraFulana = (p: Partial<LancamentoPendente> = {}) =>
+    pendente({ descricao: PIX, origem: "csv_conta", ...p });
+
+  const regraDaFulana: Regra = {
+    id: "r1",
+    criterio: { tipo: "pessoa", nome: "Fulana de Tal" },
+    categoriaId: "aluguel",
+    prioridade: 10,
+  };
+
+  it("sem regras, não há nada a comparar", () => {
+    const [r] = prepararRevisao([paraFulana()], contexto);
+    expect(r.jaPega).toBeNull();
+  });
+
+  it("devolve a regra e para onde ela manda", () => {
+    const [r] = prepararRevisao([paraFulana()], {
+      ...contexto,
+      regras: [regraDaFulana],
+    });
+
+    expect(r.jaPega).toEqual({
+      texto: "Fulana de Tal",
+      categoriaId: "aluguel",
+    });
+  });
+
+  it("regra que não pega este lançamento não aparece", () => {
+    const [r] = prepararRevisao([pendente()], {
+      ...contexto,
+      regras: [regraDaFulana],
+    });
+
+    expect(r.jaPega).toBeNull();
+  });
+
+  it("com exceção e padrão, quem aparece é a que de fato vence", () => {
+    const excecao: Regra = {
+      id: "r2",
+      criterio: {
+        tipo: "pessoa",
+        nome: "Fulana de Tal",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      },
+      categoriaId: "emprestimo",
+      prioridade: 10,
+    };
+
+    const [naFaixa] = prepararRevisao([paraFulana({ valorCentavos: 30000 })], {
+      ...contexto,
+      regras: [regraDaFulana, excecao],
+    });
+    const [foraDaFaixa] = prepararRevisao(
+      [paraFulana({ valorCentavos: 70000 })],
+      { ...contexto, regras: [regraDaFulana, excecao] },
+    );
+
+    expect(naFaixa.jaPega?.categoriaId).toBe("emprestimo");
+    expect(foraDaFaixa.jaPega?.categoriaId).toBe("aluguel");
+  });
+});
+
+describe("quantos a regra pegaria junto, com e sem o valor", () => {
+  /*
+   * É a comparação lado a lado que faz a escolha do conflito ser decidível:
+   * "para qualquer valor pega mais 2, só para R$ 300,00 pega mais 1".
+   */
+  it("a versão com valor pega menos", () => {
+    const PIX = 'Pix enviado: "Cp :00000000-Fulana de Tal"';
+
+    const [primeiro] = prepararRevisao(
+      [
+        pendente({ descricao: PIX, origem: "csv_conta", valorCentavos: 30000 }),
+        pendente({ descricao: PIX, origem: "csv_conta", valorCentavos: 30000 }),
+        pendente({ descricao: PIX, origem: "csv_conta", valorCentavos: 70000 }),
+      ],
+      contexto,
+    );
+
+    expect(primeiro.pegaJunto).toBe(2);
+    expect(primeiro.pegaJuntoComValor).toBe(1);
+  });
+
+  it("sem trecho estável, os dois números são zero", () => {
+    const [r] = prepararRevisao(
+      [pendente({ descricao: "0000 0000 000", origem: "csv_conta" })],
+      contexto,
+    );
+
+    expect(r.pegaJunto).toBe(0);
+    expect(r.pegaJuntoComValor).toBe(0);
   });
 });

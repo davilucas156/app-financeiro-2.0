@@ -255,3 +255,148 @@ describe("o mês normal de quem começou ontem", () => {
     expect(casarRegra([], alvo())).toBeNull();
   });
 });
+
+/**
+ * A faixa de valor num critério de texto — o desempate que faz o mesmo nome
+ * cair em categorias diferentes conforme a quantia.
+ *
+ * O caso real: R$ 300,00 para o Davi todo mês é uma coisa, R$ 500,00 para o
+ * mesmo Davi é outra. Sem isto o motor só sabia responder pelo nome.
+ */
+describe("faixa de valor dentro de uma regra de texto", () => {
+  const paraODavi = (parcial: Partial<AlvoDaRegra> = {}) =>
+    alvo({
+      descricao: 'Pix enviado: "Cp :12345678-Davi Lucas"',
+      pessoa: "Davi Lucas",
+      valorCentavos: 30000,
+      ...parcial,
+    });
+
+  it("casa quando o valor bate", () => {
+    const r = regra({
+      tipo: "pessoa",
+      nome: "Davi Lucas",
+      minimoCentavos: 30000,
+      maximoCentavos: 30000,
+    });
+
+    expect(casarRegra([r], paraODavi())?.id).toBe(r.id);
+  });
+
+  it("não casa quando o valor não bate, mesmo com o nome certo", () => {
+    const r = regra({
+      tipo: "pessoa",
+      nome: "Davi Lucas",
+      minimoCentavos: 30000,
+      maximoCentavos: 30000,
+    });
+
+    expect(casarRegra([r], paraODavi({ valorCentavos: 50000 }))).toBeNull();
+  });
+
+  it("a regra com valor ganha da regra só de nome, na mesma prioridade", () => {
+    const soNome = regra({ tipo: "pessoa", nome: "Davi Lucas" }, 10);
+    const comValor = regra(
+      {
+        tipo: "pessoa",
+        nome: "Davi Lucas",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      },
+      10,
+    );
+
+    expect(casarRegra([soNome, comValor], paraODavi())?.id).toBe(comValor.id);
+  });
+
+  /*
+   * A rede de segurança, e o motivo de a exceção ser segura de criar: quando
+   * o valor não bate, a regra estreita nem entra na disputa e a do nome
+   * assume. Um lançamento nunca fica sem classificação por causa da exceção.
+   */
+  it("valor fora da exceção volta para a regra do nome", () => {
+    const soNome = regra({ tipo: "pessoa", nome: "Davi Lucas" }, 10);
+    const comValor = regra(
+      {
+        tipo: "pessoa",
+        nome: "Davi Lucas",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      },
+      10,
+    );
+
+    expect(
+      casarRegra([soNome, comValor], paraODavi({ valorCentavos: 70000 }))?.id,
+    ).toBe(soNome.id);
+  });
+
+  it("ganha antes do comprimento do texto", () => {
+    // A escolha que você digitou olhando o lançamento ganha da heurística de
+    // "qual trecho parece mais específico".
+    const textoLongo = regra(
+      { tipo: "descricao_contem", termo: 'PIX ENVIADO: "CP :12345678-DAVI' },
+      10,
+    );
+    const curtoComValor = regra(
+      {
+        tipo: "pessoa",
+        nome: "Davi",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      },
+      10,
+    );
+
+    expect(casarRegra([textoLongo, curtoComValor], paraODavi())?.id).toBe(
+      curtoComValor.id,
+    );
+  });
+
+  it("a prioridade continua vencendo a faixa", () => {
+    // Faixa é desempate, não atalho: quem foi posto na frente continua na
+    // frente.
+    const naFrente = regra({ tipo: "pessoa", nome: "Davi Lucas" }, 10);
+    const comValor = regra(
+      {
+        tipo: "pessoa",
+        nome: "Davi Lucas",
+        minimoCentavos: 30000,
+        maximoCentavos: 30000,
+      },
+      20,
+    );
+
+    expect(casarRegra([comValor, naFrente], paraODavi())?.id).toBe(naFrente.id);
+  });
+
+  it("faixa aberta de um lado recorta do mesmo jeito", () => {
+    const acimaDe = regra({
+      tipo: "descricao_contem",
+      termo: "PAGAR ME",
+      minimoCentavos: 2000,
+    });
+
+    expect(casarRegra([acimaDe], alvo({ valorCentavos: 1500 }))).toBeNull();
+    expect(casarRegra([acimaDe], alvo({ valorCentavos: 2000 }))?.id).toBe(
+      acimaDe.id,
+    );
+  });
+
+  it("recusa faixa invertida também num critério de texto", () => {
+    // Ela não casaria com valor nenhum: é o mesmo sumiço silencioso do termo
+    // vazio, pelo outro lado.
+    expect(
+      regraValida({
+        tipo: "pessoa",
+        nome: "Davi Lucas",
+        minimoCentavos: 50000,
+        maximoCentavos: 30000,
+      }),
+    ).toBe(false);
+  });
+
+  it("critério de texto sem faixa continua válido — lá a faixa é opcional", () => {
+    expect(regraValida({ tipo: "pessoa", nome: "Davi Lucas" })).toBe(true);
+  });
+});

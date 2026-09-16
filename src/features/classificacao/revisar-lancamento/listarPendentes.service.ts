@@ -1,6 +1,12 @@
 import "server-only";
 import { and, asc, eq, isNotNull } from "drizzle-orm";
-import { buckets, categories, decisionUndo, transactions } from "@/db/schema";
+import {
+  buckets,
+  categories,
+  classificationRules,
+  decisionUndo,
+  transactions,
+} from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import type { Classificado } from "@/features/classificacao/motor/sugestoes";
@@ -50,7 +56,7 @@ const TETO_DE_HISTORICO = 400;
 export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
   const db = getDb();
 
-  const [linhas, potesDoBanco, categoriasDoBanco, historico, sombra] =
+  const [linhas, potesDoBanco, categoriasDoBanco, historico, sombra, regras] =
     await Promise.all([
       db
         .select({
@@ -154,6 +160,25 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
         )
         .where(eq(decisionUndo.userId, userId))
         .limit(1),
+
+      /*
+       * As regras que já existem, para a tela saber quando a pergunta "sempre
+       * classificar assim?" precisa oferecer a versão por valor.
+       *
+       * ⚠ **Todas, e não só as do tipo do lançamento.** A regra que conflita
+       * pode ser de outro tipo: uma `descricao_contem` pega o mesmo Pix que
+       * uma `pessoa`, com chave completamente diferente. Filtrar aqui
+       * esconderia justamente o conflito mais difícil de perceber sozinho.
+       */
+      db
+        .select({
+          id: classificationRules.id,
+          criterio: classificationRules.criterio,
+          categoriaId: classificationRules.categoriaId,
+          prioridade: classificationRules.prioridade,
+        })
+        .from(classificationRules)
+        .where(eq(classificationRules.userId, userId)),
     ]);
 
   const categoriasEscolhiveis: CategoriaEscolhivel[] = categoriasDoBanco.map(
@@ -185,6 +210,7 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
     voltar: sombra[0] ?? null,
     pendentes: prepararRevisao(linhas as LancamentoPendente[], {
       idPorChave,
+      regras,
       historico: historico.map((h): Classificado => ({
         descricao: h.descricao,
         origem: h.origem,

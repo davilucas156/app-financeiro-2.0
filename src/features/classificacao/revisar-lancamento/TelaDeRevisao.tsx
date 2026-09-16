@@ -203,6 +203,24 @@ function Revisando({
           fonteDaSugestao={escolhida.fonte}
           trecho={atual.trecho}
           pegaJunto={atual.pegaJunto}
+          pegaJuntoComValor={atual.pegaJuntoComValor}
+          valorCentavos={atual.valorCentavos}
+          /*
+           * ⚠ **O conflito só existe aqui.** Ele é "a regra que já pega este
+           * lançamento manda para outro lugar", e o outro lugar é a categoria
+           * que você acabou de tocar — que não existia quando o servidor
+           * montou a fila. Por isso o servidor manda o fato (`jaPega`) e a
+           * comparação é feita neste ponto, com `escolhida` na mão.
+           *
+           * Uma regra apagada depois de classificar deixa `categoriaId`
+           * apontando para o nada; `?? null` faz a pergunta voltar às duas
+           * opções em vez de anunciar um conflito com uma categoria sem nome.
+           */
+          conflito={acharConflito(
+            atual.jaPega,
+            escolhida.categoria.id,
+            catalogo,
+          )}
           aoCancelar={() => setEscolhida(null)}
         />
       ) : atual.categoriaId ? (
@@ -267,6 +285,35 @@ function Revisando({
       <CaminhoParaCategorias />
     </>
   );
+}
+
+/**
+ * "A regra que já pega este lançamento manda para outro lugar" — a pergunta
+ * que faz a `PerguntaDeRegra` oferecer a regra por valor.
+ *
+ * ⚠ **Só dá para responder aqui.** O servidor sabe qual regra pega (`jaPega`),
+ * mas o "outro lugar" é a categoria que você acabou de tocar, e ela não
+ * existia quando a fila foi montada.
+ *
+ * `null` também quando a categoria da regra sumiu do catálogo — ela foi
+ * apagada e o lançamento ficou apontando para o nada. Anunciar um conflito com
+ * uma categoria sem nome seria pedir uma decisão sobre algo que não dá para
+ * ler; sem ela, a pergunta volta às duas opções de sempre.
+ */
+function acharConflito(
+  jaPega: { texto: string; categoriaId: string } | null,
+  escolhidaId: string,
+  catalogo: Map<string, CategoriaEscolhivel>,
+): { texto: string; categoria: string } | null {
+  if (!jaPega || jaPega.categoriaId === escolhidaId) return null;
+
+  const destino = catalogo.get(jaPega.categoriaId);
+  if (!destino) return null;
+
+  return {
+    texto: jaPega.texto,
+    categoria: `${destino.emoji} ${destino.nome}`,
+  };
 }
 
 /**

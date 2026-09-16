@@ -31,6 +31,8 @@ export type EntradaDaDecisao = {
   fonteDaSugestao?: string;
   /** "Sempre classificar assim" (D5). */
   sempre?: boolean;
+  /** "…e só quando o valor for este". Ver `Decisao.comValor`. */
+  comValor?: boolean;
 };
 
 export async function decidir(
@@ -89,6 +91,9 @@ function montar(e: EntradaDaDecisao): Decisao | null {
       fonte: fonteDaSugestao ? "sugestao" : "manual",
       fonteDaSugestao,
       sempre: e.sempre === true,
+      // Sem `sempre` não há regra para estreitar. Aceitar sozinho gravaria uma
+      // intenção que não existe.
+      comValor: e.sempre === true && e.comValor === true,
     };
   }
 
