@@ -17,10 +17,21 @@ import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
  * | | Par da spec 02 | Este |
  * |---|---|---|
  * | Quando roda | Na **importação** | No **painel** |
- * | O que cruza | Os dois arquivos, por data próxima | Um pote, depois da classificação |
- * | O que faz | Tira os dois do cálculo (`revisao` / `excluido`) | Marca, e os dois continuam somando |
+ * | O que cruza | Os dois arquivos e o histórico, por data próxima | Um pote, depois da classificação |
+ * | O que faz | Tira os dois do cálculo (`excluido`) | Marca, e os dois continuam somando |
  *
  * Mecanismos diferentes, momentos diferentes, resultados diferentes.
+ *
+ * ⚠ **Esta linha já foi mentira, e a mentira custou caro.** Ela dizia
+ * "`revisao` / `excluido`", e `revisao` **não tira nada do cálculo** —
+ * `somarOMes` só pula `excluido`. Durante todo esse tempo um par encontrado na
+ * importação continuou somando dos dois lados, e um repasse de R$ 300 que
+ * entrou e saiu inflou as entradas de agosto em R$ 300 sem ninguém perceber: a
+ * diferença do mês ficava certa, porque os dois lados somavam.
+ *
+ * Num comentário cuja única função é evitar a confusão entre os dois
+ * mecanismos, errar o efeito de um deles é o pior defeito possível. Se você
+ * mexer nisto, confira contra `somarOMes` antes de escrever.
  */
 
 export type LancamentoParaParear = {

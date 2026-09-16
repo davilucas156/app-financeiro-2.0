@@ -46,27 +46,40 @@ const TITULAR = process.env.TITULAR_DA_CONTA ?? null;
  * As porcentagens são de **dinheiro**, não de contagem — a descoberta 2 da spec
  * virando asserção.
  *
- * ## ⚠ A spec dizia 47 lançamentos, 63% e 10%. Estava no recorte errado
+ * ## ⚠ Os dois recortes divergiram, e voltaram a convergir
  *
- * A medição que escrevi na spec copiou o recorte da A6 da spec 03, que joga
- * fora **tudo** que não é `marcacao: "normal"` — os 3 pagamentos de fatura e os
- * 4 "par que se anula", 7 no total.
+ * A medição original da spec dizia **47 lançamentos, 63% e 10%**, copiando o
+ * recorte da A6 da spec 03: fora **tudo** que não é `marcacao: "normal"` — os
+ * 3 pagamentos de fatura e os 4 "par que se anula", 7 no total.
  *
- * Para a classificação aquele recorte está certo: nenhum dos 7 pede decisão de
- * categoria. Para o **painel**, não: o par que se anula nasce
- * `revisao_pendente`, e não `excluido`. É movimento de banco de verdade
- * esperando o Davi decidir, e some da conta só quando ele decidir.
+ * Isso foi corrigido uma vez para 51/55%/8%, com o argumento de que o par que
+ * se anula nascia `revisao_pendente` e não `excluido`: movimento de banco
+ * esperando decisão, que só sai da conta quando o Davi decidir.
  *
- * Então o painel conta 51 e a cobertura cai para 55%/8% — e a queda é
- * informação, não defeito: são 4 lançamentos de dinheiro real que ainda não
- * estão em pote nenhum, e o painel tem de dizer isso.
+ * O argumento estava certo sobre o código e errado sobre o produto. Como
+ * `revisao_pendente` **soma** no painel, um repasse que entrou e saiu inflava
+ * as entradas do mês nos dois lados — medido em agosto: R$ 300 de repasse
+ * fizeram as entradas parecerem R$ 1.800. A diferença do mês ficava certa, e
+ * era por isso que passava despercebido.
  *
- * Mesmo erro da A6, do mesmo jeito: a medição era minha e era otimista.
+ * O par passou a sair da conta sozinho, e os dois recortes voltaram a ser o
+ * mesmo. A contagem e a cobertura de saída são as originais da spec de novo —
+ * não porque a correção foi desfeita, mas porque a causa dela deixou de
+ * existir.
+ *
+ * ⚠ **A renda fecha em 9%, e a spec dizia 10%.** Esse ponto a spec errou
+ * sozinha, e o erro sobreviveu às duas correções porque nunca foi ele que
+ * estava sendo medido. Fica o número real.
+ *
+ * ⚠ **Se um destes números se mexer, desconfie primeiro do pareamento.** A
+ * contagem e as duas porcentagens dependem de quanto dinheiro o par tirou do
+ * mês, então elas são o alarme mais sensível que este projeto tem para uma
+ * mudança acidental na janela ou no critério do par.
  */
 const ESPERADO = {
-  lancamentosNaConta: 51,
-  saiuPct: 55,
-  entrouPct: 8,
+  lancamentosNaConta: 47,
+  saiuPct: 63,
+  entrouPct: 9,
   /** `metas-sonhos`, porque a regra que o alimentaria não foi semeada (A5). */
   potesDeGastoVazios: 1,
   /** O estorno da decisão 2 não aconteceu neste mês. */
@@ -133,9 +146,10 @@ describe.skipIf(!TEM_OS_ARQUIVOS)(
     const lancamentos = TEM_OS_ARQUIVOS ? comoNoBanco() : [];
     const soma = somarOMes(lancamentos, CATEGORIAS);
 
-    it("o recorte NÃO é o mesmo da A6, e é de propósito", () => {
-      // 54 no arquivo, 3 pagamentos de fatura fora, 51 na conta do painel.
-      // Os 4 do par que se anula ficam: sao `revisao_pendente`, nao `excluido`.
+    it("o recorte é o mesmo da A6 de novo", () => {
+      // 54 no arquivo; 3 pagamentos de fatura e 4 do par que se anula ficam de
+      // fora, 47 na conta do painel. Os 4 saem porque um repasse anulado não é
+      // dinheiro do mês — ver o docblock de `ESPERADO`.
       expect(soma.lancamentos).toBe(ESPERADO.lancamentosNaConta);
     });
 

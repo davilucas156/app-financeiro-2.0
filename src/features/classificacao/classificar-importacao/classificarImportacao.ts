@@ -64,13 +64,18 @@ export function classificarImportacao(
     // Excluído (pagamento de fatura) e par que se anula já foram resolvidos
     // na spec 02, e não são decisão de categoria. É o mesmo recorte da
     // medição da A6 — o que permite comparar os dois números.
-    if (p.marcacao !== "normal") {
+    //
+    // ⚠ O par que se anula era `revisao_pendente` aqui. Virou `excluido`
+    // junto com a `Marcacao`, porque `revisao_pendente` continuava somando no
+    // painel — ver `marcarParesQueSeAnulam`. O `motivo` é o que explica a
+    // ausência na tela de anulados.
+    if (p.marcacao === "excluido") {
       porImpressao.set(p.impressao, {
         categoriaId: null,
         classificadoPor: null,
         regraId: null,
         regraChave: null,
-        status: p.marcacao === "excluido" ? "excluido" : "revisao_pendente",
+        status: "excluido",
         motivo: p.motivo,
       });
       continue;

@@ -4,6 +4,7 @@ import {
   normalizarDescricao,
   prepararLancamentos,
   type EntradaDeArquivo,
+  type LancamentoSalvo,
 } from "./preparar";
 import type { Lancamento } from "./lancamentos";
 import { paraLancamentos } from "./lancamentos";
@@ -214,8 +215,8 @@ describe("par que se anula", () => {
 
   it("mesmo valor, direções opostas, mesmo dia", () => {
     const [a, b] = par(["2026-06-09", "2026-06-09"]);
-    expect(a.marcacao).toBe("revisao");
-    expect(b.marcacao).toBe("revisao");
+    expect(a.marcacao).toBe("excluido");
+    expect(b.marcacao).toBe("excluido");
   });
 
   it("cada lado aponta para o outro", () => {
@@ -228,12 +229,21 @@ describe("par que se anula", () => {
     expect(par(["2026-06-09", "2026-06-09"])).toHaveLength(2);
   });
 
-  it("dentro da janela de 3 dias", () => {
-    expect(par(["2026-06-09", "2026-06-12"])[0].marcacao).toBe("revisao");
+  it("dentro da janela de 7 dias", () => {
+    expect(par(["2026-06-09", "2026-06-16"])[0].marcacao).toBe("excluido");
   });
 
   it("fora da janela não é par", () => {
-    expect(par(["2026-06-09", "2026-06-13"])[0].marcacao).toBe("normal");
+    expect(par(["2026-06-09", "2026-06-17"])[0].marcacao).toBe("normal");
+  });
+
+  /*
+   * A janela foi de 3 para 7 dias e o número saiu de uma medição, não de um
+   * gosto — os 4 dias a mais são o que faz o Pix devolvido na semana seguinte
+   * ser encontrado. Ver o comentário de `JANELA_DE_PAR_EM_DIAS`.
+   */
+  it("cinco dias entram, e é o caso que motivou o alargamento", () => {
+    expect(par(["2026-05-28", "2026-06-02"])[0].marcacao).toBe("excluido");
   });
 
   it("mesma direção não é par", () => {
@@ -299,7 +309,7 @@ describe("par que se anula", () => {
         ],
       },
     ]);
-    expect(tres.filter((l) => l.marcacao === "revisao")).toHaveLength(2);
+    expect(tres.filter((l) => l.marcacao === "excluido")).toHaveLength(2);
     expect(tres.filter((l) => l.marcacao === "normal")).toHaveLength(1);
   });
 
@@ -368,5 +378,163 @@ describe("bordas", () => {
       categoriaDoBanco: "TRANSPORTE",
       origem: "csv_cartao",
     });
+  });
+});
+
+/**
+ * O par que atravessa o envio — o caso que a janela sozinha nunca resolveu.
+ *
+ * Um Pix recebido no dia 28 e devolvido no dia 2 são dois arquivos diferentes:
+ * o extrato de maio e o de junho. Antes disto, nem com 90 dias de janela ele
+ * seria encontrado, porque o outro lado não estava na lista.
+ */
+describe("par com o que já está gravado", () => {
+  const salvo = (p: Partial<LancamentoSalvo> = {}): LancamentoSalvo => ({
+    data: "2026-05-28",
+    direcao: "entrada",
+    valorCentavos: 6000,
+    impressao: "antigo",
+    ...p,
+  });
+
+  const chegando = (p: Partial<Lancamento> = {}) =>
+    prepararLancamentos(
+      [
+        {
+          origem: "csv_conta",
+          lancamentos: [
+            lancamento({
+              data: "2026-06-02",
+              direcao: "saida",
+              valorCentavos: 6000,
+              linha: 2,
+              ...p,
+            }),
+          ],
+        },
+      ],
+      [salvo()],
+    );
+
+  it("acha o par a cinco dias e atravessando o mês", () => {
+    const [novo] = chegando();
+    expect(novo.marcacao).toBe("excluido");
+    expect(novo.parDe).toBe("antigo");
+    expect(novo.motivo).toContain("2026-05-28");
+  });
+
+  it("continua respeitando a janela", () => {
+    expect(chegando({ data: "2026-06-05" })[0].marcacao).toBe("normal");
+  });
+
+  it("mesma direção não é par", () => {
+    expect(chegando({ direcao: "entrada" })[0].marcacao).toBe("normal");
+  });
+
+  it("valor diferente não é par", () => {
+    expect(chegando({ valorCentavos: 6001 })[0].marcacao).toBe("normal");
+  });
+
+  it("sem histórico o resultado é o de sempre", () => {
+    const [so] = prepararLancamentos([
+      {
+        origem: "csv_conta",
+        lancamentos: [
+          lancamento({ data: "2026-06-02", valorCentavos: 6000, linha: 2 }),
+        ],
+      },
+    ]);
+    expect(so.marcacao).toBe("normal");
+  });
+
+  /*
+   * ⚠ O lado antigo não é tocado — ele já está gravado, provavelmente já
+   * classificado, talvez num mês fechado. Reabrir seria reescrever o passado,
+   * e não é preciso: o motivo do lado novo nomeia a data do outro.
+   */
+  it("só o lado novo é marcado, e ele aponta para o antigo", () => {
+    const lista = chegando();
+    expect(lista).toHaveLength(1);
+    expect(lista[0].parDe).toBe("antigo");
+  });
+
+  it("um lançamento gravado fecha um par só", () => {
+    // Sem isto, três Pix de R$ 60 no arquivo novo apontariam todos para o
+    // mesmo do mês passado.
+    const tres = prepararLancamentos(
+      [
+        {
+          origem: "csv_conta",
+          lancamentos: [2, 3, 4].map((linha) =>
+            lancamento({
+              data: "2026-06-02",
+              direcao: "saida",
+              valorCentavos: 6000,
+              descricao: `DEVOLUCAO ${linha}`,
+              linha,
+            }),
+          ),
+        },
+      ],
+      [salvo()],
+    );
+
+    expect(tres.filter((l) => l.parDe === "antigo")).toHaveLength(1);
+  });
+
+  it("o par de dentro do envio vence o do histórico", () => {
+    // Um par que se fecha no próprio arquivo é mais forte, e marcar os dois
+    // lados é melhor do que marcar um.
+    const lista = prepararLancamentos(
+      [
+        {
+          origem: "csv_conta",
+          lancamentos: [
+            lancamento({
+              data: "2026-06-02",
+              direcao: "saida",
+              valorCentavos: 6000,
+              linha: 2,
+            }),
+            lancamento({
+              data: "2026-06-02",
+              direcao: "entrada",
+              valorCentavos: 6000,
+              descricao: "VOLTOU",
+              linha: 3,
+            }),
+          ],
+        },
+      ],
+      [salvo()],
+    );
+
+    expect(lista.every((l) => l.parDe !== "antigo")).toBe(true);
+    expect(lista[0].parDe).toBe(lista[1].impressao);
+  });
+
+  it("o que já é passagem reconhecida não vira par", () => {
+    // Pagamento de fatura já está decidido; casar ele com outra coisa pediria
+    // uma decisão sobre algo decidido.
+    const [pagamento] = prepararLancamentos(
+      [
+        {
+          origem: "csv_conta",
+          lancamentos: [
+            lancamento({
+              data: "2026-06-02",
+              direcao: "saida",
+              valorCentavos: 6000,
+              descricao: 'Pagamento efetuado: "Pagamento fatura cartao Inter"',
+              linha: 2,
+            }),
+          ],
+        },
+      ],
+      [salvo()],
+    );
+
+    expect(pagamento.marcacao).toBe("excluido");
+    expect(pagamento.parDe).toBeNull();
   });
 });

@@ -131,7 +131,7 @@ describe("o motor não toca no que a spec 02 já resolveu", () => {
     expect(r.pendentes).toBe(0);
   });
 
-  it("par que se anula fica em revisão, com o motivo da spec 02", () => {
+  it("par que se anula sai da conta, com o motivo que explica a ausência", () => {
     const preparados = prepararLancamentos([
       {
         origem: "csv_conta",
@@ -146,8 +146,14 @@ describe("o motor não toca no que a spec 02 já resolveu", () => {
 
     for (const p of preparados) {
       const d = r.porImpressao.get(p.impressao)!;
-      expect(d.status).toBe("revisao_pendente");
-      expect(d.motivo).toContain("par que se anula");
+      /*
+       * ⚠ Era `revisao_pendente`, e era o bug: `somarOMes` só pula `excluido`,
+       * então o par continuava somando dos dois lados. Um repasse de R$ 300
+       * que entrou e saiu inflava as entradas do mês em R$ 300 — a diferença
+       * do mês ficava certa, e por isso ninguém percebia.
+       */
+      expect(d.status).toBe("excluido");
+      expect(d.motivo).toContain("repasse anulado");
       expect(d.categoriaId).toBeNull();
     }
   });

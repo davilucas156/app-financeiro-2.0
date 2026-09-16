@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, lte, ne } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import {
   classificationRules,
@@ -12,7 +12,11 @@ import { classificarImportacao } from "@/features/classificacao/classificar-impo
 import { formatosDoUsuario } from "@/features/upload/formatos-do-usuario/formatosDoUsuario.service";
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
-import { prepararLancamentos } from "@/features/upload/ler-arquivo/preparar";
+import {
+  prepararLancamentos,
+  JANELA_DE_PAR_EM_DIAS,
+  type LancamentoSalvo,
+} from "@/features/upload/ler-arquivo/preparar";
 import {
   reconhecer,
   type Reconhecimento,
@@ -54,8 +58,10 @@ export type ResultadoImportacao =
   | {
       ok: true;
       arquivos: ResumoDeArquivoImportado[];
+      /** Pagamento de fatura e afins: passagem reconhecida, sem par. */
       excluidos: number;
-      revisao: number;
+      /** Repasses que se anularam entre si e saíram da conta do mês. */
+      anulados: number;
       /** O motor bateu regra (D1). */
       classificados: number;
       /** Nenhuma regra bateu: vão para `/revisao`. */
@@ -183,7 +189,7 @@ export async function importarExtrato(
         jaImportado: true,
       })),
       excluidos: 0,
-      revisao: 0,
+      anulados: 0,
       classificados: 0,
       pendentes: 0,
       conferir: 0,
@@ -196,18 +202,32 @@ export async function importarExtrato(
     leitura: paraLancamentos(l.reconhecido),
   }));
 
+  const doArquivo = leituras.map((l) => ({
+    origem: l.origem,
+    lancamentos: l.leitura.lancamentos,
+  }));
+
   // Os dois arquivos numa chamada só: o pagamento de fatura e o par que se
   // anula só aparecem olhando os dois juntos (medido — os R$ 318,19 estão num
-  // e noutro).
+  // e noutro). E, desde a janela de 7 dias, também o que já está gravado: o
+  // Pix do dia 28 devolvido no dia 2 são dois arquivos diferentes.
   const preparados = prepararLancamentos(
-    leituras.map((l) => ({
-      origem: l.origem,
-      lancamentos: l.leitura.lancamentos,
-    })),
+    doArquivo,
+    await vizinhosJaGravados(db, userId, doArquivo),
   );
 
-  const excluidos = preparados.filter((p) => p.marcacao === "excluido").length;
-  const revisao = preparados.filter((p) => p.marcacao === "revisao").length;
+  /*
+   * Os dois tipos de `excluido`, separados pelo `parDe`.
+   *
+   * Contá-los juntos diria "12 lançamentos ficaram de fora" sem distinguir o
+   * pagamento de fatura — que é rotina e sempre acontece — do repasse anulado,
+   * que tira dinheiro do mês e merece uma olhada. São frases diferentes na
+   * tela porque são fatos diferentes.
+   */
+  const excluidos = preparados.filter(
+    (p) => p.marcacao === "excluido" && p.parDe === null,
+  ).length;
+  const anulados = preparados.filter((p) => p.parDe !== null).length;
 
   // ── Gravação: tudo ou nada ───────────────────────────────────────────────
   //
@@ -321,8 +341,75 @@ export async function importarExtrato(
       };
     }),
     excluidos,
-    revisao,
+    anulados,
   };
+}
+
+/**
+ * Os lançamentos já gravados que podem fechar par com os que estão chegando.
+ *
+ * ## Por que uma consulta a mais
+ *
+ * O par que se anula sempre existiu, mas só enxergava o próprio envio. O
+ * formato mais comum de repasse — sai no fim de um mês, volta no começo do
+ * seguinte — cai em dois arquivos diferentes, e por isso nunca era achado.
+ * Alargar a janela não resolvia nada sozinho: os dois lados precisavam estar
+ * na mesma lista.
+ *
+ * ## O recorte
+ *
+ * **A janela, e não o mês.** O intervalo sai das datas que chegaram, esticado
+ * dos dois lados pela mesma constante que o pareamento usa — se ela mudar, a
+ * consulta acompanha sozinha. Ler o mês inteiro traria linhas que o
+ * pareamento descartaria de qualquer jeito.
+ *
+ * **Sem os excluídos**, que é o mesmo `elegivel` do outro lado: pagamento de
+ * fatura já é passagem reconhecida, e casar ele com outra coisa seria pedir
+ * uma decisão sobre algo já decidido.
+ *
+ * **Sem quem já tem par**, senão um lançamento antigo fecharia um segundo par
+ * com o arquivo novo e a mesma quantia apareceria em dois lugares.
+ */
+async function vizinhosJaGravados(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+  entradas: { lancamentos: { data: string }[] }[],
+): Promise<LancamentoSalvo[]> {
+  const datas = entradas.flatMap((e) => e.lancamentos.map((l) => l.data));
+  if (datas.length === 0) return [];
+
+  const de = comDeslocamento(
+    datas.reduce((a, b) => (a < b ? a : b)),
+    -JANELA_DE_PAR_EM_DIAS,
+  );
+  const ate = comDeslocamento(
+    datas.reduce((a, b) => (a > b ? a : b)),
+    JANELA_DE_PAR_EM_DIAS,
+  );
+
+  return db
+    .select({
+      data: transactions.data,
+      direcao: transactions.direcao,
+      valorCentavos: transactions.valorCentavos,
+      impressao: transactions.impressao,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        gte(transactions.data, de),
+        lte(transactions.data, ate),
+        ne(transactions.status, "excluido"),
+        isNull(transactions.parDe),
+      ),
+    );
+}
+
+/** `"2026-06-02"` mais ou menos N dias, ainda como `YYYY-MM-DD`. */
+function comDeslocamento(data: string, dias: number): string {
+  const ms = Date.parse(`${data}T00:00:00Z`) + dias * 86_400_000;
+  return new Date(ms).toISOString().slice(0, 10);
 }
 
 /**

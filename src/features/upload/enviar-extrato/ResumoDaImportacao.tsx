@@ -23,7 +23,7 @@ import {
  * | `entraram` | `Leitura.lancamentos` (A3) |
  * | `ignoradas` | `Leitura.ignoradas` (A3), com linha, motivo e conteúdo |
  * | `excluidos` | `marcacao: "excluido"` (A4) |
- * | `revisao` | `marcacao: "revisao"` (A4) |
+ * | `anulados` | `parDe !== null` (A4) |
  *
  * ⚠ **"3 ignoradas" sem dizer quais só gera desconfiança.** Cada linha que
  * ficou de fora aparece com o número da linha, o motivo e o **conteúdo
@@ -40,8 +40,8 @@ export type DadosDoResumo = {
   arquivos: ResumoDeArquivo[];
   /** Pagamento de fatura e afins: entram, mas fora do cálculo. */
   excluidos: number;
-  /** Pares que se anulam, esperando o usuário decidir. */
-  revisao: number;
+  /** Pares que se anularam entre si e já saíram da conta do mês. */
+  anulados: number;
   /** O motor bateu regra (D1). */
   classificados: number;
   /** Nenhuma regra bateu: você escolhe a categoria. */
@@ -59,7 +59,7 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
   const contagem: ContagemDaImportacao = {
     classificados: dados.classificados,
     pendentes: dados.pendentes,
-    pares: dados.revisao,
+    pares: dados.anulados,
     conferir: dados.conferir,
     excluidos: dados.excluidos,
   };
@@ -160,14 +160,15 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
         </Card>
       )}
 
-      {dados.revisao > 0 && (
+      {dados.anulados > 0 && (
         <Card className="mt-3 border-gold/20 bg-gold/8">
           <div className="flex items-start gap-3">
-            <Badge variant="gold">Anulam?</Badge>
+            <Badge variant="gold">Anulados</Badge>
             <p className="text-xs leading-relaxed text-dim">
-              {dados.revisao} lançamentos parecem se anular entre si — mesmo
-              valor, sentidos opostos, datas próximas. Nada foi apagado; você
-              decide o que fazer com eles.
+              {dados.anulados} lançamentos se anulam entre si — mesmo valor,
+              sentidos opostos, datas próximas. Saíram da conta do mês para não
+              inflar as entradas. Nada foi apagado: eles aparecem no painel, em
+              &quot;fora da conta&quot;, e de lá dá para trazer de volta.
             </p>
           </div>
         </Card>

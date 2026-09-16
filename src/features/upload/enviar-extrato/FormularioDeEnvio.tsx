@@ -243,7 +243,7 @@ export function FormularioDeEnvio({
               ignoradas: a.ignoradas,
             })),
             excluidos: sucesso.excluidos,
-            revisao: sucesso.revisao,
+            anulados: sucesso.anulados,
             classificados: sucesso.classificados,
             pendentes: sucesso.pendentes,
             conferir: sucesso.conferir,
