@@ -10,6 +10,10 @@ import {
 } from "@/features/painel/somar-o-mes/cobertura";
 import { paresDeValorIdentico } from "@/features/painel/somar-o-mes/paresDeValorIdentico";
 import {
+  foraDaConta,
+  type ForaDaConta,
+} from "@/features/painel/fora-da-conta/foraDaConta";
+import {
   somarOMes,
   type CategoriaComPote,
 } from "@/features/painel/somar-o-mes/somarOMes";
@@ -53,6 +57,16 @@ export type DadosDoPainel = {
    * serve a tudo aqui.
    */
   categorias: CategoriaEscolhivel[];
+  /**
+   * O dinheiro que ficou de fora da conta deste mês, e por quê.
+   *
+   * ⚠ Existe desde que o par que se anula passou a sair sozinho. Dinheiro que
+   * some sem deixar rastro é pior do que dinheiro contado errado: o número
+   * errado ao menos dá para conferir contra o extrato. Até aqui o painel
+   * filtrava `status !== "excluido"` e aquelas linhas não apareciam em tela
+   * nenhuma do app.
+   */
+  foraDaConta: ForaDaConta;
 };
 
 export async function dadosDoPainel(
@@ -109,6 +123,11 @@ export async function dadosDoPainel(
           classificadoPor: transactions.classificadoPor,
           regraChave: transactions.regraChave,
           fonteDaSugestao: transactions.fonteDaSugestao,
+          // Para a lista de "fora da conta": o motivo explica a ausência, e a
+          // impressão com o `parDe` é o que junta os dois lados do par.
+          motivo: transactions.motivo,
+          impressao: transactions.impressao,
+          parDe: transactions.parDe,
         })
         .from(transactions)
         .where(
@@ -251,6 +270,9 @@ export async function dadosDoPainel(
     renda,
     potes,
     categorias: escolhiveis,
+    // Das **mesmas** linhas, como tudo o mais aqui: a consulta já traz o mês
+    // inteiro, excluídos inclusive, porque o `where` nunca filtrou status.
+    foraDaConta: foraDaConta(linhas),
   };
 }
 

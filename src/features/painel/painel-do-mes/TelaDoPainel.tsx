@@ -4,6 +4,8 @@ import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lanca
 import { ChamadaDoComparativo } from "@/features/painel/comparar-meses/ChamadaDoComparativo";
 import type { MediaDoComparativo } from "@/features/painel/comparar-meses/comparativo";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
+import { ForaDaContaNoPainel } from "@/features/painel/fora-da-conta/ForaDaContaNoPainel";
+import type { ForaDaConta } from "@/features/painel/fora-da-conta/foraDaConta";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
 import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
@@ -45,6 +47,7 @@ export function TelaDoPainel({
   potes,
   categorias,
   media,
+  foraDaConta,
 }: {
   mes: string;
   meses: string[];
@@ -56,6 +59,8 @@ export function TelaDoPainel({
   renda: RendaDeclarada | null;
   potes: PoteNoPainel[];
   categorias: CategoriaEscolhivel[];
+  /** O dinheiro que o painel não somou, e por quê. */
+  foraDaConta: ForaDaConta;
   /**
    * Só a frase do comparativo (spec 09) — não o comparativo inteiro.
    *
@@ -144,6 +149,13 @@ export function TelaDoPainel({
           </div>
         </>
       )}
+
+      {/*
+        Depois dos potes, antes do comparativo: é a nota de rodapé do mês, e
+        quem chega aqui já está procurando por ela — "por que as entradas deram
+        menos do que o extrato diz?". Ver o docblock do componente.
+      */}
+      <ForaDaContaNoPainel dados={foraDaConta} />
 
       <ChamadaDoComparativo media={media} mes={mes} />
 
