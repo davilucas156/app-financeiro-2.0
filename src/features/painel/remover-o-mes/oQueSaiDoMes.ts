@@ -7,9 +7,14 @@ import { anoDoMes, nomeDoMes } from "@/lib/mes";
  * ## Por que o transbordo existe
  *
  * O mês de um lançamento não é o mês do envio. `mesDoLancamento`, na
- * importação, arquiva lançamento de **conta** pelo mês da data e de **cartão**
- * pelo mês da fatura escolhido na tela — então o extrato de conta que vai de
- * 02/06 a 02/07 põe lançamentos em julho.
+ * importação, arquiva pelo mês da **data** de cada linha — então o extrato de
+ * conta que vai de 02/06 a 02/07 põe lançamentos em julho, e a fatura que
+ * vence em outubro põe compras em agosto e em setembro.
+ *
+ * ⚠ **O transbordo ficou a regra, e não a exceção.** Enquanto a fatura inteira
+ * ia para o mês escolhido na tela, só o extrato de conta transbordava, e só por
+ * dois dias. Agora um envio de fatura alimenta dois ou três meses de uma vez —
+ * esta função não mudou, mas o que ela conta passou a aparecer quase sempre.
  *
  * ⚠ **Disso sai o fato que esta função existe para contar:** remover um mês é
  * remover os envios que o formaram (Descoberta 4 da spec 14), e um desses

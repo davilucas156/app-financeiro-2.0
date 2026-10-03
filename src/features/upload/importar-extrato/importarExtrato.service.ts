@@ -9,6 +9,7 @@ import {
   type NovaTransacao,
 } from "@/db/schema";
 import { classificarImportacao } from "@/features/classificacao/classificar-importacao/classificarImportacao";
+import { mesDoLancamento } from "@/features/upload/importar-extrato/mesDoLancamento";
 import { formatosDoUsuario } from "@/features/upload/formatos-do-usuario/formatosDoUsuario.service";
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
@@ -282,7 +283,7 @@ export async function importarExtrato(
             status: d.status,
             motivo: d.motivo,
             parDe: p.parDe,
-            mesReferencia: mesDoLancamento(l.origem, p.data, mesEscolhido),
+            mesReferencia: mesDoLancamento(p, mesEscolhido),
             origem: p.origem,
             impressao: p.impressao,
             parcela: p.parcela,
@@ -410,22 +411,4 @@ async function vizinhosJaGravados(
 function comDeslocamento(data: string, dias: number): string {
   const ms = Date.parse(`${data}T00:00:00Z`) + dias * 86_400_000;
   return new Date(ms).toISOString().slice(0, 10);
-}
-
-/**
- * Resolve a pendência 3 da spec, com os números que a fase A mediu.
- *
- * **Conta:** o mês sai da data do lançamento. O extrato de 02/06 a 02/07 traz
- * lançamentos de julho; empurrá-los para junho seria mentir sobre quando o
- * dinheiro se moveu.
- *
- * **Cartão:** o mês é o da fatura, escolhido na tela. A fatura de julho traz
- * uma parcela de **março** — pelo mês da compra, ela cairia num mês já
- * fechado.
- *
- * Nos dois casos a coluna `data` guarda a data real, então a outra leitura
- * continua possível depois sem migration.
- */
-function mesDoLancamento(origem: Origem, data: string, mesEscolhido: string) {
-  return origem === "csv_conta" ? data.slice(0, 7) : mesEscolhido;
 }

@@ -7,6 +7,17 @@ import { rotuloDeMes } from "@/lib/mes";
  * Um `<select>` nativo de propósito: no celular ele abre o seletor do próprio
  * sistema, que é maior, rolável e acessível de graça. Um dropdown nosso seria
  * mais bonito e pior de usar com o polegar.
+ *
+ * ## ⚠ Este campo decide muito menos do que o nome dele sugere
+ *
+ * Ele não coloca os lançamentos em mês nenhum: quem faz isso é a
+ * `mesDoLancamento`, pela data de cada linha. O que ele determina é só **qual
+ * fatura é esta** — e com isso, o mês das parcelas, que não têm como ser
+ * datadas pela cobrança.
+ *
+ * A frase embaixo do campo existe por isso. Sem ela, quem escolhe "outubro"
+ * espera ver tudo em outubro e encontra as compras em setembro, o que parece
+ * defeito e é o conserto.
  */
 
 /**
@@ -65,6 +76,11 @@ export function SeletorDeMes({
           </option>
         ))}
       </select>
+
+      <p className="mt-2 text-2xs leading-relaxed text-dim">
+        Qual fatura é esta. Cada lançamento cai no mês da própria data — só as
+        parcelas ficam no mês da fatura.
+      </p>
     </div>
   );
 }
