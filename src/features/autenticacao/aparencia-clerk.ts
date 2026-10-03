@@ -46,13 +46,13 @@ const ESCURO: ClerkAppearanceTheme = {
     colorPrimaryForeground: "#060608", // --color-bg (texto sobre o laranja)
 
     colorMuted: "#16161c", // --color-card2
-    colorMutedForeground: "#5a5a70", // --color-dim
+    colorMutedForeground: "#7d7d96", // --color-dim
 
     colorInput: "#16161c", // --color-card2
     colorInputForeground: "#e8e8f0", // --color-text
 
     colorBorder: "#28282f", // --color-border2
-    colorNeutral: "#5a5a70", // --color-dim
+    colorNeutral: "#7d7d96", // --color-dim
 
     colorDanger: "#ff4f4f", // --color-red
     colorSuccess: "#00e5a0", // --color-green
