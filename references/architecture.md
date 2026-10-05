@@ -46,6 +46,7 @@ app-financeiro-2.0/
 ├── AGENTS.md / CLAUDE.md        # gerados pelo próprio Next 16 a cada dev/build
 ├── references/
 │   ├── architecture.md          # este arquivo
+│   ├── deploy.md                # como publicar, e por que push não é deploy
 │   └── design-system.md         # cores, tipografia, potes, componentes base
 ├── specs/                       # Etapa 1 (specs), Etapa 2 (tarefas)
 │   └── plans/                   # Etapa 3 (planos), um por tarefa
