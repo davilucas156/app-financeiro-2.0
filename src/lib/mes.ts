@@ -39,6 +39,32 @@ export function rotuloDeMes(mes: string): string {
 }
 
 /**
+ * Rótulo curto `"Jun 26"` a partir de `"2026-06"`.
+ *
+ * ⚠ **Existe para a fileira de abas, que rola de lado.** Lá o rótulo longo
+ * custa caro de um jeito específico: `"Junho / 2026"` dá pilulas de ~110px, e
+ * num aparelho de 360px caberiam duas e meia — a fileira deixaria de mostrar
+ * "cada mês ao lado do outro", que é a razão de ela existir. Com três letras e
+ * dois dígitos cabem quatro ou cinco.
+ *
+ * O ano fica, abreviado, e não sai: a conta atravessa o ano, e `"Jan"` sozinho
+ * entre dezembro e fevereiro não diz **qual** janeiro.
+ *
+ * ⚠ **Não substitui `rotuloDeMes`.** O longo continua onde há espaço e onde o
+ * texto é lido com calma — o seletor do upload, o histórico, o topo das telas.
+ * Abreviar lá seria economizar onde não aperta.
+ */
+export function rotuloCurtoDeMes(mes: string): string {
+  const [ano, m] = mes.split("-");
+  const nome = MESES[Number(m) - 1];
+
+  if (!nome) return mes;
+
+  const tres = `${nome.charAt(0).toUpperCase()}${nome.slice(1, 3)}`;
+  return `${tres} ${ano.slice(2)}`;
+}
+
+/**
  * O mês no meio de uma frase: `"maio"`, ou `"maio de 2025"` quando o ano é
  * outro.
  *
