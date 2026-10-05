@@ -58,6 +58,52 @@ npx vercel --prod
 Se o usuário autorizar o MCP da Vercel numa sessão interativa (`/mcp`), o agente
 passa a conseguir publicar e inspecionar deploys daqui. Até lá, não.
 
+### ⚠ "Not authorized" na CLI quase nunca é permissão: é conta ou escopo errado
+
+Aconteceu em 04/10/2026, e a mensagem engana — ela sugere pedir acesso a um
+dono de time, quando o problema era estar logado na conta errada. A CLI guarda
+credencial e escopo em arquivos separados, e os dois erram de formas
+diferentes:
+
+```
+%APPDATA%/com.vercel.cli/Data/auth.json     # token — NUNCA imprimir o valor
+%APPDATA%/com.vercel.cli/Data/config.json   # "currentTeam"
+```
+
+A sequência que diagnostica, em ordem, e sem escrever nada:
+
+```
+npx --yes vercel whoami                            # quem está logado
+npx --yes vercel teams ls                           # times que a conta alcança
+npx --yes vercel project ls --scope <slug-do-time>  # o projeto está nesse time?
+cat .vercel/project.json                            # para qual orgId o repo aponta
+```
+
+Como ler o resultado:
+
+- **`whoami` dá `forbidden` mas `teams ls` funciona** → o `currentTeam` do
+  `config.json` está velho e aponta para um time inacessível. O `teams ls` passa
+  porque é o único que não usa o escopo. Conserta com `vercel switch <time>`.
+- **`project ls` lista projetos, e o seu não está lá** → a conta logada não é a
+  dona. Foi este o caso: logado como uma conta cujo único escopo tinha três
+  outros projetos, enquanto o `orgId` do `.vercel/project.json` apontava para um
+  time que, dessa conta, respondia `The specified scope does not exist`.
+- **O site está no ar servindo build antigo** → o projeto existe e funciona; o
+  que falta é acesso, não deploy. Não conclua que o projeto foi apagado.
+
+O conserto é `vercel logout` e `vercel login` com a conta certa — ou
+`vercel link`, se o projeto estiver na conta atual com outro nome.
+
+⚠ **Nada disso um agente faz sozinho.** `logout` descarta credencial do usuário e
+`login` abre navegador. O agente diagnostica, nomeia a causa e entrega os
+comandos; quem troca de conta é a pessoa.
+
+⚠ **E o `auth.json` não se lê.** Conferir que o arquivo **existe** e quais
+**chaves** ele tem é diagnóstico; imprimir o `token` ou o `refreshToken` é
+vazar credencial num transcrito. Mesma regra para o `VERCEL_OIDC_TOKEN` do
+`.env.local` — uma tentativa de decodificar as claims dele nesta sessão foi
+barrada pelo classificador, e corretamente.
+
 ---
 
 ## 2. Antes do push: o que tem de estar verde
@@ -224,3 +270,9 @@ Duas lições, e nenhuma é sobre a Vercel:
    se fosse um fato.** Se você não pode verificar, diga que não pode.
 2. **A ordem de 4 existe por isso.** O recálculo foi feito antes do deploy
    porque o deploy parecia feito.
+
+**Como terminou:** dois dias depois, o `npx vercel --prod` devolveu
+`Not authorized`. A causa era a conta logada na CLI, não permissão — ver o
+alerta da seção 1. Trocada a conta, o deploy saiu, e o `/entrar` em produção
+perdeu a moldura dobrada: `grep -c` da classe do `<Card>` passou de 1 para 0,
+com `Age: 0`. Aí, e só aí, código e banco voltaram a falar a mesma língua.
