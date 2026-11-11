@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition, useActionState } from "react";
 import { Button } from "@/components/ui/Button";
+import { erroDoActionState } from "@/lib/erroDoActionState";
 import { rotuloDeMes } from "@/lib/mes";
 import { removerMes, resumoDaRemocao } from "./removerOMes.action";
 /*
@@ -83,7 +84,7 @@ export function RemoverOMes({ mes }: { mes: string }) {
   }
 
   const rotulo = rotuloDeMes(mes);
-  const erroDaRemocao = resultado && !resultado.ok ? resultado.erro : null;
+  const erroDaRemocao = erroDoActionState(resultado);
 
   return (
     <section

@@ -13,6 +13,7 @@ import type {
   ResultadoImportacao,
 } from "@/features/upload/importar-extrato/importarExtrato.service";
 import { formatarTamanho, recusar } from "@/features/upload/limites";
+import { erroDoActionState } from "@/lib/erroDoActionState";
 
 /**
  * O formulário de verdade (tarefa D3).
@@ -92,7 +93,7 @@ export function FormularioDeEnvio({
   const [ensinando, setEnsinando] = useState(false);
 
   const temArquivo = Boolean(escolhidos.conta || escolhidos.cartao);
-  const erroDoServidor = resultado && !resultado.ok ? resultado.erro : null;
+  const erroDoServidor = erroDoActionState(resultado);
   const sucesso = resultado?.ok ? resultado : null;
   const jaImportados = sucesso?.arquivos.filter((a) => a.jaImportado) ?? [];
   const gravados = sucesso?.arquivos.filter((a) => !a.jaImportado) ?? [];

@@ -9,6 +9,7 @@ import {
   LinhasIgnoradas,
   rotuloDeIgnoradas,
 } from "@/features/upload/enviar-extrato/LinhasIgnoradas";
+import { erroDoActionState } from "@/lib/erroDoActionState";
 import { rotuloDeMes } from "@/lib/mes";
 
 /**
@@ -22,14 +23,18 @@ import { rotuloDeMes } from "@/lib/mes";
  * sessão; daqui sai apenas o id do envio.
  */
 export function LinhaDeEnvio({ envio }: { envio: EnvioExibido }) {
-  const [confirmando, setConfirmando] = useState(false);
+  const [pediuConfirmacao, setConfirmando] = useState(false);
   const [resultado, agir, apagando] = useActionState<
     ResultadoDesfazer | null,
     FormData
   >(desfazerEnvio, null);
 
+  // Depois de apagar com sucesso a confirmação some, mesmo que a linha ainda
+  // fique na tela por um instante até a lista ser revalidada.
+  const confirmando = pediuConfirmacao && !resultado?.ok;
+
   const mes = rotuloDeMes(envio.mes);
-  const erro = resultado && !resultado.ok ? resultado.erro : null;
+  const erro = erroDoActionState(resultado);
 
   return (
     <li className="rounded-card border border-border bg-card px-4 py-3.5">
