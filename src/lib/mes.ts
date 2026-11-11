@@ -88,6 +88,20 @@ export function anoDoMes(mes: string): string {
 }
 
 /**
+ * O formato `"YYYY-MM"`, e só o formato — a mesma forma exigida pelo `check`
+ * de `mes_referencia` no schema (`^[0-9]{4}-[0-9]{2}$`).
+ *
+ * ⚠ Estava reimplementado como regex solta em três arquivos
+ * (`declararRenda.action.ts`, `importarExtrato.service.ts`,
+ * `removerOMes.service.ts`). Não valida o intervalo 01–12: o banco também não
+ * valida isso hoje, e fazer só aqui criaria uma régua mais estrita que a do
+ * schema que esta função existe para espelhar.
+ */
+export function formatoDeMesValido(mes: string): boolean {
+  return /^\d{4}-\d{2}$/.test(mes);
+}
+
+/**
  * O mês de hoje, em `YYYY-MM`.
  *
  * ⚠ **UTC, e não hora local**, como todo o resto deste arquivo: o mês é um

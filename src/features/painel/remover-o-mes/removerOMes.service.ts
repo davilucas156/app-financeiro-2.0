@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, inArray } from "drizzle-orm";
 import { imports, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { formatoDeMesValido } from "@/lib/mes";
 
 /**
  * Apagar os envios que formaram um mês (tarefa C1).
@@ -48,15 +49,12 @@ export type ResultadoDaRemocao =
  */
 const NAO_ENCONTRADO = "Esse mês não está mais aqui. A tela foi atualizada.";
 
-/** A mesma forma do `check` de `mes_referencia` no schema. */
-const MES = /^\d{4}-\d{2}$/;
-
 export async function removerOMes(
   userId: string,
   mes: string,
 ): Promise<ResultadoDaRemocao> {
   // Recusa antes de tocar no banco: o que nunca existiria não vira consulta.
-  if (!MES.test(mes)) return { ok: false, erro: NAO_ENCONTRADO };
+  if (!formatoDeMesValido(mes)) return { ok: false, erro: NAO_ENCONTRADO };
 
   const db = getDb();
 

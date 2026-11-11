@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { and, eq, gte, inArray, isNull, lte, ne } from "drizzle-orm";
 import { getDb } from "@/lib/db";
+import { formatoDeMesValido } from "@/lib/mes";
 import {
   classificationRules,
   imports,
@@ -91,7 +92,7 @@ export async function importarExtrato(
     return { ok: false, erro: "Escolha ao menos um arquivo." };
   }
 
-  if (!/^\d{4}-\d{2}$/.test(mesEscolhido)) {
+  if (!formatoDeMesValido(mesEscolhido)) {
     return { ok: false, erro: "Mês de referência inválido." };
   }
 

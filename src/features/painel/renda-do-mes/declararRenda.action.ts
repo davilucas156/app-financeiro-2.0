@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { formatoDeMesValido } from "@/lib/mes";
 import { declararRenda } from "./rendaDoMes.service";
 
 /**
@@ -15,16 +16,17 @@ import { declararRenda } from "./rendaDoMes.service";
 
 export type ResultadoDaRenda = { ok: true } | { ok: false; erro: string };
 
+export type EntradaDaRenda = { mes: string; centavos: number };
+
 /** O maior valor que ainda é digitação plausível: R$ 10 milhões. */
 const TETO_CENTAVOS = 1_000_000_000;
 
-export async function informarRenda(entrada: {
-  mes: string;
-  centavos: number;
-}): Promise<ResultadoDaRenda> {
+export async function informarRenda(
+  entrada: EntradaDaRenda,
+): Promise<ResultadoDaRenda> {
   const usuario = await garantirUsuario();
 
-  if (!/^\d{4}-\d{2}$/.test(entrada.mes)) {
+  if (!formatoDeMesValido(entrada.mes)) {
     return { ok: false, erro: "Mês inválido. Recarregue a tela." };
   }
 
@@ -49,7 +51,6 @@ export async function informarRenda(entrada: {
   try {
     await declararRenda(usuario.id, entrada.mes, entrada.centavos);
 
-    revalidatePath("/painel");
     revalidatePath("/dashboard");
 
     return { ok: true };
