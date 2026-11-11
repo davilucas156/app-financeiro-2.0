@@ -1,3 +1,6 @@
+import "server-only";
+import { estaNaListaDeEmails } from "@/lib/listaDeEmails";
+
 /**
  * Quem nasce com as regras-base da A5 (tarefa D7).
  *
@@ -18,11 +21,16 @@
  *
  * Sem `NEXT_PUBLIC_`, como a allowlist: quem recebe seed não é informação que
  * precise chegar ao navegador.
+ *
+ * ⚠ **Diferente da allowlist, este arquivo leva `import "server-only"`.** A
+ * ausência do prefixo público já impede o vazamento pelo bundle; a diferença
+ * é a classe de dano se algo um dia importar isto do lado errado — dado
+ * pessoal de terceiro atravessando contas, não só "quem pode entrar". Por
+ * levar a marca, deixou de ser importável por um teste em Node puro: quem
+ * decide `recebeRegrasBase(email)` agora é o chamador `server-only`
+ * (`concluirOnboarding.service.ts`), e `linhasDeRegras.ts` recebe a decisão
+ * já pronta, continuando puro e testável.
  */
-
-function normalizar(email: string) {
-  return email.trim().toLowerCase();
-}
 
 /**
  * **Lista vazia = ninguém recebe.** É o lado seguro para errar: uma conta sem
@@ -30,12 +38,5 @@ function normalizar(email: string) {
  * em silêncio.
  */
 export function recebeRegrasBase(email: string | null | undefined): boolean {
-  if (!email) return false;
-
-  const lista = (process.env.EMAILS_COM_REGRAS_BASE ?? "")
-    .split(",")
-    .map(normalizar)
-    .filter(Boolean);
-
-  return lista.includes(normalizar(email));
+  return estaNaListaDeEmails(email, process.env.EMAILS_COM_REGRAS_BASE);
 }

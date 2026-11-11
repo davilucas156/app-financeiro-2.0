@@ -1,3 +1,5 @@
+import { estaNaListaDeEmails, normalizarEmail } from "@/lib/listaDeEmails";
+
 /**
  * Quem tem convite para usar o app.
  *
@@ -11,14 +13,10 @@
  * cliente.
  */
 
-function normalizar(email: string) {
-  return email.trim().toLowerCase();
-}
-
 export function emailsConvidados(): string[] {
   return (process.env.EMAILS_CONVIDADOS ?? "")
     .split(",")
-    .map(normalizar)
+    .map(normalizarEmail)
     .filter(Boolean); // descarta vírgulas sobrando
 }
 
@@ -28,10 +26,5 @@ export function emailsConvidados(): string[] {
  * que falha aberto é pior do que um que falha fechado.
  */
 export function estaConvidado(email: string | null | undefined): boolean {
-  if (!email) return false;
-
-  const convidados = emailsConvidados();
-  if (convidados.length === 0) return false;
-
-  return convidados.includes(normalizar(email));
+  return estaNaListaDeEmails(email, process.env.EMAILS_CONVIDADOS);
 }
