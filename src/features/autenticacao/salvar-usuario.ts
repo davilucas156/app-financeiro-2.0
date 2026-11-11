@@ -17,10 +17,48 @@ import { estaConvidado } from "@/features/autenticacao/allowlist";
  * - `garantir-usuario` (D5) — quando o webhook **não** chegou.
  *
  * Os dois caminhos convergem porque a gravação é idempotente.
+ *
+ * ⚠ **`dados.id` só aceita um id marcado** (`comoIdDeSessaoAutenticada` ou
+ * `comoIdDeWebhookVerificado`), não uma string qualquer. A revisão de
+ * arquitetura (rodada 12) flagrou que, exportada aceitando `id: string`, um
+ * código futuro que importasse isto direto e repassasse um id de fonte não
+ * confiável sobrescreveria dados de outro usuário — o único portão era o
+ * e-mail estar na allowlist, não o id casar com a sessão.
  */
 
+declare const marcaDeSessao: unique symbol;
+declare const marcaDeWebhook: unique symbol;
+
+/**
+ * Prova em **tipo** de que o id veio de `auth()` — não de um parâmetro que
+ * chegou de qualquer lugar.
+ *
+ * ⚠ É um lembrete que o compilador cobra, não uma garantia de runtime: nada
+ * impede um `as IdDeSessaoAutenticada` em código novo. O valor está em tornar
+ * esse descuido **visível e deliberado** em vez de uma string solta que passa
+ * batida numa revisão de código.
+ */
+export type IdDeSessaoAutenticada = string & { readonly [marcaDeSessao]: true };
+
+/** Mesma ideia, para o id de um payload que já passou por `verifyWebhook`. */
+export type IdDeWebhookVerificado = string & {
+  readonly [marcaDeWebhook]: true;
+};
+
+/** Chamar logo depois de `auth()`, nunca com um id de outra origem. */
+export function comoIdDeSessaoAutenticada(
+  userId: string,
+): IdDeSessaoAutenticada {
+  return userId as IdDeSessaoAutenticada;
+}
+
+/** Chamar logo depois de `verifyWebhook`, nunca com um id de outra origem. */
+export function comoIdDeWebhookVerificado(id: string): IdDeWebhookVerificado {
+  return id as IdDeWebhookVerificado;
+}
+
 export type DadosUsuario = {
-  id: string;
+  id: IdDeSessaoAutenticada | IdDeWebhookVerificado;
   email: string | null;
   nome: string | null;
 };

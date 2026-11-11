@@ -5,7 +5,10 @@ import { eq } from "drizzle-orm";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { getDb } from "@/lib/db";
 import { users, type Usuario } from "@/db/schema";
-import { salvarUsuario } from "@/features/autenticacao/salvar-usuario";
+import {
+  comoIdDeSessaoAutenticada,
+  salvarUsuario,
+} from "@/features/autenticacao/salvar-usuario";
 
 /**
  * Garantia de usuário no banco (tarefa D5).
@@ -72,7 +75,7 @@ async function resolverUsuario(
   // `on conflict` — de propósito. Se o webhook chegar logo depois, os dois
   // convergem para uma linha só em vez de brigarem.
   const { resultado, usuario } = await salvarUsuario({
-    id: userId,
+    id: comoIdDeSessaoAutenticada(userId),
     email: perfil.email,
     nome: perfil.nome,
   });
