@@ -1,3 +1,5 @@
+import { contar } from "@/lib/plural";
+
 /**
  * O que a tela de arrumação sabe (tarefa C1).
  *
@@ -99,15 +101,11 @@ export function oQueDependeDela(categoria: CategoriaNaGestao): string {
   const partes: string[] = [];
 
   if (categoria.lancamentos > 0) {
-    partes.push(
-      `${categoria.lancamentos} ${categoria.lancamentos === 1 ? "lançamento" : "lançamentos"}`,
-    );
+    partes.push(contar(categoria.lancamentos, "lançamento", "lançamentos"));
   }
 
   if (categoria.regras > 0) {
-    partes.push(
-      `${categoria.regras} ${categoria.regras === 1 ? "regra" : "regras"}`,
-    );
+    partes.push(contar(categoria.regras, "regra", "regras"));
   }
 
   return partes.join(" · ");

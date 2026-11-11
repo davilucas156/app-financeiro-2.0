@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { contar } from "@/lib/plural";
 import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { ehUnicidadeViolada, restricaoViolada } from "@/lib/erroDoPostgres";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
@@ -258,7 +259,7 @@ export async function moverCategoria(
       // "não é possível mover" só frustra.
       return {
         ok: false,
-        erro: `Esta categoria já tem ${dentro.n} ${dentro.n === 1 ? "lançamento" : "lançamentos"}. Mover de pote agora mudaria o rateio de todos os meses anteriores — só dá para mover enquanto ela está vazia.`,
+        erro: `Esta categoria já tem ${contar(dentro.n, "lançamento", "lançamentos")}. Mover de pote agora mudaria o rateio de todos os meses anteriores — só dá para mover enquanto ela está vazia.`,
       };
     }
 

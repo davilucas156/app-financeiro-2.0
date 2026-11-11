@@ -1,3 +1,5 @@
+import { contar } from "@/lib/plural";
+
 /**
  * O que a tela diz antes de apagar uma categoria (tarefa A3).
  *
@@ -178,9 +180,4 @@ function alerta(o: OQueVaiJunto, destino: DestinoDoApagar): string | null {
   return o.lancamentos === 1
     ? "O destino está em outro pote: este lançamento muda de pote em todos os meses em que aparece, e não só neste."
     : "O destino está em outro pote: estes lançamentos mudam de pote em todos os meses em que aparecem, e não só neste.";
-}
-
-/** "1 lançamentos" faz a tela parecer descuidada no pior momento possível. */
-function contar(n: number, singular: string, plural: string): string {
-  return `${n} ${n === 1 ? singular : plural}`;
 }
