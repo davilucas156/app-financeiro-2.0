@@ -35,8 +35,12 @@ export type Decisao =
       tipo: "categoria";
       lancamentoId: string;
       categoriaId: string;
-      /** De onde veio a escolha, para a procedência da C3. */
-      fonte: "sugestao" | "manual";
+      /**
+       * A sugestão que motivou a escolha, para a procedência da C3.
+       *
+       * Presente = `classificado_por = 'sugestao'`; ausente = `'manual'`. É o
+       * serviço quem deriva isso, e não quem chama.
+       */
       fonteDaSugestao?: FonteDeSugestao;
       /**
        * "Sempre classificar assim" (D5). Cria a regra e aplica aos outros
@@ -142,17 +146,19 @@ export async function decidirNaTransacao(
 
   const agora = new Date();
 
+  const veioDeSugestao =
+    decisao.tipo === "categoria" && decisao.fonteDaSugestao !== undefined;
+
   const alteracao =
     decisao.tipo === "categoria"
       ? {
           categoriaId: decisao.categoriaId,
-          classificadoPor: decisao.fonte,
+          classificadoPor: veioDeSugestao
+            ? ("sugestao" as const)
+            : ("manual" as const),
           // A procedência da sugestão só existe quando a escolha veio de uma
           // (`transactions_fonte_sugestao_ck`).
-          fonteDaSugestao:
-            decisao.fonte === "sugestao"
-              ? (decisao.fonteDaSugestao ?? null)
-              : null,
+          fonteDaSugestao: decisao.fonteDaSugestao ?? null,
           /*
            * ⚠ **A procedência da regra sai.** Encontrado pela verificação da
            * D6, no caminho "Ou troque a categoria" da tela: um valor alto que
@@ -245,6 +251,7 @@ export async function decidirNaTransacao(
       antes.descricao,
       antes.origem,
       // O valor sai da linha do banco, nunca do cliente — ver `comValor`.
+      // `sempre` já é verdadeiro aqui: sem ele não há regra para estreitar.
       decisao.comValor ? antes.valorCentavos : undefined,
     );
 

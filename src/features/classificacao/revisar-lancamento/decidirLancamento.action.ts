@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
-import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
+import { FONTES_DE_SUGESTAO } from "@/features/classificacao/motor/sugestoes";
+import { ehUuid } from "@/lib/uuid";
 import {
   decidirLancamento,
   type Decisao,
@@ -16,13 +17,6 @@ import {
  * `garantirUsuario()`, no servidor. Todo id vindo daqui é conferido contra ele
  * no serviço (`references/architecture.md`, Thin Client / Fat Server).
  */
-
-const FONTES: FonteDeSugestao[] = [
-  "voce-ja-classificou",
-  "mesma-contraparte",
-  "categoria-do-banco",
-  "pote-do-banco",
-];
 
 export type EntradaDaDecisao = {
   tipo: Decisao["tipo"];
@@ -74,26 +68,22 @@ export async function decidir(
  * banco; conferir aqui devolve uma frase em vez de um 500.
  */
 function montar(e: EntradaDaDecisao): Decisao | null {
-  if (!e.lancamentoId) return null;
+  if (!ehUuid(e.lancamentoId)) return null;
 
   if (e.tipo === "categoria") {
-    if (!e.categoriaId) return null;
+    if (!e.categoriaId || !ehUuid(e.categoriaId)) return null;
 
-    const fonteDaSugestao = FONTES.find((f) => f === e.fonteDaSugestao);
+    const fonteDaSugestao = FONTES_DE_SUGESTAO.find((f) => f === e.fonteDaSugestao);
 
     return {
       tipo: "categoria",
       lancamentoId: e.lancamentoId,
       categoriaId: e.categoriaId,
-      // Sem uma fonte reconhecida, a escolha é manual. Aceitar um rótulo
-      // qualquer encheria a procedência de texto inventado — e procedência que
-      // não é confiável não serve para responder "por que caiu aqui?".
-      fonte: fonteDaSugestao ? "sugestao" : "manual",
+      // Rótulo desconhecido vira `undefined`: aceitar texto qualquer encheria a
+      // procedência de valor inventado. O serviço decide sugestão vs. manual.
       fonteDaSugestao,
       sempre: e.sempre === true,
-      // Sem `sempre` não há regra para estreitar. Aceitar sozinho gravaria uma
-      // intenção que não existe.
-      comValor: e.sempre === true && e.comValor === true,
+      comValor: e.comValor === true,
     };
   }
 

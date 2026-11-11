@@ -3,8 +3,8 @@
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
-import { criarEUsarAqui } from "./criarEClassificar.action";
-import { FormularioDeCategoria } from "./FormularioDeCategoria";
+import { criarEUsarAqui } from "@/features/categorias/nomear-categoria/criarEClassificar.action";
+import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
 
 /**
  * "+ Nova categoria" no fim da lista da revisão (tarefas C2 e D2).

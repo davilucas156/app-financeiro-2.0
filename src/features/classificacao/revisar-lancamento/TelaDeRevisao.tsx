@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { NovaCategoriaNaRevisao } from "@/features/categorias/nomear-categoria/NovaCategoriaNaRevisao";
+import { NovaCategoriaNaRevisao } from "./NovaCategoriaNaRevisao";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import { AcaoDeDecidir } from "./AcaoDeDecidir";
 import { AcaoDeVoltar } from "./AcaoDeVoltar";

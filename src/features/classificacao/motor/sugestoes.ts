@@ -18,11 +18,14 @@ import { trechoEstavel } from "./trecho";
  * reescrever nada.
  */
 
-export type FonteDeSugestao =
-  | "voce-ja-classificou"
-  | "mesma-contraparte"
-  | "categoria-do-banco"
-  | "pote-do-banco";
+export const FONTES_DE_SUGESTAO = [
+  "voce-ja-classificou",
+  "mesma-contraparte",
+  "categoria-do-banco",
+  "pote-do-banco",
+] as const;
+
+export type FonteDeSugestao = (typeof FONTES_DE_SUGESTAO)[number];
 
 export type Sugestao = {
   categoriaId: string;
