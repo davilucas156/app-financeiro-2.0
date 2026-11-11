@@ -4,8 +4,10 @@ import { categories, classificationRules } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { ehUnicidadeViolada } from "@/lib/erroDoPostgres";
 import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
-import { regraValida } from "@/features/classificacao/motor/regras";
-import { comTextoNovo } from "./regrasNaTela";
+import {
+  comTextoNovo,
+  regraValida,
+} from "@/features/classificacao/motor/regras";
 
 /**
  * Editar e apagar regra (tarefa D9).

@@ -45,35 +45,6 @@ export function textoEhEditavel(criterio: Criterio): boolean {
   return criterio.tipo === "descricao_contem" || criterio.tipo === "pessoa";
 }
 
-/**
- * O critério com o texto trocado, **preservando o resto**.
- *
- * ⚠ A `direcao` de uma regra `pessoa` tem de sobreviver à edição do nome. Duas
- * regras do seed dependem dela: sem a direção, dinheiro que sai para a sua
- * própria conta vira renda, e uma empresa que te paga vira renda quando **você**
- * paga ela. Perder isso ao corrigir uma letra do nome seria classificar errado
- * em silêncio — o erro mais caro deste projeto.
- *
- * `null` quando o tipo não tem texto editável, ou quando o texto novo é vazio:
- * regra que procura por nada casaria com tudo.
- */
-export function comTextoNovo(
-  criterio: Criterio,
-  texto: string,
-): Criterio | null {
-  const limpo = texto.trim();
-  if (limpo.length === 0) return null;
-
-  switch (criterio.tipo) {
-    case "descricao_contem":
-      return { ...criterio, termo: limpo };
-    case "pessoa":
-      return { ...criterio, nome: limpo };
-    case "valor_direcao":
-      return null;
-  }
-}
-
 /** O rótulo humano do tipo, para a tela não mostrar `descricao_contem`. */
 export function rotuloDoTipo(criterio: Criterio): string {
   switch (criterio.tipo) {

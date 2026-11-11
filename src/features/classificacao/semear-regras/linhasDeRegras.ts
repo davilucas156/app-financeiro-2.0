@@ -1,6 +1,5 @@
 import type { NovaRegraSalva } from "@/db/schema";
 import { regrasSemente } from "@/features/classificacao/motor/semente";
-import { recebeRegrasBase } from "./quemRecebe";
 
 /**
  * Traduz a semente da A5 para linhas de `classification_rules` (tarefa D7).
@@ -11,6 +10,12 @@ import { recebeRegrasBase } from "./quemRecebe";
  *
  * Sem isto, a D1 classifica **zero**: o motor inteiro das fases A a D existe e
  * não tem uma regra para aplicar.
+ *
+ * ⚠ **`recebeRegras` vem de fora, já decidido.** `quemRecebe.ts` leva
+ * `import "server-only"` — a decisão de quem recebe dado pessoal de terceiro
+ * no seed é de quem já é `server-only` (`concluirOnboarding.service.ts`), não
+ * deste arquivo. Receber a decisão como booleano é o que mantém este módulo
+ * puro e testável em Node simples.
  */
 
 export type DonoDaConta = {
@@ -30,8 +35,9 @@ export function linhasDeRegras(
   userId: string,
   dono: DonoDaConta,
   idPorChave: Map<string, string>,
+  recebeRegras: boolean,
 ): NovaRegraSalva[] {
-  if (!recebeRegrasBase(dono.email)) return [];
+  if (!recebeRegras) return [];
 
   return regrasSemente({ idPorChave, nomeDoTitular: dono.nome }).map((r) => ({
     userId,

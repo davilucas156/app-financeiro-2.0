@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { chaveDoCriterio } from "./chaveDaRegra";
 import {
   casarRegra,
+  comTextoNovo,
   regraValida,
   type AlvoDaRegra,
   type Criterio,
@@ -398,5 +400,106 @@ describe("faixa de valor dentro de uma regra de texto", () => {
 
   it("critério de texto sem faixa continua válido — lá a faixa é opcional", () => {
     expect(regraValida({ tipo: "pessoa", nome: "Davi Lucas" })).toBe(true);
+  });
+});
+
+/**
+ * `comTextoNovo` — trocar o texto de uma regra preservando o resto do
+ * critério (tarefa D9). Mora aqui, no motor, e não na tela: é invariante de
+ * negócio, não formatação.
+ */
+describe("comTextoNovo", () => {
+  const contem: Criterio = { tipo: "descricao_contem", termo: "PETROBRAS" };
+  const pessoa: Criterio = { tipo: "pessoa", nome: "FULANA DE TAL" };
+  const pessoaEntrando: Criterio = {
+    tipo: "pessoa",
+    nome: "EMPRESA IMAGINARIA",
+    direcao: "entrada",
+  };
+  const porValor: Criterio = {
+    tipo: "valor_direcao",
+    direcao: "saida",
+    minimoCentavos: 100,
+  };
+
+  it("regra por valor não tem texto para corrigir", () => {
+    // `textoDoCriterio` devolve a direção para este tipo. Um campo aqui
+    // gravaria lixo.
+    expect(comTextoNovo(porValor, "qualquer coisa")).toBeNull();
+  });
+
+  it("o termo muda e o tipo fica", () => {
+    expect(comTextoNovo(contem, "  PETROBRAS DISTRIBUIDORA  ")).toEqual({
+      tipo: "descricao_contem",
+      termo: "PETROBRAS DISTRIBUIDORA",
+    });
+  });
+
+  it("⚠ a direção sobrevive à edição do nome", () => {
+    /*
+     * Duas regras do seed dependem da direção: sem ela, dinheiro que sai para
+     * a sua própria conta vira renda, e uma empresa que te paga vira renda
+     * quando **você** paga ela. Perder isso ao corrigir uma letra do nome
+     * seria classificar errado em silêncio.
+     */
+    const novo = comTextoNovo(pessoaEntrando, "EMPRESA IMAGINARIA LTDA");
+
+    expect(novo).toEqual({
+      tipo: "pessoa",
+      nome: "EMPRESA IMAGINARIA LTDA",
+      direcao: "entrada",
+    });
+
+    // E a prova de que a direção continua fazendo efeito no motor:
+    const regraComDirecao: Regra = {
+      id: "r",
+      criterio: novo!,
+      categoriaId: "c",
+      prioridade: 10,
+    };
+    const alvoBase = {
+      descricao: "",
+      valorCentavos: 1000,
+      pessoa: "EMPRESA IMAGINARIA LTDA",
+    };
+
+    expect(
+      casarRegra([regraComDirecao], { ...alvoBase, direcao: "entrada" }),
+    ).not.toBeNull();
+    expect(
+      casarRegra([regraComDirecao], { ...alvoBase, direcao: "saida" }),
+    ).toBeNull();
+  });
+
+  it("texto vazio não vira regra", () => {
+    // Regra que procura por nada casaria com tudo.
+    expect(comTextoNovo(contem, "   ")).toBeNull();
+    expect(comTextoNovo(pessoa, "")).toBeNull();
+  });
+
+  it("o texto novo produz a chave nova — a mesma da D5 e do seed", () => {
+    const novo = comTextoNovo(contem, "PETROLINA")!;
+    expect(chaveDoCriterio(novo)).toBe("descricao_contem:PETROLINA");
+  });
+
+  it("editar o texto preserva a faixa", () => {
+    // Mesma lição da direção: perder a restrição ao corrigir uma letra do nome
+    // faria a exceção virar padrão em silêncio.
+    expect(
+      comTextoNovo(
+        {
+          tipo: "pessoa",
+          nome: "Fulana",
+          minimoCentavos: 30000,
+          maximoCentavos: 30000,
+        },
+        "Fulana de Tal",
+      ),
+    ).toEqual({
+      tipo: "pessoa",
+      nome: "Fulana de Tal",
+      minimoCentavos: 30000,
+      maximoCentavos: 30000,
+    });
   });
 });

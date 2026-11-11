@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { chaveDoCriterio } from "@/features/classificacao/motor/chaveDaRegra";
-import {
-  casarRegra,
-  type Criterio,
-} from "@/features/classificacao/motor/regras";
-import {
-  comTextoNovo,
-  oQueEstaRegraProcura,
-  textoEhEditavel,
-} from "./regrasNaTela";
+import type { Criterio } from "@/features/classificacao/motor/regras";
+import { oQueEstaRegraProcura, textoEhEditavel } from "./regrasNaTela";
 
 const contem: Criterio = { tipo: "descricao_contem", termo: "PETROBRAS" };
 const pessoa: Criterio = { tipo: "pessoa", nome: "FULANA DE TAL" };
@@ -33,59 +25,6 @@ describe("o que dá para corrigir (D9)", () => {
     // `textoDoCriterio` devolve a direção para este tipo. Um campo aqui
     // gravaria lixo.
     expect(textoEhEditavel(porValor)).toBe(false);
-    expect(comTextoNovo(porValor, "qualquer coisa")).toBeNull();
-  });
-});
-
-describe("trocar o texto preserva o resto do critério", () => {
-  it("o termo muda e o tipo fica", () => {
-    expect(comTextoNovo(contem, "  PETROBRAS DISTRIBUIDORA  ")).toEqual({
-      tipo: "descricao_contem",
-      termo: "PETROBRAS DISTRIBUIDORA",
-    });
-  });
-
-  it("⚠ a direção sobrevive à edição do nome", () => {
-    /*
-     * Duas regras do seed dependem da direção: sem ela, dinheiro que sai para
-     * a sua própria conta vira renda, e uma empresa que te paga vira renda
-     * quando **você** paga ela. Perder isso ao corrigir uma letra do nome
-     * seria classificar errado em silêncio.
-     */
-    const novo = comTextoNovo(pessoaEntrando, "EMPRESA IMAGINARIA LTDA");
-
-    expect(novo).toEqual({
-      tipo: "pessoa",
-      nome: "EMPRESA IMAGINARIA LTDA",
-      direcao: "entrada",
-    });
-
-    // E a prova de que a direção continua fazendo efeito no motor:
-    const regra = {
-      id: "r",
-      criterio: novo!,
-      categoriaId: "c",
-      prioridade: 10,
-    };
-    const alvo = {
-      descricao: "",
-      valorCentavos: 1000,
-      pessoa: "EMPRESA IMAGINARIA LTDA",
-    };
-
-    expect(casarRegra([regra], { ...alvo, direcao: "entrada" })).not.toBeNull();
-    expect(casarRegra([regra], { ...alvo, direcao: "saida" })).toBeNull();
-  });
-
-  it("texto vazio não vira regra", () => {
-    // Regra que procura por nada casaria com tudo.
-    expect(comTextoNovo(contem, "   ")).toBeNull();
-    expect(comTextoNovo(pessoa, "")).toBeNull();
-  });
-
-  it("o texto novo produz a chave nova — a mesma da D5 e do seed", () => {
-    const novo = comTextoNovo(contem, "PETROLINA")!;
-    expect(chaveDoCriterio(novo)).toBe("descricao_contem:PETROLINA");
   });
 });
 
@@ -176,26 +115,5 @@ describe("a faixa de valor aparece na frase", () => {
     expect(
       oQueEstaRegraProcura({ tipo: "descricao_contem", termo: "PETROBRAS" }),
     ).toBe("PETROBRAS");
-  });
-
-  it("editar o texto preserva a faixa", () => {
-    // Mesma lição da direção: perder a restrição ao corrigir uma letra do nome
-    // faria a exceção virar padrão em silêncio.
-    expect(
-      comTextoNovo(
-        {
-          tipo: "pessoa",
-          nome: "Fulana",
-          minimoCentavos: 30000,
-          maximoCentavos: 30000,
-        },
-        "Fulana de Tal",
-      ),
-    ).toEqual({
-      tipo: "pessoa",
-      nome: "Fulana de Tal",
-      minimoCentavos: 30000,
-      maximoCentavos: 30000,
-    });
   });
 });

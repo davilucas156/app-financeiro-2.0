@@ -1,4 +1,5 @@
 import { normalizarDescricao } from "@/features/upload/ler-arquivo/preparar";
+import { conteudoDoEvento } from "./evento";
 
 /**
  * O outro lado de uma transferência (tarefa A3).
@@ -23,9 +24,6 @@ import { normalizarDescricao } from "@/features/upload/ler-arquivo/preparar";
  * de "FULANA DE TAL" na hora de perguntar se vira regra.
  */
 
-/** `Pix enviado: "…"` — o tipo do evento e o conteúdo entre aspas. */
-const EVENTO_DA_CONTA = /^([^:]+):\s*"(.*)"\s*$/;
-
 /** `Cp :00000000-Fulana de Tal` */
 const COM_CHAVE = /^Cp\s*:?\s*\d+\s*-\s*(.+)$/i;
 
@@ -48,10 +46,7 @@ const SEM_NOME = "NULL";
 const MINIMO = 3;
 
 export function pessoaDe(descricao: string): string | null {
-  const texto = descricao.trim();
-
-  const evento = EVENTO_DA_CONTA.exec(texto);
-  const conteudo = (evento ? evento[2] : texto).trim();
+  const conteudo = conteudoDoEvento(descricao.trim());
 
   const achado =
     COM_CHAVE.exec(conteudo)?.[1] ?? COM_BANCO_E_AGENCIA.exec(conteudo)?.[1];

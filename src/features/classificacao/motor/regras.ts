@@ -157,6 +157,38 @@ export function regraValida(criterio: Criterio): boolean {
 }
 
 /**
+ * O critério com o texto trocado, **preservando o resto** (tarefa D9).
+ *
+ * ⚠ A `direcao` de uma regra `pessoa` tem de sobreviver à edição do nome. Duas
+ * regras do seed dependem dela: sem a direção, dinheiro que sai para a sua
+ * própria conta vira renda, e uma empresa que te paga vira renda quando **você**
+ * paga ela. Perder isso ao corrigir uma letra do nome seria classificar errado
+ * em silêncio — o erro mais caro deste projeto.
+ *
+ * `null` quando o tipo não tem texto editável, ou quando o texto novo é vazio:
+ * regra que procura por nada casaria com tudo.
+ *
+ * Mora no motor, e não na tela (`gerir-regras/`): é um invariante de negócio
+ * do critério, não formatação — a mesma razão de `regraValida` estar aqui.
+ */
+export function comTextoNovo(
+  criterio: Criterio,
+  texto: string,
+): Criterio | null {
+  const limpo = texto.trim();
+  if (limpo.length === 0) return null;
+
+  switch (criterio.tipo) {
+    case "descricao_contem":
+      return { ...criterio, termo: limpo };
+    case "pessoa":
+      return { ...criterio, nome: limpo };
+    case "valor_direcao":
+      return null;
+  }
+}
+
+/**
  * O comprimento do texto da regra, para o desempate.
  *
  * `valor_direcao` vale **zero** de propósito: numa faixa de valor não há

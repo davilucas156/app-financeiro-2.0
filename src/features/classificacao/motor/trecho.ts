@@ -1,5 +1,6 @@
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { normalizarDescricao } from "@/features/upload/ler-arquivo/preparar";
+import { conteudoDoEvento } from "./evento";
 
 /**
  * O trecho que vira regra (tarefa A2).
@@ -49,9 +50,6 @@ const TERMINA_EM_CODIGO = /\s[A-Z]{2,3}$/;
  * Com um campo só, as 23 linhas do cartão saem certas.
  */
 const CAMPOS_DE_LOCAL = 1;
-
-/** `Pix enviado: "…"` — o tipo do evento e o conteúdo entre aspas. */
-const EVENTO_DA_CONTA = /^([^:]+):\s*"(.*)"\s*$/;
 
 /**
  * O que denuncia uma transferência entre pessoas, em que o trecho útil é o
@@ -116,8 +114,7 @@ function doCartao(cru: string): string {
  * `Pix enviado`, que sozinho classificaria todo Pix igual.
  */
 function daConta(texto: string): string | null {
-  const evento = EVENTO_DA_CONTA.exec(texto);
-  const conteudo = evento ? evento[2].trim() : texto;
+  const conteudo = conteudoDoEvento(texto);
 
   // Transferência entre pessoas: o trecho útil é o nome, e a regra certa é a
   // do tipo `pessoa`. Devolver `CP :00000000-FULANA` como texto criaria uma
