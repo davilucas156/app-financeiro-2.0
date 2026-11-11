@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
-import { somaDasMetas } from "./somaDasMetas";
+import { somaDasMetas, type PoteQueConta } from "./somaDasMetas";
 import { VoltarAoPadrao } from "./VoltarAoPadrao";
 
 /**
@@ -18,12 +17,16 @@ import { VoltarAoPadrao } from "./VoltarAoPadrao";
  * salvar, e não ver efeito nenhum. Sem renda declarada, `metaDoPote` devolve
  * `null` para todo pote — o percentual está lá, correto, e invisível. Sem esta
  * frase, o que a pessoa conclui é que o app não salvou.
+ *
+ * ⚠ **Sem `"use client"`, mas roda no cliente.** É renderizado dentro de
+ * `TelaDeCategorias` (que é cliente), então entra no bundle do navegador. Não
+ * use aqui `cookies()`, `headers()`, segredos nem nada de `server-only`.
  */
 export function ResumoDasMetas({
   potes,
   temRenda,
 }: {
-  potes: PoteNaGestao[];
+  potes: PoteQueConta[];
   temRenda: boolean;
 }) {
   const { frase } = somaDasMetas(potes);

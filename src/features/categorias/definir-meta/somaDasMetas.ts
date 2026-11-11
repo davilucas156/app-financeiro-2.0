@@ -30,7 +30,7 @@ export type SomaDasMetas = {
  * Aceita a **forma** e não o tipo importado: assim serve à tela de arrumação e
  * ao teste sem arrastar `PoteNaGestao` para dentro deste módulo.
  */
-type PoteQueConta = {
+export type PoteQueConta = {
   tipo: "gasto" | "renda";
   percentual: number | null;
 };

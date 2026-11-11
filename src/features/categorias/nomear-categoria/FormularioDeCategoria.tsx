@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import { validarCategoria } from "./validar";
 
@@ -32,11 +33,27 @@ import { validarCategoria } from "./validar";
  */
 const SUGERIDOS = ["🍔", "🚗", "🏠", "💊", "🎁", "📚", "🐶", "✈️", "🔧", "💡"];
 
-export type ValoresDaCategoria = {
-  nome: string;
-  emoji: string;
-  poteId: string;
-};
+export type ValoresDaCategoria = { nome: string; emoji: string };
+export type ValoresComPote = ValoresDaCategoria & { poteId: string };
+
+type Props = {
+  inicial?: Partial<ValoresComPote>;
+  aoCancelar: () => void;
+  salvando?: boolean;
+  erro?: string | null;
+  rotuloDoBotao: string;
+} & (
+  | {
+      /** Presente = o pote se escolhe aqui e `aoSalvar` recebe o `poteId`. */
+      potes: PoteNaGestao[];
+      aoSalvar: (v: ValoresComPote) => void;
+    }
+  | {
+      /** Ausente = renomear: o pote não muda, e `aoSalvar` não recebe `poteId`. */
+      potes?: undefined;
+      aoSalvar: (v: ValoresDaCategoria) => void;
+    }
+);
 
 export function FormularioDeCategoria({
   inicial,
@@ -46,16 +63,7 @@ export function FormularioDeCategoria({
   salvando = false,
   erro = null,
   rotuloDoBotao,
-}: {
-  inicial?: Partial<ValoresDaCategoria>;
-  /** Ausente = o pote não se escolhe aqui (renomear não muda de pote). */
-  potes?: PoteNaGestao[];
-  aoSalvar: (v: ValoresDaCategoria) => void;
-  aoCancelar: () => void;
-  salvando?: boolean;
-  erro?: string | null;
-  rotuloDoBotao: string;
-}) {
+}: Props) {
   const [nome, setNome] = useState(inicial?.nome ?? "");
   const [emoji, setEmoji] = useState(inicial?.emoji ?? "");
   const [poteId, setPoteId] = useState(inicial?.poteId ?? potes?.[0]?.id ?? "");
@@ -68,7 +76,10 @@ export function FormularioDeCategoria({
       ? valida.mensagem
       : null;
 
-  const pronto = valida.ok && (potes === undefined || poteId !== "");
+  // `inicial.poteId` pode apontar para um pote que não está mais na lista.
+  const pronto =
+    valida.ok &&
+    (potes === undefined || potes.some((p) => p.id === poteId));
 
   return (
     <div className="mt-4 border-t border-border pt-4">
@@ -151,26 +162,33 @@ export function FormularioDeCategoria({
       )}
 
       <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          onClick={() =>
-            valida.ok &&
-            aoSalvar({ nome: valida.nome, emoji: valida.emoji, poteId })
-          }
-          disabled={!pronto || salvando}
-          aria-busy={salvando || undefined}
-          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-4 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"
+        <Button
+          variant="primary"
+          loading={salvando}
+          disabled={!pronto}
+          className="flex-1"
+          onClick={() => {
+            if (!valida.ok) return;
+            const valores = { nome: valida.nome, emoji: valida.emoji };
+
+            // `potes` define qual das duas formas de `aoSalvar` chegou.
+            if (potes) {
+              (aoSalvar as (v: ValoresComPote) => void)({ ...valores, poteId });
+            } else {
+              aoSalvar(valores);
+            }
+          }}
         >
           {rotuloDoBotao}
-        </button>
-        <button
-          type="button"
-          onClick={aoCancelar}
+        </Button>
+        <Button
+          variant="secondary"
           disabled={salvando}
-          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text transition-colors hover:bg-card2 disabled:opacity-40"
+          className="flex-1"
+          onClick={aoCancelar}
         >
           Cancelar
-        </button>
+        </Button>
       </div>
 
       {erro && (

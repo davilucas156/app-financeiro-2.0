@@ -75,9 +75,8 @@ export async function criarEClassificar(
         tipo: "categoria",
         lancamentoId: entrada.lancamentoId,
         categoriaId: criada.categoria.id,
-        // Escolher a categoria que você acabou de inventar é a escolha mais
-        // manual que existe — não há sugestão nenhuma por trás.
-        fonte: "manual",
+        // Sem `fonteDaSugestao`: escolher a categoria que você acabou de
+        // inventar é a escolha mais manual que existe.
         sempre: false,
       });
 
