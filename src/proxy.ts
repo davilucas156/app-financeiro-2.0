@@ -93,6 +93,8 @@ export default clerkMiddleware(async (auth, req) => {
   if (!convidado) {
     return NextResponse.redirect(new URL("/cadastrar?acesso=negado", req.url));
   }
+
+  return;
 });
 
 export const config = {
