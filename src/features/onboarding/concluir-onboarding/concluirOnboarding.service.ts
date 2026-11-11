@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { buckets, categories, classificationRules, users } from "@/db/schema";
 import { linhasDeRegras } from "@/features/classificacao/semear-regras/linhasDeRegras";
+import { recebeRegrasBase } from "@/features/classificacao/semear-regras/quemRecebe";
 import {
   linhasDeCategorias,
   linhasDePotes,
@@ -119,7 +120,12 @@ async function semearRegras(
     ),
   );
 
-  const linhas = linhasDeRegras(userId, dono, idPorChave);
+  const linhas = linhasDeRegras(
+    userId,
+    dono,
+    idPorChave,
+    recebeRegrasBase(dono.email),
+  );
   if (linhas.length === 0) return;
 
   await tx.insert(classificationRules).values(linhas).onConflictDoNothing();

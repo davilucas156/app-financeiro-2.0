@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { imports, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { ehUuid } from "@/lib/uuid";
 
 /**
  * Desfazer uma importação (tarefa D5).
@@ -24,15 +25,13 @@ export type ResultadoDesfazer =
  */
 const NAO_ENCONTRADO = "Esse envio não está mais aqui. A lista foi atualizada.";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export async function desfazerImportacao(
   userId: string,
   importId: string,
 ): Promise<ResultadoDesfazer> {
   // Recusa antes de tocar no banco: um id fora do formato nunca existiria, e
   // o Postgres devolveria erro de tipo em vez de "não encontrado".
-  if (!UUID.test(importId)) return { ok: false, erro: NAO_ENCONTRADO };
+  if (!ehUuid(importId)) return { ok: false, erro: NAO_ENCONTRADO };
 
   return getDb().transaction(async (tx) => {
     /**
