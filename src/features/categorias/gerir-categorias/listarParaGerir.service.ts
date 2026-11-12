@@ -1,13 +1,13 @@
 import "server-only";
 import { asc, eq, sql } from "drizzle-orm";
-import {
-  buckets,
-  categories,
-  classificationRules,
-  transactions,
-} from "@/db/schema";
+import { categories, classificationRules, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
-import type { CategoriaNaGestao, PoteNaGestao } from "./categoriasNaTela";
+import { potesDoUsuario } from "./potesDoUsuario";
+import {
+  juntarContagens,
+  type CategoriaNaGestao,
+  type PoteNaGestao,
+} from "./categoriasNaTela";
 
 /**
  * O que a `/categorias` lê (tarefa D1).
@@ -29,29 +29,8 @@ export async function listarParaGerir(userId: string): Promise<DadosDaGestao> {
 
   const [potesDoBanco, categoriasDoBanco, porLancamento, porRegra] =
     await Promise.all([
-      /*
-       * ⚠ **Da tabela de potes**, como na B5.
-       *
-       * Derivar os potes da lista de categorias faria o pote sem nenhuma
-       * sumir — e sumir exatamente da única tela onde daria para criar uma
-       * categoria dentro dele. Ficaria inalcançável para sempre.
-       */
-      db
-        .select({
-          id: buckets.id,
-          slug: buckets.slug,
-          nome: buckets.nome,
-          emoji: buckets.emoji,
-          cor: buckets.cor,
-          tipo: buckets.tipo,
-          // A coluna já existe desde a spec 03: nenhuma consulta nova, só uma
-          // coluna a mais na que já rodava.
-          percentual: buckets.percentualMeta,
-          ordem: buckets.ordem,
-        })
-        .from(buckets)
-        .where(eq(buckets.userId, userId))
-        .orderBy(asc(buckets.ordem)),
+      // Da tabela de potes, e não derivados das categorias — ver o helper.
+      potesDoUsuario(userId),
 
       db
         .select({
@@ -93,25 +72,8 @@ export async function listarParaGerir(userId: string): Promise<DadosDaGestao> {
         .groupBy(classificationRules.categoriaId),
     ]);
 
-  // `categoria_id` é nulo no pendente e no excluído sem classificação: aquela
-  // linha do agrupamento é a contagem dos sem-categoria, e não pertence a
-  // categoria nenhuma.
-  const lancamentos = new Map(
-    porLancamento
-      .filter((l) => l.categoriaId !== null)
-      .map((l) => [l.categoriaId as string, l]),
-  );
-  // Sem filtro de nulo aqui: `classification_rules.categoria_id` é `not null`
-  // — uma regra sem categoria não teria o que aplicar.
-  const regras = new Map(porRegra.map((r) => [r.categoriaId, r.total]));
-
   return {
     potes: potesDoBanco,
-    categorias: categoriasDoBanco.map((c) => ({
-      ...c,
-      lancamentos: lancamentos.get(c.id)?.total ?? 0,
-      foraDoCalculo: lancamentos.get(c.id)?.foraDoCalculo ?? 0,
-      regras: regras.get(c.id) ?? 0,
-    })),
+    categorias: juntarContagens(categoriasDoBanco, porLancamento, porRegra),
   };
 }

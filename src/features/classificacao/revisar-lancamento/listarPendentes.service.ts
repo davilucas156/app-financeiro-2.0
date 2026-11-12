@@ -11,6 +11,7 @@ import { getDb } from "@/lib/db";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import type { Classificado } from "@/features/classificacao/motor/sugestoes";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
+import { potesDoUsuario } from "@/features/categorias/gerir-categorias/potesDoUsuario";
 import type { CategoriaEscolhivel } from "./categorias";
 import type { PodeVoltar } from "./desfazer";
 import { naFilaDeRevisao } from "./filaDeRevisao";
@@ -81,26 +82,8 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
         )
         .orderBy(asc(transactions.data), asc(transactions.id)),
 
-      db
-        .select({
-          id: buckets.id,
-          slug: buckets.slug,
-          nome: buckets.nome,
-          emoji: buckets.emoji,
-          cor: buckets.cor,
-          tipo: buckets.tipo,
-          /*
-           * A /revisão não usa a meta — ela carrega porque `PoteNaGestao` é
-           * **um pote**, e um pote tem meta. Deixar o campo de fora aqui
-           * pediria um segundo tipo para a mesma coisa; a coluna sai da
-           * tabela que esta consulta já lê, e não custa consulta nenhuma.
-           */
-          percentual: buckets.percentualMeta,
-          ordem: buckets.ordem,
-        })
-        .from(buckets)
-        .where(eq(buckets.userId, userId))
-        .orderBy(asc(buckets.ordem)),
+      // A /revisão não usa a meta; ela vem porque `PoteNaGestao` é um pote.
+      potesDoUsuario(userId),
 
       db
         .select({

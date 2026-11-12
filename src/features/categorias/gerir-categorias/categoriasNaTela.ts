@@ -44,6 +44,46 @@ export type CategoriaNaGestao = {
   regras: number;
 };
 
+type CategoriaSemContagem = Omit<
+  CategoriaNaGestao,
+  "lancamentos" | "foraDoCalculo" | "regras"
+>;
+
+/**
+ * Cola as contagens (já agrupadas pelo banco) em cada categoria.
+ *
+ * Num `.ts` puro para ter teste: é aqui que mora o filtro do nulo e o `?? 0`
+ * que decidem o que a tela escreve em "nunca foi usada".
+ */
+export function juntarContagens(
+  categorias: CategoriaSemContagem[],
+  porLancamento: {
+    categoriaId: string | null;
+    total: number;
+    foraDoCalculo: number;
+  }[],
+  porRegra: { categoriaId: string; total: number }[],
+): CategoriaNaGestao[] {
+  // `categoria_id` é nulo no pendente e no excluído sem classificação: aquela
+  // linha do agrupamento é a contagem dos sem-categoria, e não pertence a
+  // categoria nenhuma.
+  const lancamentos = new Map<string, { total: number; foraDoCalculo: number }>();
+  for (const l of porLancamento) {
+    if (l.categoriaId !== null) lancamentos.set(l.categoriaId, l);
+  }
+
+  // Sem filtro de nulo aqui: `classification_rules.categoria_id` é `not null`
+  // — uma regra sem categoria não teria o que aplicar.
+  const regras = new Map(porRegra.map((r) => [r.categoriaId, r.total]));
+
+  return categorias.map((c) => ({
+    ...c,
+    lancamentos: lancamentos.get(c.id)?.total ?? 0,
+    foraDoCalculo: lancamentos.get(c.id)?.foraDoCalculo ?? 0,
+    regras: regras.get(c.id) ?? 0,
+  }));
+}
+
 export type GrupoDeGestao = {
   pote: PoteNaGestao;
   categorias: CategoriaNaGestao[];

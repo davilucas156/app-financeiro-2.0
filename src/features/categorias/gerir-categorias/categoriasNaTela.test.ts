@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   agruparParaGerir,
+  juntarContagens,
   oQueDependeDela,
   podeMover,
   type CategoriaNaGestao,
@@ -116,5 +117,39 @@ describe("oQueDependeDela", () => {
     const c = categoria("a", "p", 1, { lancamentos: 1, regras: 1 });
 
     expect(oQueDependeDela(c)).toBe("1 lançamento · 1 regra");
+  });
+});
+
+describe("juntarContagens", () => {
+  const base = { nome: "n", emoji: "e", ordem: 1, poteId: "p" };
+
+  it("categoria sem nenhuma contagem fica com zeros", () => {
+    expect(juntarContagens([{ id: "a", ...base }], [], [])).toEqual([
+      { id: "a", ...base, lancamentos: 0, foraDoCalculo: 0, regras: 0 },
+    ]);
+  });
+
+  it("cola lançamentos, fora do cálculo e regras na categoria certa", () => {
+    const r = juntarContagens(
+      [
+        { id: "a", ...base },
+        { id: "b", ...base },
+      ],
+      [{ categoriaId: "a", total: 5, foraDoCalculo: 2 }],
+      [{ categoriaId: "b", total: 3 }],
+    );
+
+    expect(r[0]).toMatchObject({ lancamentos: 5, foraDoCalculo: 2, regras: 0 });
+    expect(r[1]).toMatchObject({ lancamentos: 0, foraDoCalculo: 0, regras: 3 });
+  });
+
+  it("a linha dos sem-categoria (nulo) não pertence a categoria nenhuma", () => {
+    const r = juntarContagens(
+      [{ id: "a", ...base }],
+      [{ categoriaId: null, total: 30, foraDoCalculo: 30 }],
+      [],
+    );
+
+    expect(r[0].lancamentos).toBe(0);
   });
 });
