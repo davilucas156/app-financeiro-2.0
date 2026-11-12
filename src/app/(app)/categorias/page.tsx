@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { listarParaGerir } from "@/features/categorias/gerir-categorias/listarParaGerir.service";
+import { RATEIO_DO_PADRAO } from "@/features/categorias/definir-meta/metasDoPadrao";
 import { TelaDeCategorias } from "@/features/categorias/gerir-categorias/TelaDeCategorias";
 import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
 import { mesAtual } from "@/lib/mes";
@@ -47,6 +48,10 @@ export default async function CategoriasPage() {
       potes={potes}
       categorias={categorias}
       temRenda={renda !== null}
+      // Lido aqui, no servidor: importar a semente num componente de cliente
+      // levaria os potes e categorias padrão inteiros ao bundle do navegador
+      // só para escrever "30/25/15/15/10/5".
+      rateioDoPadrao={RATEIO_DO_PADRAO}
     />
   );
 }

@@ -153,6 +153,9 @@ export function regraValida(criterio: Criterio): boolean {
       // Nos critérios de texto a mesma ausência é o caso normal: lá quem
       // identifica é o texto.
       return temFaixaDeValor(criterio);
+
+    default:
+      return criterioDesconhecido(criterio, false);
   }
 }
 
@@ -203,6 +206,9 @@ function especificidade(criterio: Criterio): number {
       return normalizarDescricao(criterio.nome).length;
     case "valor_direcao":
       return 0;
+
+    default:
+      return criterioDesconhecido(criterio, 0);
   }
 }
 
@@ -227,7 +233,23 @@ function casa(criterio: Criterio, alvo: AlvoDaRegra): boolean {
 
     case "valor_direcao":
       return alvo.direcao === criterio.direcao;
+
+    default:
+      return criterioDesconhecido(criterio, false);
   }
+}
+
+/**
+ * O ramo que o `switch` não cobre.
+ *
+ * O `criterio` vem do banco por `jsonb().$type<Criterio>()`, que é uma
+ * asserção: um `tipo` novo (ou corrompido) chegaria aqui sem aviso e a regra
+ * sumiria do `casarRegra`. O parâmetro `never` faz o compilador acusar,
+ * nos três `switch`, o dia em que `Criterio` ganhar um tipo sem ramo — e em
+ * runtime a regra de tipo desconhecido é tratada como inválida, nunca casa.
+ */
+function criterioDesconhecido<T>(_criterio: never, valorSeguro: T): T {
+  return valorSeguro;
 }
 
 /**

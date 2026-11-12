@@ -503,3 +503,26 @@ describe("comTextoNovo", () => {
     });
   });
 });
+
+describe("critério de tipo desconhecido (vindo do banco sem checagem)", () => {
+  const desconhecido = { tipo: "futuro" } as unknown as Criterio;
+
+  it("é inválido e nunca casa, em vez de estourar", () => {
+    expect(regraValida(desconhecido)).toBe(false);
+
+    const regra = {
+      id: "r1",
+      criterio: desconhecido,
+      categoriaId: "c1",
+      prioridade: 10,
+    };
+
+    expect(
+      casarRegra([regra], {
+        descricao: "qualquer",
+        valorCentavos: 100,
+        direcao: "saida",
+      }),
+    ).toBeNull();
+  });
+});

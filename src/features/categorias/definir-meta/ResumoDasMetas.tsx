@@ -25,9 +25,11 @@ import { VoltarAoPadrao } from "./VoltarAoPadrao";
 export function ResumoDasMetas({
   potes,
   temRenda,
+  rateioDoPadrao,
 }: {
   potes: PoteQueConta[];
   temRenda: boolean;
+  rateioDoPadrao: string;
 }) {
   const { frase } = somaDasMetas(potes);
 
@@ -37,7 +39,7 @@ export function ResumoDasMetas({
         {frase}
       </p>
 
-      <VoltarAoPadrao />
+      <VoltarAoPadrao rateio={rateioDoPadrao} />
 
       {!temRenda && (
         <Card className="mt-2 border-gold/30 bg-gold/8">

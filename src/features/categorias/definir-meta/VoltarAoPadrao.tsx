@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { restaurarMetas } from "./definirMeta.action";
-import { RATEIO_DO_PADRAO } from "./metasDoPadrao";
 
 /**
  * O caminho de volta (tarefa D1).
@@ -20,7 +20,7 @@ import { RATEIO_DO_PADRAO } from "./metasDoPadrao";
  * regra, nem no nome dos potes — e é exatamente isso que alguém teme ao ver
  * "voltar ao padrão" numa tela chamada Categorias.
  */
-export function VoltarAoPadrao() {
+export function VoltarAoPadrao({ rateio }: { rateio: string }) {
   const [confirmando, setConfirmando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [restaurando, transicao] = useTransition();
@@ -44,7 +44,7 @@ export function VoltarAoPadrao() {
       </p>
       <p className="mt-1.5 text-3xs leading-relaxed text-dim">
         Os potes do rateio voltam a{" "}
-        <strong className="font-bold">{RATEIO_DO_PADRAO}</strong>, e Manutenção
+        <strong className="font-bold">{rateio}</strong>, e Manutenção
         e Outros voltam a <strong>não ter meta</strong>. Suas categorias, seus
         lançamentos e os nomes dos potes{" "}
         <strong className="font-bold">não mudam</strong> — só os percentuais.
@@ -60,11 +60,14 @@ export function VoltarAoPadrao() {
         <Button
           loading={restaurando}
           onClick={() =>
-            transicao(() => {
-              void restaurarMetas().then((r) => {
+            transicao(async () => {
+              try {
+                const r = await restaurarMetas();
                 if (r.ok) setConfirmando(false);
                 else setErro(r.erro);
-              });
+              } catch {
+                setErro(FALHA_DE_CONEXAO);
+              }
             })
           }
         >

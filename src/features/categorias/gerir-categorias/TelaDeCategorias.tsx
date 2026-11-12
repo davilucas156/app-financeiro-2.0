@@ -36,10 +36,13 @@ export function TelaDeCategorias({
   potes,
   categorias,
   temRenda,
+  rateioDoPadrao,
 }: {
   potes: PoteNaGestao[];
   categorias: CategoriaNaGestao[];
   temRenda: boolean;
+  /** `"30/25/15/15/10/5"`, lido da semente no servidor. */
+  rateioDoPadrao: string;
 }) {
   const grupos = agruparParaGerir(potes, categorias);
 
@@ -77,7 +80,11 @@ export function TelaDeCategorias({
         />
       ))}
 
-      <ResumoDasMetas potes={potes} temRenda={temRenda} />
+      <ResumoDasMetas
+        potes={potes}
+        temRenda={temRenda}
+        rateioDoPadrao={rateioDoPadrao}
+      />
 
       <p className="mt-8 text-2xs leading-relaxed text-dim">
         Não dá para criar ou apagar pote aqui, e é de propósito: os potes são a
