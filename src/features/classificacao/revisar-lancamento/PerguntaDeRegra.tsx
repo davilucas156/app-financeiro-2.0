@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 import type { CategoriaEscolhivel } from "./categorias";
 import { decidir } from "./decidirLancamento.action";
@@ -83,15 +84,19 @@ export function PerguntaDeRegra({
   const gravar = (sempre: boolean, comValor = false) =>
     iniciar(async () => {
       setErro(null);
-      const r = await decidir({
-        tipo: "categoria",
-        lancamentoId,
-        categoriaId: categoria.id,
-        fonteDaSugestao,
-        sempre,
-        comValor,
-      });
-      if (!r.ok) setErro(r.erro);
+      try {
+        const r = await decidir({
+          tipo: "categoria",
+          lancamentoId,
+          categoriaId: categoria.id,
+          fonteDaSugestao,
+          sempre,
+          comValor,
+        });
+        if (!r.ok) setErro(r.erro);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
 
   return (

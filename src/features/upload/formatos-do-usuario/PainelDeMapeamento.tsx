@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
+import {
+  comColuna,
+  rotuloDoSeparador,
+  sugerirNome,
+} from "./mapeamentoNaTela";
+import { contar } from "@/lib/plural";
 import {
   FORMATOS_DE_DATA,
   FORMATOS_DE_NUMERO,
@@ -68,6 +75,7 @@ export function PainelDeMapeamento({
   const [banco, setBanco] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pensando, transicao] = useTransition();
+  const ultimoPedido = useRef(0);
 
   /*
    * ⚠ **O arquivo vai junto em toda chamada**, e é o que permite os bytes nunca
@@ -84,17 +92,22 @@ export function PainelDeMapeamento({
   useEffect(() => {
     let vivo = true;
 
-    void palpitarFormato(comArquivo()).then((r) => {
-      if (!vivo) return;
-      if (!r.ok) {
-        setErro(r.erro);
-        return;
-      }
-      setPalpite(r.palpite);
-      setCabecalho(r.cabecalho);
-      setPrevia(r.previa);
-      setNome(sugerirNome(r.palpite.origem));
-    });
+    palpitarFormato(comArquivo())
+      .then((r) => {
+        if (!vivo) return;
+        if (!r.ok) {
+          setErro(r.erro);
+          return;
+        }
+        setPalpite(r.palpite);
+        setCabecalho(r.cabecalho);
+        setPrevia(r.previa);
+        setNome(sugerirNome(r.palpite.origem));
+      })
+      .catch(() => {
+        // Sem isto a tela ficaria em "Lendo o arquivo…" para sempre.
+        if (vivo) setErro(FALHA_DE_CONEXAO);
+      });
 
     return () => {
       vivo = false;
@@ -108,13 +121,24 @@ export function PainelDeMapeamento({
     setPalpite(novo);
     setErro(null);
 
-    transicao(() => {
-      void preverMapeamento(comArquivo(novo)).then((r) => {
+    // Cliques rápidos: só a resposta do último pedido vale, senão uma resposta
+    // antiga sobrescreveria a prévia do mapeamento atual.
+    const minha = ++ultimoPedido.current;
+
+    transicao(async () => {
+      try {
+        const r = await preverMapeamento(comArquivo(novo));
+        if (minha !== ultimoPedido.current) return;
+
         if (r.ok) {
           setCabecalho(r.cabecalho);
           setPrevia(r.previa);
+        } else {
+          setErro(r.erro);
         }
-      });
+      } catch {
+        if (minha === ultimoPedido.current) setErro(FALHA_DE_CONEXAO);
+      }
     });
   }
 
@@ -124,11 +148,14 @@ export function PainelDeMapeamento({
     const fd = comArquivo({ ...palpite });
     fd.set("mapeamento", JSON.stringify({ ...palpite, nome, banco }));
 
-    transicao(() => {
-      void ensinarFormato(fd).then((r) => {
+    transicao(async () => {
+      try {
+        const r = await ensinarFormato(fd);
         if (r.ok) aoSalvar();
         else setErro(r.erro);
-      });
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
   }
 
@@ -328,9 +355,7 @@ function Consequencia({
     >
       <p className="text-xs leading-relaxed">
         <strong className="font-bold">
-          {previa.lancamentos === 1
-            ? "1 lançamento"
-            : `${previa.lancamentos} lançamentos`}
+          {contar(previa.lancamentos, "lançamento", "lançamentos")}
         </strong>
         {": "}
         <span className="font-mono text-text">
@@ -537,24 +562,3 @@ function Opcao({
   );
 }
 
-function comColuna(
-  colunas: Partial<Record<Papel, number>>,
-  papel: Papel,
-  i: number | undefined,
-): Partial<Record<Papel, number>> {
-  const novo = { ...colunas };
-  if (i === undefined) delete novo[papel];
-  else novo[papel] = i;
-  return novo;
-}
-
-function rotuloDoSeparador(s: string): string {
-  if (s === ";") return "; ponto e vírgula";
-  if (s === ",") return ", vírgula";
-  if (s === "\t") return "tabulação";
-  return "| barra";
-}
-
-function sugerirNome(origem: string): string {
-  return origem === "csv_cartao" ? "Fatura do cartão" : "Extrato da conta";
-}

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/cn";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { desfazer } from "./desfazerDecisao.action";
 import type { PodeVoltar } from "./desfazer";
 
@@ -47,10 +48,14 @@ export function AcaoDeVoltar({
         onClick={() =>
           iniciar(async () => {
             setErro(null);
-            const r = await desfazer();
-            // Sucesso não precisa de aviso: o lançamento anterior voltando ao
-            // topo da fila **é** o aviso.
-            if (!r.ok) setErro(r.erro);
+            try {
+              const r = await desfazer();
+              // Sucesso não precisa de aviso: o lançamento anterior voltando
+              // ao topo da fila **é** o aviso.
+              if (!r.ok) setErro(r.erro);
+            } catch {
+              setErro(FALHA_DE_CONEXAO);
+            }
           })
         }
         className={cn(

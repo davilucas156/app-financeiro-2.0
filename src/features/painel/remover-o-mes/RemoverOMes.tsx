@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition, useActionState } from "react";
 import { Button } from "@/components/ui/Button";
 import { erroDoActionState } from "@/lib/erroDoActionState";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { rotuloDeMes } from "@/lib/mes";
 import { removerMes, resumoDaRemocao } from "./removerOMes.action";
 /*
@@ -71,10 +72,14 @@ export function RemoverOMes({ mes }: { mes: string }) {
     setErro(null);
 
     comecarAPedir(async () => {
-      const resposta = await resumoDaRemocao(mes);
+      try {
+        const resposta = await resumoDaRemocao(mes);
 
-      if (resposta.ok) setResumo(resposta.resumo);
-      else setErro(resposta.erro);
+        if (resposta.ok) setResumo(resposta.resumo);
+        else setErro(resposta.erro);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
   }
 

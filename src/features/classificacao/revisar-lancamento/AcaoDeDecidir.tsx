@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { decidir, type EntradaDaDecisao } from "./decidirLancamento.action";
 
 /**
@@ -39,10 +40,14 @@ export function AcaoDeDecidir({
         onClick={() =>
           iniciar(async () => {
             setErro(null);
-            const r = await decidir(entrada);
-            // Sucesso não precisa de aviso: o próximo lançamento aparecendo no
-            // lugar deste **é** o aviso.
-            if (!r.ok) setErro(r.erro);
+            try {
+              const r = await decidir(entrada);
+              // Sucesso não precisa de aviso: o próximo lançamento aparecendo
+              // no lugar deste **é** o aviso.
+              if (!r.ok) setErro(r.erro);
+            } catch {
+              setErro(FALHA_DE_CONEXAO);
+            }
           })
         }
         className={cn(
