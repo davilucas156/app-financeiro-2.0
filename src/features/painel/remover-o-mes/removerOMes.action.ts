@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { formatoDeMesValido } from "@/lib/mes";
 import { enviosDoMes } from "./enviosDoMes.service";
 import { oQueSaiDoMes, type OQueSaiDoMes } from "./oQueSaiDoMes";
 import { removerOMes, type ResultadoDaRemocao } from "./removerOMes.service";
@@ -34,6 +35,8 @@ const FALHA = "Não deu para remover agora. Nada foi apagado pela metade.";
  */
 export async function resumoDaRemocao(mes: string): Promise<ResultadoDoResumo> {
   const usuario = await garantirUsuario();
+
+  if (!formatoDeMesValido(mes)) return { ok: false, erro: NAO_ENCONTRADO };
 
   try {
     const resumo = oQueSaiDoMes(mes, await enviosDoMes(usuario.id, mes));
@@ -68,6 +71,12 @@ export async function removerMes(
 
   try {
     const resultado = await removerOMes(usuario.id, mes);
+
+    // Mês que não existe mais (outra aba, outro clique) é recusa, e não um
+    // sucesso com zeros que redirecionaria sem aviso.
+    if (resultado.ok && resultado.envios === 0) {
+      return { ok: false, erro: NAO_ENCONTRADO };
+    }
 
     if (resultado.ok) revalidarOndeOMesAparece();
 

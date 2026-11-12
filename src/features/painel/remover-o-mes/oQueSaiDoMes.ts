@@ -1,5 +1,6 @@
 import { rotuloDeOrigem } from "@/features/upload/enviar-extrato/exibirEnvio";
 import { anoDoMes, nomeDoMes } from "@/lib/mes";
+import { contar } from "@/lib/plural";
 
 /**
  * O que a confirmação precisa dizer antes de apagar um mês (tarefa B1).
@@ -153,8 +154,7 @@ export function fraseDoTransbordo(
   atingido: MesAtingido,
   mesRemovido: string,
 ): string {
-  const unidade = atingido.lancamentos === 1 ? "lançamento" : "lançamentos";
   const nome = nomeDoMes(atingido.mes, anoDoMes(mesRemovido));
 
-  return `${nome} perde ${atingido.lancamentos} ${unidade}`;
+  return `${nome} perde ${contar(atingido.lancamentos, "lançamento", "lançamentos")}`;
 }
