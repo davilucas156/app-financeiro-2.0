@@ -126,6 +126,9 @@ export function paraCentavos(
   const centavos = Number(centavosTexto.padEnd(2, "0") || "0");
 
   const total = inteiro * 100 + centavos;
+  // Dezessete dígitos ou mais perdem precisão em silêncio (ou viram Infinity).
+  if (!Number.isSafeInteger(total)) return null;
+
   return negativo ? -total : total;
 }
 

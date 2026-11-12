@@ -3,6 +3,7 @@ import type {
   FormatoDeNumero,
 } from "@/features/upload/ler-arquivo/dialetos";
 import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
+import { semAcento } from "@/lib/semAcento";
 
 /**
  * Os formatos de extrato que o app sabe ler (tarefa A2).
@@ -21,8 +22,21 @@ import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
  * "Descrição" num e "Lançamento" no outro. Sem essa camada, a A3 precisaria
  * conhecer os dois vocabulários.
  */
-export type Papel =
-  "data" | "descricao" | "valor" | "saldo" | "categoria" | "tipo";
+export const PAPEIS = [
+  "data",
+  "descricao",
+  "valor",
+  "saldo",
+  "categoria",
+  "tipo",
+] as const;
+
+export type Papel = (typeof PAPEIS)[number];
+
+/** Diz se um texto de fora (um nome de chave vindo do cliente) é um papel. */
+export function ehPapel(valor: string): valor is Papel {
+  return PAPEIS.some((papel) => papel === valor);
+}
 
 /** De onde o lançamento veio. Casa com `transactions.origem` (C1). */
 export type Origem = "csv_conta" | "csv_cartao";
@@ -166,14 +180,5 @@ export const FORMATOS: Formato[] = [
  * hora manda `Descricao`.
  */
 export function normalizarNomeDeColuna(nome: string): string {
-  return (
-    nome
-      .normalize("NFD")
-      // Escrito como escapes, e não com os caracteres combinantes literais:
-      // acento solto num arquivo-fonte é invisível e some em copiar e colar.
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim()
-  );
+  return semAcento(nome).toLowerCase().replace(/\s+/g, " ").trim();
 }

@@ -1,5 +1,6 @@
 import { decodificar, paraGrade } from "@/features/upload/ler-arquivo/grade";
 import {
+  ehPapel,
   FORMATOS,
   normalizarNomeDeColuna,
   type Formato,
@@ -177,10 +178,12 @@ function mapear(linha: string[], formato: Formato) {
   const coluna: Partial<Record<Papel, number>> = {};
 
   for (const [papel, nomeNoArquivo] of Object.entries(formato.colunas)) {
+    if (!ehPapel(papel)) continue;
+
     const i = indicePorNome.get(normalizarNomeDeColuna(nomeNoArquivo));
     // Coluna opcional ausente é normal — a fatura não tem saldo, o extrato não
     // tem categoria. Só as obrigatórias decidem se o formato bate.
-    if (i !== undefined) coluna[papel as Papel] = i;
+    if (i !== undefined) coluna[papel] = i;
   }
 
   const faltando = formato.obrigatorias.filter((papel) => !(papel in coluna));

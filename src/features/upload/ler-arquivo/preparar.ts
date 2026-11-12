@@ -5,6 +5,7 @@ import {
   type Origem,
 } from "@/features/upload/ler-arquivo/formatos";
 import type { Lancamento } from "@/features/upload/ler-arquivo/lancamentos";
+import { semAcento } from "@/lib/semAcento";
 
 /**
  * Impressão digital, pagamento de fatura e par que se anula (tarefa A4).
@@ -93,12 +94,7 @@ export type LancamentoSalvo = {
  * mês seguinte.
  */
 export function normalizarDescricao(descricao: string): string {
-  return descricao
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  return semAcento(descricao).toUpperCase().replace(/\s+/g, " ").trim();
 }
 
 /**

@@ -7,6 +7,7 @@ import {
   FORMATOS_DE_NUMERO,
   FORMATO_DE_DATA_PADRAO,
   FORMATO_DE_NUMERO_PADRAO,
+  SEPARADORES_VALIDOS,
   type FormatoDeData,
   type FormatoDeNumero,
 } from "@/features/upload/ler-arquivo/dialetos";
@@ -206,7 +207,17 @@ function comoPalpite(bruto: unknown): Palpite | null {
   const m = bruto as Record<string, unknown>;
 
   const dialeto = m.dialeto as { separador?: unknown; aspas?: unknown } | null;
-  if (!dialeto || typeof dialeto.separador !== "string") return null;
+  /*
+   * ⚠ **Lista fechada, como no `validarMapeamento`.** Separador vazio faz o
+   * `paraGrade` criar uma célula por caractere, e o palpite sairia sem erro
+   * nenhum, só com uma prévia sem sentido.
+   */
+  if (
+    !dialeto ||
+    typeof dialeto.separador !== "string" ||
+    !SEPARADORES_VALIDOS.includes(dialeto.separador)
+  )
+    return null;
 
   const colunas: Record<string, number> = {};
   if (typeof m.colunas === "object" && m.colunas !== null) {

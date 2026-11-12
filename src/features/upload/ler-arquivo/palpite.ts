@@ -1,6 +1,7 @@
 import {
   FORMATOS_DE_DATA,
   FORMATOS_DE_NUMERO,
+  SEPARADORES_VALIDOS,
   type FormatoDeData,
   type FormatoDeNumero,
 } from "@/features/upload/ler-arquivo/dialetos";
@@ -43,14 +44,11 @@ export type Palpite = {
   sinalNegativo: "entrada" | "saida";
 };
 
-/**
- * Os separadores que valem tentar.
- *
- * `;` e `,` são os dois medidos. `\t` e `|` entram porque são o que sobra
- * quando um banco quer evitar os dois primeiros — e tentá-los custa uma
- * releitura de um arquivo que o limite já prende em 2 MB.
+/*
+ * `SEPARADORES_VALIDOS` mora em `dialetos.ts`. Reexportada aqui porque é daqui
+ * que o teste de mapeamento a importa.
  */
-const SEPARADORES = [";", ",", "\t", "|"];
+export { SEPARADORES_VALIDOS };
 
 export function palpitar(texto: string): Palpite | null {
   const dialeto = melhorDialeto(texto);
@@ -100,7 +98,7 @@ function melhorDialeto(
   let melhor: { dialeto: Dialeto; colunas: number; linhas: number } | null =
     null;
 
-  for (const separador of SEPARADORES) {
+  for (const separador of SEPARADORES_VALIDOS) {
     for (const aspas of [false, true]) {
       const dialeto = { separador, aspas };
       const grade = paraGrade(texto, dialeto);

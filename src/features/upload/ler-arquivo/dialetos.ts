@@ -25,6 +25,18 @@ export type FormatoDeData = (typeof FORMATOS_DE_DATA)[number];
 /** O que os dois arquivos do Inter usam, e o que o leitor sempre supôs. */
 export const FORMATO_DE_DATA_PADRAO: FormatoDeData = "dd/mm/aaaa";
 
+/**
+ * Os separadores que valem tentar.
+ *
+ * `;` e `,` são os dois medidos. `\t` e `|` entram porque são o que sobra
+ * quando um banco quer evitar os dois primeiros — e tentá-los custa uma
+ * releitura de um arquivo que o limite já prende em 2 MB.
+ *
+ * ⚠ **Mora aqui e não em `palpite.ts`** para a tela de mapeamento importá-la
+ * sem puxar o leitor de CSV (`grade`, `lancamentos`) para o bundle do navegador.
+ */
+export const SEPARADORES_VALIDOS: readonly string[] = [";", ",", "\t", "|"];
+
 export const FORMATOS_DE_NUMERO = ["pt-BR", "en-US"] as const;
 
 export type FormatoDeNumero = (typeof FORMATOS_DE_NUMERO)[number];

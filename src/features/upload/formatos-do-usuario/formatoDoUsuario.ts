@@ -3,13 +3,16 @@ import {
   FORMATOS_DE_NUMERO,
   FORMATO_DE_DATA_PADRAO,
   FORMATO_DE_NUMERO_PADRAO,
+  SEPARADORES_VALIDOS,
   type FormatoDeData,
   type FormatoDeNumero,
 } from "@/features/upload/ler-arquivo/dialetos";
-import type {
-  Formato,
-  Origem,
-  Papel,
+import {
+  ehPapel,
+  PAPEIS,
+  type Formato,
+  type Origem,
+  type Papel,
 } from "@/features/upload/ler-arquivo/formatos";
 import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
 
@@ -50,14 +53,7 @@ import type { Dialeto } from "@/features/upload/ler-arquivo/grade";
  * mandassem.
  */
 
-export const PAPEIS: Papel[] = [
-  "data",
-  "descricao",
-  "valor",
-  "saldo",
-  "categoria",
-  "tipo",
-];
+export { PAPEIS };
 
 export const PAPEIS_OBRIGATORIOS: Papel[] = ["data", "descricao", "valor"];
 
@@ -71,14 +67,15 @@ export const ROTULOS_DO_PAPEL: Record<Papel, string> = {
 };
 
 /**
- * Os separadores que um formato pode declarar.
+ * Os separadores que um formato pode declarar — a lista mora em `dialetos.ts`,
+ * junto dos outros formatos de leitura, e é a mesma que o palpite tenta.
  *
  * ⚠ **Lista fechada, e não "qualquer caractere".** O separador vai para um
  * `String.split` e não para um `RegExp`, então não há injeção possível — mas um
  * separador vazio, ou de dois caracteres, produziria uma grade sem sentido cujo
  * único sintoma seria "0 lançamentos", muito depois.
  */
-export const SEPARADORES_VALIDOS = [";", ",", "\t", "|"];
+export { SEPARADORES_VALIDOS };
 
 /** O que uma linha de `user_formats` guarda, sem os campos do banco. */
 export type MapeamentoSalvo = {
@@ -195,7 +192,7 @@ function nomearColunas(
   if (typeof bruto !== "object" || bruto === null) return colunas;
 
   for (const [chave, valor] of Object.entries(bruto)) {
-    if (!PAPEIS.includes(chave as Papel)) continue;
+    if (!ehPapel(chave)) continue;
 
     const i = inteiro(valor);
     if (i === null || i < 0 || i >= cabecalho.length) continue;
@@ -203,7 +200,7 @@ function nomearColunas(
     const nome = (cabecalho[i] ?? "").trim();
     if (nome === "") continue;
 
-    colunas[chave as Papel] = nome;
+    colunas[chave] = nome;
   }
 
   return colunas;

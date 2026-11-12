@@ -283,3 +283,10 @@ describe("as amostras inteiras", () => {
     });
   });
 });
+
+describe("paraCentavos com número gigante", () => {
+  it("recusa o que perderia precisão em vez de arredondar em silêncio", () => {
+    expect(paraCentavos("99999999999999999999,00")).toBeNull();
+    expect(paraCentavos("1" + "0".repeat(309))).toBeNull();
+  });
+});
