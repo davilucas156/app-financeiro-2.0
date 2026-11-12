@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { ehUuid } from "@/lib/uuid";
 import {
   criarEClassificar,
   type ResultadoDeCriarEClassificar,
@@ -20,7 +21,7 @@ export async function criarEUsarAqui(entrada: {
   poteId: string;
   lancamentoId: string;
 }): Promise<ResultadoDeCriarEClassificar> {
-  if (!entrada.poteId || !entrada.lancamentoId) {
+  if (!entrada || !ehUuid(entrada.poteId) || !ehUuid(entrada.lancamentoId)) {
     return { ok: false, erro: "Não entendi esse pedido. Recarregue a tela." };
   }
 

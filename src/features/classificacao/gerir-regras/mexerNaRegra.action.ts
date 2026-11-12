@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { ehUuid } from "@/lib/uuid";
 import {
   apagarRegra,
   editarRegra,
@@ -45,7 +46,12 @@ export async function editar(entrada: {
   categoriaId: string;
   texto?: string;
 }): Promise<ResultadoDeMexer> {
-  if (!entrada.id || !entrada.categoriaId) {
+  if (
+    !entrada ||
+    !ehUuid(entrada.id) ||
+    !ehUuid(entrada.categoriaId) ||
+    (entrada.texto !== undefined && typeof entrada.texto !== "string")
+  ) {
     return { ok: false, erro: "Não entendi essa edição. Recarregue a tela." };
   }
 
@@ -56,7 +62,7 @@ export async function editar(entrada: {
 }
 
 export async function apagar(id: string): Promise<ResultadoDeMexer> {
-  if (!id) {
+  if (!ehUuid(id)) {
     return { ok: false, erro: "Não entendi essa exclusão. Recarregue a tela." };
   }
 

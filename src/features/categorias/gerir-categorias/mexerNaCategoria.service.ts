@@ -7,7 +7,10 @@ import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { ehUnicidadeViolada, restricaoViolada } from "@/lib/erroDoPostgres";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { slugUnico } from "@/features/categorias/nomear-categoria/slug";
-import { validarCategoria } from "@/features/categorias/nomear-categoria/validar";
+import {
+  validarCategoria,
+  type CampoInvalido,
+} from "@/features/categorias/nomear-categoria/validar";
 
 /**
  * Criar, renomear e mover categoria (tarefas B1 e B2).
@@ -21,11 +24,11 @@ import { validarCategoria } from "@/features/categorias/nomear-categoria/validar
  */
 
 export type ResultadoDeMexer =
-  { ok: true } | { ok: false; erro: string; campo?: "nome" | "emoji" };
+  { ok: true } | { ok: false; erro: string; campo?: CampoInvalido };
 
 export type ResultadoDeCriar =
   | { ok: true; categoria: CategoriaEscolhivel }
-  | { ok: false; erro: string; campo?: "nome" | "emoji" };
+  | { ok: false; erro: string; campo?: CampoInvalido };
 
 /** A mesma mensagem para "não existe" e "não é seu" — a régua da D5 da spec 02. */
 const NAO_ENCONTRADA = "Essa categoria não existe mais. Recarregue a tela.";

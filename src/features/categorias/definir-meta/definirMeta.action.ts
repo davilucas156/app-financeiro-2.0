@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { ehUuid } from "@/lib/uuid";
 import { definirMeta, type ResultadoDaMeta } from "./definirMeta.service";
 import {
   restaurarMetasDoPadrao,
@@ -39,6 +40,10 @@ export async function salvarMeta(
   poteId: string,
   texto: string,
 ): Promise<ResultadoDaMeta> {
+  if (!ehUuid(poteId) || typeof texto !== "string") {
+    return { ok: false, erro: "Não entendi esse pedido. Recarregue a tela." };
+  }
+
   const usuario = await garantirUsuario();
 
   try {

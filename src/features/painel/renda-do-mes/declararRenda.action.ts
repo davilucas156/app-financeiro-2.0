@@ -26,7 +26,9 @@ export async function informarRenda(
 ): Promise<ResultadoDaRenda> {
   const usuario = await garantirUsuario();
 
-  if (!formatoDeMesValido(entrada.mes)) {
+  // Entrada malformada (sem `mes` string) não pode chegar ao TypeError do catch
+  // genérico: devolve a mesma frase de mês inválido.
+  if (typeof entrada?.mes !== "string" || !formatoDeMesValido(entrada.mes)) {
     return { ok: false, erro: "Mês inválido. Recarregue a tela." };
   }
 

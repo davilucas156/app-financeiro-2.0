@@ -85,4 +85,48 @@ describe("agrupamento de milhar", () => {
     expect(emCentavos("1,2,3,4")).toBeNull();
     expect(emCentavos("12.34.56")).toBeNull();
   });
+
+  it("⚠ `0,005` não vira R$ 5,00 por milhar com grupo inicial zero", () => {
+    expect(emCentavos("0,005")).toBeNull();
+  });
+
+  it("zero na frente de decimal continua valendo", () => {
+    expect(emCentavos("0,50")).toBe(50);
+    expect(emCentavos("0,1")).toBe(10);
+    expect(emCentavos("0,05")).toBe(5);
+  });
+});
+
+describe("⚠ texto que não é número não vira valor", () => {
+  it("letra no meio do número não some silenciosamente", () => {
+    // `1r2` virava 1200 quando R, r e $ saíam de qualquer posição.
+    expect(emCentavos("1r2")).toBeNull();
+    expect(emCentavos("12R$34")).toBeNull();
+  });
+
+  it("notação científica não é valor", () => {
+    expect(emCentavos("1e5")).toBeNull();
+  });
+
+  it("R$ só conta no começo; NBSP também sai", () => {
+    expect(emCentavos("R$ 1.200,50")).toBe(120_050);
+    expect(emCentavos("R$ 1.200,50")).toBe(120_050);
+  });
+
+  it("⚠ número grande demais devolve null, não Infinity", () => {
+    expect(emCentavos("9".repeat(400))).toBeNull();
+  });
+});
+
+describe("de volta para o campo: entrada inválida devolve vazio", () => {
+  it.each([
+    -1,
+    -120_050,
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.MAX_SAFE_INTEGER + 2,
+  ])("%o → campo vazio", (centavos) => {
+    expect(paraOCampo(centavos)).toBe("");
+  });
 });

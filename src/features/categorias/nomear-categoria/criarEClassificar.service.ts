@@ -1,6 +1,7 @@
 import "server-only";
 import { getDb } from "@/lib/db";
 import { criarCategoriaNaTransacao } from "@/features/categorias/gerir-categorias/mexerNaCategoria.service";
+import type { CampoInvalido } from "@/features/categorias/nomear-categoria/validar";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { decidirNaTransacao } from "@/features/classificacao/revisar-lancamento/decidirLancamento.service";
 
@@ -35,7 +36,7 @@ import { decidirNaTransacao } from "@/features/classificacao/revisar-lancamento/
 
 export type ResultadoDeCriarEClassificar =
   | { ok: true; categoria: CategoriaEscolhivel }
-  | { ok: false; erro: string; campo?: "nome" | "emoji" };
+  | { ok: false; erro: string; campo?: CampoInvalido };
 
 /**
  * Recusa vira exceção para a transação voltar atrás.

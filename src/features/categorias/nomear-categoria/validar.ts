@@ -15,9 +15,11 @@
  * ver como igual.
  */
 
+export type CampoInvalido = "nome" | "emoji";
+
 export type CategoriaValidada =
   | { ok: true; nome: string; emoji: string }
-  | { ok: false; campo: "nome" | "emoji"; mensagem: string };
+  | { ok: false; campo: CampoInvalido; mensagem: string };
 
 /**
  * 40 caracteres.
@@ -32,10 +34,17 @@ export function validarCategoria(entrada: {
   nome: string;
   emoji: string;
 }): CategoriaValidada {
+  // A Server Action recebe dado não confiável: campo que não é texto vira vazio
+  // e cai na mesma recusa de campo vazio, em vez de estourar TypeError. Ficar
+  // vazio, e não devolver ok:false logo no topo, mantém a ordem "nome antes de
+  // emoji" mesmo quando os dois estão errados.
+  const nomeBruto = typeof entrada?.nome === "string" ? entrada.nome : "";
+  const emojiBruto = typeof entrada?.emoji === "string" ? entrada.emoji : "";
+
   // Espaço interno também colapsa: "Gasolina  comum" e "Gasolina comum" são o
   // mesmo nome para quem lê, e o único precisa enxergar isso.
-  const nome = entrada.nome.trim().replace(/\s+/g, " ");
-  const emoji = entrada.emoji.trim();
+  const nome = nomeBruto.trim().replace(/\s+/g, " ");
+  const emoji = emojiBruto.trim();
 
   if (nome.length === 0) {
     return { ok: false, campo: "nome", mensagem: "Dê um nome à categoria." };
@@ -50,11 +59,14 @@ export function validarCategoria(entrada: {
   }
 
   /*
-   * ⚠ **Esta regra e a A1 são a mesma regra vista de dois lados.**
+   * ⚠ **Esta regra não garante o slug por si só.** Ela aceita qualquer letra ou
+   * número de qualquer alfabeto (`\p{L}\p{N}`), mas `slugificar` só mantém
+   * `a-z0-9` depois de tirar os acentos. "日本" passa aqui e sai com slug vazio.
    *
-   * O slug sai do nome, e um nome sem letra nem dígito produziria slug vazio —
-   * que colidiria com todo outro nome sem letra nem dígito. A exigência de
-   * tela e a integridade do dado coincidem aqui, e é por isso que ela existe.
+   * Quem cobre esse caso é `slugUnico` (slug.ts): troca o vazio por
+   * "categoria" e acrescenta o sufixo numérico ("categoria-2"), então dois
+   * nomes assim não colidem. Esta checagem só recusa o nome sem nenhuma letra
+   * nem número — "###" — que daria o mesmo fallback sem sentido.
    */
   if (!/[\p{L}\p{N}]/u.test(nome)) {
     return {

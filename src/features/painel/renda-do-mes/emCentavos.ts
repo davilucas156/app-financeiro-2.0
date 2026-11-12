@@ -19,7 +19,9 @@
  * dele. `1.200` vira 1200 reais, não 1 real e 20 centavos.
  */
 export function emCentavos(texto: string): number | null {
-  const limpo = texto.replace(/[R$\s ]/gi, "");
+  // O `R$` só conta no começo. Depois disso, qualquer espaço (inclusive NBSP,
+  // que o teclado de alguns celulares digita) sai.
+  const limpo = texto.replace(/^\s*R\$\s*/i, "").replace(/[\s ]/g, "");
   if (limpo.length === 0) return null;
   if (!/^\d[\d.,]*$/.test(limpo)) return null;
 
@@ -41,11 +43,17 @@ export function emCentavos(texto: string): number | null {
 
   const centavos = ehDecimal ? depois.padEnd(2, "0") : "00";
 
-  return Number(inteiro) * 100 + Number(centavos);
+  const total = Number(inteiro) * 100 + Number(centavos);
+
+  // Acima de 2^53 o ponto flutuante já perdeu centavos (ou virou Infinity).
+  // Melhor recusar do que gravar um valor errado na base das metas.
+  return Number.isSafeInteger(total) ? total : null;
 }
 
 /** Centavos → o que o campo mostra para edição: `1200,50`. */
 export function paraOCampo(centavos: number): string {
+  if (!Number.isSafeInteger(centavos) || centavos < 0) return "";
+
   const reais = Math.floor(centavos / 100);
   const resto = centavos % 100;
 
@@ -61,12 +69,17 @@ export function paraOCampo(centavos: number): string {
  * para "garbage in, garbage out".
  *
  * `1.200` e `1.234.567` passam; `1,2,3,4` e `12.34.56` não.
+ *
+ * ⚠ Com mais de um grupo, o primeiro não pode ser zero: `0,005` é R$ 0,005
+ * (meio centavo), não "zero mil e cinco". Um `0` na frente de decimal legítimo
+ * (`0,50`) não cai aqui, porque já foi separado como centavos antes.
  */
 function agrupamentoPlausivel(parteInteira: string): boolean {
   const grupos = parteInteira.split(/[.,]/);
 
   if (grupos.some((g) => !/^\d+$/.test(g))) return false;
   if (grupos.length === 1) return true;
+  if (/^0+$/.test(grupos[0])) return false;
 
   return (
     grupos[0].length >= 1 &&

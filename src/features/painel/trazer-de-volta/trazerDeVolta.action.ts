@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { ehUuid } from "@/lib/uuid";
 import {
   trazerDeVolta,
   type ResultadoDeTrazerDeVolta,
@@ -20,7 +21,7 @@ export async function desfazerAnulacao(entrada: {
 }): Promise<ResultadoDeTrazerDeVolta> {
   const usuario = await garantirUsuario();
 
-  if (!entrada.lancamentoId) {
+  if (!entrada || !ehUuid(entrada.lancamentoId)) {
     return {
       ok: false,
       erro: "Não entendi qual lançamento. Recarregue a tela.",

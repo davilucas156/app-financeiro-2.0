@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
-import { FONTES_DE_SUGESTAO } from "@/features/classificacao/motor/sugestoes";
+import {
+  FONTES_DE_SUGESTAO,
+  type FonteDeSugestao,
+} from "@/features/classificacao/motor/sugestoes";
 import { ehUuid } from "@/lib/uuid";
 import {
   decidirLancamento,
@@ -22,7 +25,7 @@ export type EntradaDaDecisao = {
   tipo: Decisao["tipo"];
   lancamentoId: string;
   categoriaId?: string;
-  fonteDaSugestao?: string;
+  fonteDaSugestao?: FonteDeSugestao;
   /** "Sempre classificar assim" (D5). */
   sempre?: boolean;
   /** "…e só quando o valor for este". Ver `Decisao.comValor`. */

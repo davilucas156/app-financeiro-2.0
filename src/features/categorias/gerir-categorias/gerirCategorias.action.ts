@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { ehUuid } from "@/lib/uuid";
 import {
   apagarCategoria,
   type DestinoEscolhido,
@@ -67,7 +68,9 @@ export async function criar(entrada: {
   emoji: string;
   poteId: string;
 }): Promise<ResultadoDeCriar> {
-  if (!entrada.poteId) return { ok: false, erro: NAO_ENTENDI };
+  if (!entrada || !ehUuid(entrada.poteId)) {
+    return { ok: false, erro: NAO_ENTENDI };
+  }
 
   return comRevalidacao(
     (userId) => criarCategoria(userId, entrada),
@@ -83,7 +86,7 @@ export async function renomear(
   id: string,
   entrada: { nome: string; emoji: string },
 ): Promise<ResultadoDeMexer> {
-  if (!id) return { ok: false, erro: NAO_ENTENDI };
+  if (!ehUuid(id)) return { ok: false, erro: NAO_ENTENDI };
 
   return comRevalidacao(
     (userId) => renomearCategoria(userId, id, entrada),
@@ -99,7 +102,7 @@ export async function mover(
   id: string,
   poteId: string,
 ): Promise<ResultadoDeMexer> {
-  if (!id || !poteId) return { ok: false, erro: NAO_ENTENDI };
+  if (!ehUuid(id) || !ehUuid(poteId)) return { ok: false, erro: NAO_ENTENDI };
 
   return comRevalidacao(
     (userId) => moverCategoria(userId, id, poteId),
@@ -126,7 +129,7 @@ export async function mover(
 export async function verOQueVaiJunto(
   id: string,
 ): Promise<RaioXDaCategoria | null> {
-  if (!id) return null;
+  if (!ehUuid(id)) return null;
 
   const usuario = await garantirUsuario();
 
@@ -142,8 +145,8 @@ export async function apagar(
   id: string,
   destino: DestinoEscolhido,
 ): Promise<ResultadoDeApagar> {
-  if (!id) return { ok: false, erro: NAO_ENTENDI };
-  if (destino.tipo === "mover" && !destino.categoriaId) {
+  if (!ehUuid(id) || !destino) return { ok: false, erro: NAO_ENTENDI };
+  if (destino.tipo === "mover" && !ehUuid(destino.categoriaId)) {
     return { ok: false, erro: NAO_ENTENDI };
   }
 

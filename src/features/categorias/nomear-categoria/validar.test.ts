@@ -83,4 +83,41 @@ describe("validarCategoria", () => {
 
     expect(r.ok === false && r.campo).toBe("nome");
   });
+
+  it.each([
+    ["undefined", undefined],
+    ["null", null],
+    ["número", 42],
+  ])("recusa nome que não é texto (%s) sem estourar", (_, nome) => {
+    const r = validarCategoria({ nome, emoji: "⛽" } as unknown as {
+      nome: string;
+      emoji: string;
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.ok === false && r.campo).toBe("nome");
+  });
+
+  it.each([
+    ["undefined", undefined],
+    ["null", null],
+    ["número", 42],
+  ])("recusa emoji que não é texto (%s) sem estourar", (_, emoji) => {
+    const r = validarCategoria({ nome: "Gasolina", emoji } as unknown as {
+      nome: string;
+      emoji: string;
+    });
+
+    expect(r.ok).toBe(false);
+    expect(r.ok === false && r.campo).toBe("emoji");
+  });
+
+  it("recusa nome não-texto antes de olhar o emoji", () => {
+    const r = validarCategoria({ nome: null, emoji: undefined } as unknown as {
+      nome: string;
+      emoji: string;
+    });
+
+    expect(r.ok === false && r.campo).toBe("nome");
+  });
 });
