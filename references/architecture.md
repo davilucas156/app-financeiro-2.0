@@ -535,9 +535,10 @@ deploy sobe e responde erro.
 > quem precisar de `onClick` marca a si próprio como client. Nenhum deles sabe
 > o que é pote, transação ou usuário.
 >
-> **Único `"use client"` do projeto:** `NavegacaoPrincipal`, porque destacar o
-> item ativo exige `usePathname()`. Não é precedente para componente novo
-> nascer client — a justificativa tem que ser um hook de verdade.
+> **`"use client"` só onde há hook de verdade.** Hoje ele aparece em dezenas de
+> componentes, todos em `features/` e nenhum em `ui/`, sempre por estado, efeito,
+> ref ou leitura de `usePathname()` no navegador. Não é precedente para
+> componente novo nascer client — a justificativa tem que ser um hook de verdade.
 
 ## Padrões e decisões
 

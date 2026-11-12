@@ -105,6 +105,13 @@ pessoas.
   único dos seis que não é pote e seria a única consulta nova da spec. Se fizer
   falta, o pedido real é _"fixar uma categoria como cartão"_, que é
   funcionalidade e não cartão.
+- **Teste de regressão do `desfazerEnvio.service.ts`.** Dívida conhecida (revisão
+  de arquitetura, rodada 25, item 3), deixada de propósito. O comportamento que
+  importa — envio de outro dono devolve a **mesma** frase que envio inexistente —
+  hoje só se sustenta por leitura de código. Nenhum service do projeto tem teste:
+  os 62 arquivos de teste cobrem lógica pura, e testar o service pede mockar
+  `getDb()`, o que abre um padrão novo. Se for pago, o caminho é extrair a
+  decisão para uma função pura testável, e não mockar o banco.
 
 > ⚠ **Os 6 cartões de topo do Comparativo Anual saíram daqui.** Eram dívida
 > aberta desde a spec 06 (pendência 5), com a justificativa de que _"seriam outra
