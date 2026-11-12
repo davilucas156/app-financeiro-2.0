@@ -5,10 +5,11 @@ import {
   classificationRules,
   decisionUndo,
   transactions,
+  type StatusDoLancamento,
 } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
-import { VALOR_ALTO_CENTAVOS } from "@/features/classificacao/classificar-importacao/classificarImportacao";
+import { statusDoValor } from "@/features/classificacao/motor/valorAlto";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import {
   casarRegra,
@@ -81,9 +82,6 @@ const NAO_ENCONTRADO =
   "Esse lançamento não está mais esperando decisão. Recarregue a tela.";
 
 const MOTIVO_EXCLUIDO = "você marcou como fora do cálculo";
-
-/** O mesmo texto da D1: a tela mostra os dois iguais porque são a mesma coisa. */
-const MOTIVO_VALOR_ALTO = "valor alto — confira se a categoria está certa";
 
 /**
  * **10** — a faixa que a A5 reservou para as correções.
@@ -233,6 +231,25 @@ export async function decidirNaTransacao(
 
   if (!antes) return { ok: false, erro: NAO_ENCONTRADO };
 
+  /*
+   * ⚠ **O estado é conferido depois do lock**, quando já não pode mudar.
+   *
+   * Não vale exigir "está na fila": o painel reusa esta função para **trocar a
+   * categoria** de um lançamento já classificado (`TrocarCategoria`), e isso é
+   * legítimo. O que nunca é legítimo, vindo de uma aba velha ou de um id
+   * forjado:
+   *
+   * - decidir sobre um **excluído** — voltaria a `importado` sem passar pelo
+   *   "trazer de volta", e sobrescreveria a sombra do desfazer;
+   * - **confirmar** o que não está pedindo confirmação — zeraria
+   *   `status`/`motivo` de um lançamento sem pendência nenhuma.
+   */
+  if (antes.status === "excluido") return { ok: false, erro: NAO_ENCONTRADO };
+
+  if (decisao.tipo === "confirmar" && antes.status !== "revisao_pendente") {
+    return { ok: false, erro: NAO_ENCONTRADO };
+  }
+
   await tx
     .update(transactions)
     .set(alteracao)
@@ -305,7 +322,7 @@ async function guardarODesfazer(
     regraChave: string | null;
     fonteDaSugestao: FonteDeSugestao | null;
     classificadoEm: Date | null;
-    status: "importado" | "revisao_pendente" | "excluido";
+    status: StatusDoLancamento;
     motivo: string | null;
   },
   extra: { regraCriada: boolean; irmaos: number },
@@ -446,13 +463,20 @@ async function aplicarAosIrmaos(
    * justamente o alerta de que a regra pode estar larga demais**. Um irmão de
    * R$ 500 apanhado por engano é o erro mais caro que existe aqui.
    */
-  for (const alto of [true, false]) {
-    const ids = pegos
-      .filter((p) => p.valorCentavos >= VALOR_ALTO_CENTAVOS === alto)
-      .map((p) => p.id);
+  const grupos = new Map<
+    StatusDoLancamento,
+    { motivo: string | null; ids: string[] }
+  >();
 
-    if (ids.length === 0) continue;
+  for (const p of pegos) {
+    const { status, motivo } = statusDoValor(p.valorCentavos);
+    const grupo = grupos.get(status) ?? { motivo, ids: [] };
 
+    grupo.ids.push(p.id);
+    grupos.set(status, grupo);
+  }
+
+  for (const [status, { motivo, ids }] of grupos) {
     await tx
       .update(transactions)
       .set({
@@ -461,8 +485,8 @@ async function aplicarAosIrmaos(
         regraId: dados.regraId,
         regraChave: chave,
         classificadoEm: agora,
-        status: alto ? "revisao_pendente" : "importado",
-        motivo: alto ? MOTIVO_VALOR_ALTO : null,
+        status,
+        motivo,
       })
       .where(
         and(

@@ -1,3 +1,4 @@
+import type { StatusDoLancamento } from "@/db/schema";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
@@ -31,7 +32,7 @@ export type LancamentoDoMes = {
   /** Sempre positivo. O sentido está em `direcao`. */
   valorCentavos: number;
   direcao: Direcao;
-  status: "importado" | "revisao_pendente" | "excluido";
+  status: StatusDoLancamento;
   categoriaId: string | null;
 };
 

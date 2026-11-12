@@ -144,6 +144,35 @@ describe("foraDaConta", () => {
     expect(invertido.pares[0].chave).toBe("A");
   });
 
+  it("com a mesma data, a ordem de entrada não muda a chave nem os lados", () => {
+    // Sem desempate, quem era "o mais antigo" dependia da ordem em que o banco
+    // devolveu as linhas. O `id` decide quando a data empata.
+    const entrou = linha({
+      id: "t-entrou",
+      impressao: "E",
+      parDe: "S",
+      direcao: "entrada",
+      data: "2026-08-28",
+    });
+    const saiu = linha({
+      id: "t-saiu",
+      impressao: "S",
+      parDe: "E",
+      direcao: "saida",
+      data: "2026-08-28",
+      valorCentavos: entrou.valorCentavos,
+    });
+
+    const direto = foraDaConta([entrou, saiu]);
+    const invertido = foraDaConta([saiu, entrou]);
+
+    expect(direto.pares[0].chave).toBe("E");
+    expect(invertido.pares[0].chave).toBe("E");
+    expect(invertido.pares[0].lados.map((l) => l.id)).toEqual(
+      direto.pares[0].lados.map((l) => l.id),
+    );
+  });
+
   it("dois pares de valores diferentes não se misturam", () => {
     const grande = par({ valorCentavos: 90000 });
     grande[0].impressao = "C";

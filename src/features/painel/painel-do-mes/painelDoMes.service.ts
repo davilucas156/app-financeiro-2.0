@@ -1,6 +1,11 @@
 import "server-only";
 import { and, asc, eq, sql } from "drizzle-orm";
-import { buckets, categories, transactions } from "@/db/schema";
+import {
+  buckets,
+  categories,
+  transactions,
+  type StatusDoLancamento,
+} from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { naFilaDeRevisao } from "@/features/classificacao/revisar-lancamento/filaDeRevisao";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
@@ -20,6 +25,7 @@ import {
 import { mesesEPadrao } from "@/features/painel/navegar-entre-meses/mesesEPadrao";
 import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
+import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 import type { LancamentoNoPainel, PoteNoPainel } from "./poteNoPainel";
 
 /**
@@ -281,8 +287,8 @@ type LinhaDoBanco = {
   data: string;
   descricao: string;
   valorCentavos: number;
-  direcao: "entrada" | "saida";
-  status: "importado" | "revisao_pendente" | "excluido";
+  direcao: Direcao;
+  status: StatusDoLancamento;
   categoriaId: string | null;
   classificadoPor: "regra" | "sugestao" | "manual" | null;
   regraChave: string | null;

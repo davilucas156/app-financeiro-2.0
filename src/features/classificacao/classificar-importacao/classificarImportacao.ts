@@ -1,5 +1,10 @@
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import { casarRegra, type Regra } from "@/features/classificacao/motor/regras";
+import {
+  statusDoValor,
+  VALOR_ALTO_CENTAVOS,
+} from "@/features/classificacao/motor/valorAlto";
+import type { StatusDoLancamento } from "@/db/schema";
 import type { LancamentoPreparado } from "@/features/upload/ler-arquivo/preparar";
 
 /**
@@ -20,8 +25,6 @@ import type { LancamentoPreparado } from "@/features/upload/ler-arquivo/preparar
 /** Uma regra do banco, com a chave que vai ser congelada na procedência. */
 export type RegraAplicavel = Regra & { chave: string };
 
-export type StatusDoLancamento = "importado" | "revisao_pendente" | "excluido";
-
 export type Decisao = {
   categoriaId: string | null;
   classificadoPor: "regra" | null;
@@ -41,15 +44,7 @@ export type ResultadoDaClassificacao = {
   conferir: number;
 };
 
-/**
- * R$ 200 — do `readme.md`, seção 7, e é o número que o painel usa hoje.
- *
- * Uma regra errada num valor alto é o erro mais caro que existe aqui, e é o
- * mais fácil de não notar: some no meio de trinta lançamentos certos.
- */
-export const VALOR_ALTO_CENTAVOS = 20_000;
-
-const MOTIVO_VALOR_ALTO = "valor alto — confira se a categoria está certa";
+export { VALOR_ALTO_CENTAVOS };
 
 export function classificarImportacao(
   preparados: LancamentoPreparado[],
@@ -109,16 +104,16 @@ export function classificarImportacao(
     // `/revisao` já lida com `revisao_pendente` por causa dos pares que se
     // anulam. São dois tipos de pendência e a diferença é visível: um não tem
     // categoria e pede escolha, o outro tem e pede confirmação.
-    const alto = p.valorCentavos >= VALOR_ALTO_CENTAVOS;
-    if (alto) conferir++;
+    const { status, motivo } = statusDoValor(p.valorCentavos);
+    if (status === "revisao_pendente") conferir++;
 
     porImpressao.set(p.impressao, {
       categoriaId: vencedora.categoriaId,
       classificadoPor: "regra",
       regraId: vencedora.id,
       regraChave: vencedora.chave,
-      status: alto ? "revisao_pendente" : "importado",
-      motivo: alto ? MOTIVO_VALOR_ALTO : null,
+      status,
+      motivo,
     });
   }
 

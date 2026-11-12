@@ -42,6 +42,9 @@ import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
  * São Paulo e lido de outro fuso cai no dia seguinte — e "mês de referência"
  * é o eixo do produto inteiro.
  */
+/** O estado de um lançamento — a mesma lista do `transactions_status_ck`. */
+export type StatusDoLancamento = "importado" | "revisao_pendente" | "excluido";
+
 export const users = pgTable("users", {
   /** `user_2ab…` — vem do Clerk. */
   id: text("id").primaryKey(),
@@ -347,7 +350,7 @@ export const transactions = pgTable(
     direcao: text("direcao").$type<"entrada" | "saida">().notNull(),
 
     status: text("status")
-      .$type<"importado" | "revisao_pendente" | "excluido">()
+      .$type<StatusDoLancamento>()
       .notNull()
       .default("importado"),
 
@@ -689,9 +692,7 @@ export const decisionUndo = pgTable("decision_undo", {
   regraChave: text("regra_chave"),
   fonteDaSugestao: text("fonte_da_sugestao").$type<FonteDeSugestao>(),
   classificadoEm: timestamp("classificado_em", { withTimezone: true }),
-  status: text("status")
-    .$type<"importado" | "revisao_pendente" | "excluido">()
-    .notNull(),
+  status: text("status").$type<StatusDoLancamento>().notNull(),
   motivo: text("motivo"),
 
   // ── O que a tela precisa avisar antes de você tocar em "Voltar" ──────────

@@ -1,3 +1,4 @@
+import type { StatusDoLancamento } from "@/db/schema";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
@@ -32,7 +33,7 @@ export type LinhaForaDaConta = {
   descricao: string;
   valorCentavos: number;
   direcao: Direcao;
-  status: "importado" | "revisao_pendente" | "excluido";
+  status: StatusDoLancamento;
   motivo: string | null;
   impressao: string;
   /** A impressão do outro lado. Só o par anulado tem. */
@@ -107,15 +108,21 @@ export function foraDaConta(linhas: LinhaForaDaConta[]): ForaDaConta {
     jaAgrupado.add(l.impressao);
     if (outro) jaAgrupado.add(outro.impressao);
 
-    const lados = (outro ? [l, outro] : [l])
-      .slice()
-      .sort((a, b) => (a.data < b.data ? -1 : 1))
-      .map((x): LadoDoPar => ({
-        id: x.id,
-        data: x.data,
-        descricao: x.descricao,
-        direcao: x.direcao,
-      }));
+    /*
+     * O mais antigo vem primeiro: é a ordem dos lados e de onde sai a `chave`.
+     * Com a mesma data, o `id` desempata — sem isso, quem era "o mais antigo"
+     * dependia da ordem em que o banco devolveu as linhas.
+     */
+    const ordenados = (outro ? [l, outro] : [l]).sort(
+      (a, b) => a.data.localeCompare(b.data) || a.id.localeCompare(b.id),
+    );
+
+    const lados = ordenados.map((x): LadoDoPar => ({
+      id: x.id,
+      data: x.data,
+      descricao: x.descricao,
+      direcao: x.direcao,
+    }));
 
     for (const lado of lados) {
       if (lado.direcao === "entrada") entradaAnuladaCentavos += l.valorCentavos;
@@ -123,7 +130,7 @@ export function foraDaConta(linhas: LinhaForaDaConta[]): ForaDaConta {
     }
 
     pares.push({
-      chave: lados[0].id === l.id ? l.impressao : outro!.impressao,
+      chave: ordenados[0].impressao,
       valorCentavos: l.valorCentavos,
       lados,
       motivo: l.motivo ?? "repasse anulado",
@@ -135,7 +142,11 @@ export function foraDaConta(linhas: LinhaForaDaConta[]): ForaDaConta {
   return {
     // Mais recente primeiro: é o mês que você acabou de importar que você quer
     // conferir, não o começo dele.
-    pares: pares.sort((a, b) => (a.lados[0].data > b.lados[0].data ? -1 : 1)),
+    pares: pares.sort(
+      (a, b) =>
+        b.lados[0].data.localeCompare(a.lados[0].data) ||
+        a.chave.localeCompare(b.chave),
+    ),
     passagens: {
       quantas: passagens.length,
       totalCentavos: passagens.reduce((s, l) => s + l.valorCentavos, 0),
