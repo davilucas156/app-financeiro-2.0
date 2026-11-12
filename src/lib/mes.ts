@@ -88,28 +88,43 @@ export function anoDoMes(mes: string): string {
 }
 
 /**
- * O formato `"YYYY-MM"`, e só o formato — a mesma forma exigida pelo `check`
- * de `mes_referencia` no schema (`^[0-9]{4}-[0-9]{2}$`).
+ * Abreviação de três letras do mês: `"2026-06"` → `"jun"`, `"2026-03"` → `"mar"`.
  *
- * ⚠ Estava reimplementado como regex solta em três arquivos
- * (`declararRenda.action.ts`, `importarExtrato.service.ts`,
- * `removerOMes.service.ts`). Não valida o intervalo 01–12: o banco também não
- * valida isso hoje, e fazer só aqui criaria uma régua mais estrita que a do
- * schema que esta função existe para espelhar.
+ * Sai do próprio `nomeDoMes`, então herda o mesmo comportamento: mês fora de
+ * 01–12 devolve o texto que recebeu, cortado em três letras.
  */
-export function formatoDeMesValido(mes: string): boolean {
-  return /^\d{4}-\d{2}$/.test(mes);
+export function abreviacaoDoMes(mes: string): string {
+  return nomeDoMes(mes).slice(0, 3);
 }
 
 /**
- * O mês de hoje, em `YYYY-MM`.
+ * O formato `"YYYY-MM"` com mês de 01 a 12.
+ *
+ * ⚠ **Aqui é mais estrito que o banco, de propósito.** O `check` de
+ * `mes_referencia` no schema (`^[0-9]{4}-[0-9]{2}$`) aceita `"2026-13"` e
+ * `"2026-00"`; a aplicação não. Estava reimplementado como regex solta em três
+ * arquivos (`declararRenda.action.ts`, `importarExtrato.service.ts`,
+ * `removerOMes.service.ts`), e a régua frouxa deixava passar um mês que a tela
+ * não sabe nomear.
+ */
+export function formatoDeMesValido(mes: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(mes);
+}
+
+/**
+ * O mês de uma data, em `YYYY-MM`.
  *
  * ⚠ **UTC, e não hora local**, como todo o resto deste arquivo: o mês é um
  * rótulo, não um instante, e ler o fuso do aparelho faria a virada do mês
  * acontecer em hora diferente para cada pessoa.
  */
-export function mesAtual(hoje = new Date()): string {
-  const mes = String(hoje.getUTCMonth() + 1).padStart(2, "0");
+export function mesDeData(d: Date): string {
+  const mes = String(d.getUTCMonth() + 1).padStart(2, "0");
 
-  return `${hoje.getUTCFullYear()}-${mes}`;
+  return `${d.getUTCFullYear()}-${mes}`;
+}
+
+/** O mês de hoje, em `YYYY-MM`. Ver `mesDeData`: a leitura é em UTC. */
+export function mesAtual(hoje = new Date()): string {
+  return mesDeData(hoje);
 }
