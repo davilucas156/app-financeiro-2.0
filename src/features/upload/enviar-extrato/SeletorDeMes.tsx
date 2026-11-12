@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { rotuloDeMes } from "@/lib/mes";
+import { mesDeData, rotuloDeMes } from "@/lib/mes";
 
 /**
  * Mês de referência da importação (tarefa B1) — **protótipo visual**.
@@ -31,9 +31,7 @@ export function mesesDisponiveis(hoje = new Date(), quantos = 18): string[] {
     const d = new Date(
       Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() - i, 1),
     );
-    lista.push(
-      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`,
-    );
+    lista.push(mesDeData(d));
   }
 
   return lista;

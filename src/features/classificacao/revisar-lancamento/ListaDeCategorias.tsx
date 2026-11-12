@@ -4,20 +4,11 @@ import { useId, useMemo, useState, type ReactNode } from "react";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
-import { agruparPorPote, type CategoriaEscolhivel } from "./categorias";
-
-/**
- * ⚠ **Não é o `normalizarDescricao` do motor**, e não é descuido.
- *
- * Aquele mora em `ler-arquivo/preparar.ts`, que importa `node:crypto` para a
- * impressão digital — puxá-lo para um componente de cliente quebraria o build.
- *
- * E os propósitos são diferentes: lá é comparação de regra, que precisa ser
- * idêntica à que gravou a regra; aqui é filtro de busca de tela, onde caixa
- * baixa basta.
- */
-const comparavel = (texto: string) =>
-  texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+import {
+  agruparPorPote,
+  filtrarCategorias,
+  type CategoriaEscolhivel,
+} from "./categorias";
 
 /**
  * A lista completa, agrupada por pote (tarefas B2 e D3).
@@ -84,16 +75,10 @@ export function ListaDeCategorias({
     [categorias, direcao],
   );
 
-  const encontradas = useMemo(() => {
-    const alvo = comparavel(busca);
-    if (!alvo) return null;
-
-    return categorias.filter(
-      (c) =>
-        comparavel(c.nome).includes(alvo) ||
-        comparavel(c.pote.nome).includes(alvo),
-    );
-  }, [busca, categorias]);
+  const encontradas = useMemo(
+    () => filtrarCategorias(categorias, busca),
+    [busca, categorias],
+  );
 
   return (
     <section aria-labelledby={idDoTitulo}>

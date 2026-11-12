@@ -2,7 +2,13 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { emReais } from "@/lib/dinheiro";
-import { nomeDoMes, rotuloDeMes } from "@/lib/mes";
+import { abreviacaoDoMes, anoDoMes, rotuloDeMes } from "@/lib/mes";
+import {
+  larguraEmPct,
+  anosDaSerie,
+  ultimoMesDaLinha,
+  maiorValorDaTela,
+} from "./escalaDasBarras";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type {
   Comparativo,
@@ -49,13 +55,13 @@ export function SecaoDoComparativo({
   mesDeReferencia: string;
 }) {
   const porId = new Map(potes.map((p) => [p.id, p]));
-  const teto = maiorValor(comparativo.linhas);
+  const teto = maiorValorDaTela(comparativo.linhas);
   /*
    * "jan" de 2025 e "jan" de 2026 seriam a mesma etiqueta numa tela de treze
    * meses. O ano só aparece quando a série atravessa a virada — dentro de um
    * ano só, repeti-lo em toda linha seria ruído.
    */
-  const comAno = anos(comparativo.linhas) > 1;
+  const comAno = anosDaSerie(comparativo.linhas) > 1;
 
   return (
     <>
@@ -84,7 +90,7 @@ export function SecaoDoComparativo({
                     valor={valor}
                     teto={teto}
                     cor={pote.cor}
-                    atual={valor.mes === ultimoMes(linha)}
+                    atual={valor.mes === ultimoMesDaLinha(linha)}
                     comAno={comAno}
                   />
                 ))}
@@ -209,16 +215,15 @@ function BarraDoMes({
   atual: boolean;
   comAno: boolean;
 }) {
-  const largura =
-    teto === 0 ? 0 : Math.round((valor.totalCentavos / teto) * 100);
+  const largura = larguraEmPct(valor.totalCentavos, teto);
 
   return (
     <div className="flex items-center gap-2">
       <span
         className={`w-[5.6em] shrink-0 font-mono text-3xs ${atual ? "text-text" : "text-dim"}`}
       >
-        {nomeDoMes(valor.mes).slice(0, 3)}
-        {comAno && `/${valor.mes.slice(2, 4)}`}
+        {abreviacaoDoMes(valor.mes)}
+        {comAno && `/${anoDoMes(valor.mes).slice(2)}`}
         {!valor.confiavel && <span className="text-gold"> ⚠</span>}
       </span>
 
@@ -227,7 +232,7 @@ function BarraDoMes({
           className="block h-full rounded-full"
           style={{
             ...estiloDoPote(cor),
-            width: `${Math.max(0, Math.min(100, largura))}%`,
+            width: `${largura}%`,
             opacity: valor.confiavel ? 1 : 0.3,
           }}
         />
@@ -256,7 +261,7 @@ function BarraDoMes({
  * duas custava a leitura.
  */
 function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
-  const largura = teto === 0 ? 0 : Math.round((centavos / teto) * 100);
+  const largura = larguraEmPct(centavos, teto);
 
   return (
     <div className="flex items-center gap-2 pt-1">
@@ -266,7 +271,7 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
       <span className="h-2 flex-1 overflow-hidden rounded-full">
         <span
           className="block h-full rounded-full border border-dashed border-dim"
-          style={{ width: `${Math.max(0, Math.min(100, largura))}%` }}
+          style={{ width: `${largura}%` }}
         />
       </span>
       <span className="w-[8em] shrink-0 text-right font-mono text-3xs text-dim">
@@ -274,36 +279,4 @@ function LinhaDaMedia({ centavos, teto }: { centavos: number; teto: number }) {
       </span>
     </div>
   );
-}
-
-/**
- * O teto é o maior valor da seção inteira — ver a nota do topo do arquivo.
- *
- * A média entra na conta: com um mês muito acima dela, a barra tracejada teria
- * de caber embaixo das outras de qualquer jeito.
- */
-function maiorValor(linhas: LinhaDoComparativo[]): number {
-  let maior = 0;
-
-  for (const linha of linhas) {
-    for (const valor of linha.serie) {
-      if (valor.totalCentavos > maior) maior = valor.totalCentavos;
-    }
-    if (linha.mediaCentavos !== null && linha.mediaCentavos > maior) {
-      maior = linha.mediaCentavos;
-    }
-  }
-
-  return maior;
-}
-
-function anos(linhas: LinhaDoComparativo[]): number {
-  const vistos = new Set(
-    linhas.flatMap((l) => l.serie.map((v) => v.mes.slice(0, 4))),
-  );
-  return vistos.size;
-}
-
-function ultimoMes(linha: LinhaDoComparativo): string | undefined {
-  return linha.serie.at(-1)?.mes;
 }

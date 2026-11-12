@@ -3,6 +3,7 @@ import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Voltar } from "@/components/ui/Voltar";
 import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
+import { hrefDoComparativo } from "@/features/painel/navegar-entre-meses/hrefs";
 import { CartoesDoAno } from "./CartoesDoAno";
 import { SecaoDoComparativo } from "./SecaoDoComparativo";
 import { SeletorDeAno } from "./SeletorDeAno";
@@ -164,7 +165,7 @@ function AvisoDeAnoCurto({
     <p className="mt-3 text-xs leading-relaxed text-dim">
       {ano} ainda não tem meses suficientes para uma média.{" "}
       <Link
-        href={`/comparativo?ano=${anterior}`}
+        href={hrefDoComparativo(anterior)}
         className="text-text underline underline-offset-4"
       >
         Ver {anterior}

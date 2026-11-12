@@ -1,4 +1,5 @@
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
+import { semAcento } from "@/lib/semAcento";
 
 /**
  * As categorias que a tela de revisão oferece (tarefas B2 e D3).
@@ -89,4 +90,41 @@ export function porId(
   categorias: CategoriaEscolhivel[],
 ): Map<string, CategoriaEscolhivel> {
   return new Map(categorias.map((c) => [c.id, c]));
+}
+
+/**
+ * Texto pronto para comparar na busca: sem acento, minúsculo, sem espaço nas
+ * pontas.
+ *
+ * ⚠ **Não é o `normalizarDescricao` do motor**, e não é descuido. Aquele mora em
+ * `ler-arquivo/preparar.ts`, que importa `node:crypto` para a impressão digital
+ * — puxá-lo para um componente de cliente quebraria o build.
+ *
+ * E os propósitos são diferentes: lá é comparação de regra, que precisa ser
+ * idêntica à que gravou a regra; aqui é filtro de busca de tela, onde caixa
+ * baixa basta.
+ */
+export function comparavel(texto: string): string {
+  return semAcento(texto).toLowerCase().trim();
+}
+
+/**
+ * As categorias que batem com a busca, por nome da categoria ou do pote.
+ *
+ * Busca vazia (ou só espaços) devolve `null`, e não a lista inteira: quem chama
+ * usa esse `null` para saber que deve mostrar os potes agrupados, e não a lista
+ * achatada da busca.
+ */
+export function filtrarCategorias(
+  categorias: CategoriaEscolhivel[],
+  busca: string,
+): CategoriaEscolhivel[] | null {
+  const alvo = comparavel(busca);
+  if (!alvo) return null;
+
+  return categorias.filter(
+    (c) =>
+      comparavel(c.nome).includes(alvo) ||
+      comparavel(c.pote.nome).includes(alvo),
+  );
 }

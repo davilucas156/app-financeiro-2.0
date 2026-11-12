@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { hrefDoComparativo } from "@/features/painel/navegar-entre-meses/hrefs";
 
 /**
  * O ano que a `/comparativo` está mostrando (spec 12, tarefa C2).
@@ -31,7 +32,7 @@ export function SeletorDeAno({
       {anos.map((a) => (
         <Link
           key={a}
-          href={`/comparativo?ano=${a}`}
+          href={hrefDoComparativo(a)}
           aria-current={a === ano ? "page" : undefined}
           className={`pressiona inline-flex min-h-11 items-center rounded-card border px-3 font-mono text-3xs font-bold ${
             a === ano

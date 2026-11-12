@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
-import { nomeDoMes } from "@/lib/mes";
+import { abreviacaoDoMes } from "@/lib/mes";
+import { contar } from "@/lib/plural";
 import { estiloDoTextoDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { CartaoDoAno } from "./cartaoDoAno";
 
@@ -170,7 +171,7 @@ function Sub({ cartao, ano }: { cartao: CartaoDoAno; ano: string }) {
   return (
     <p className="mt-1.5 font-mono text-3xs text-dim">
       no ano · {emReais(cartao.mediaMensalCentavos)}/mês ·{" "}
-      {cartao.mesesComDado === 1 ? "1 mês" : `${cartao.mesesComDado} meses`}
+      {contar(cartao.mesesComDado, "mês", "meses")}
     </p>
   );
 }
@@ -206,7 +207,7 @@ function LinhaMesAMes({ cartao }: { cartao: CartaoDoAno }) {
       {cartao.serie.map((valor, i) => (
         <span key={valor.mes}>
           {i > 0 && " · "}
-          {nomeDoMes(valor.mes).slice(0, 3)} {emReais(valor.totalCentavos)}
+          {abreviacaoDoMes(valor.mes)} {emReais(valor.totalCentavos)}
           {!valor.confiavel && <span className="text-gold"> ⚠</span>}
         </span>
       ))}

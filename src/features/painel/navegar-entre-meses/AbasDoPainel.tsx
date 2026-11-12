@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { anoDoMes, rotuloCurtoDeMes } from "@/lib/mes";
+import { hrefDoComparativo, hrefDoMes } from "./hrefs";
+
+/** Qual das duas telas está aberta; a aba marcada é a dela. */
+type TelaDasAbas = "painel" | "comparativo";
 
 /**
  * A fileira de abas do painel (spec 12, tarefas B1, B2 e B3).
@@ -89,7 +93,7 @@ export function AbasDoPainel({
    * mais recente da conta. É dele que sai o ano para onde a aba leva.
    */
   mes: string;
-  aqui: "painel" | "comparativo";
+  aqui: TelaDasAbas;
 }) {
   const fileira = useRef<HTMLDivElement>(null);
 
@@ -172,9 +176,12 @@ export function AbasDoPainel({
      * `offsetWidth` do filho não inclui o espaço entre eles, e sem o `gap` a
      * seta andaria consistentemente de menos — 8px por mês, 32px por toque.
      */
-    const primeiro = el.firstElementChild as HTMLElement | null;
+    const primeiro = el.firstElementChild;
     const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 0;
-    const passo = primeiro ? (primeiro.offsetWidth + gap) * MESES_POR_SETA : 0;
+    const passo =
+      primeiro instanceof HTMLElement
+        ? (primeiro.offsetWidth + gap) * MESES_POR_SETA
+        : 0;
 
     el.scrollBy({
       // Sem a pílula para medir, meia tela é um palpite melhor do que zero.
@@ -210,7 +217,7 @@ export function AbasDoPainel({
             return (
               <Link
                 key={m}
-                href={`/dashboard?mes=${m}`}
+                href={hrefDoMes(m)}
                 /*
                  * ⚠ **No comparativo, nenhum mês é a página atual.** Marcar o
                  * mês de referência aqui faria o leitor de tela anunciar duas
@@ -283,10 +290,12 @@ function Seta({
 }
 
 /**
- * ⚠ **Some quando a conta tem um mês só**, e é a mesma decisão da
- * `ChamadaDoComparativo`, com o motivo escrito lá: convidar para o comparativo
- * quem tem um mês é convidar para uma tela que vai dizer "ainda não dá para
- * comparar".
+ * ⚠ **Some quando a conta tem um mês só.** Não é a regra da
+ * `ChamadaDoComparativo`, que só aparece quando há mês anterior confiável
+ * (`media.pode`). A aba é navegação permanente e aparece com dois ou mais meses;
+ * a chamada é um convite dentro do painel, e só existe quando há o que comparar.
+ * Convidar para o comparativo quem tem um mês seria convidar para uma tela que
+ * vai dizer "ainda não dá para comparar".
  *
  * ⚠ **Ela não pode parecer mais um mês.** Onze meses e um comparativo na mesma
  * linha, com a mesma forma, fariam dela o mês que ninguém acha. Daí o emoji e a
@@ -306,7 +315,7 @@ function AbaDoComparativo({
 }: {
   meses: string[];
   mes: string;
-  aqui: "painel" | "comparativo";
+  aqui: TelaDasAbas;
 }) {
   if (meses.length < 2) return null;
 
@@ -314,7 +323,7 @@ function AbaDoComparativo({
 
   return (
     <Link
-      href={`/comparativo?ano=${anoDoMes(mes)}`}
+      href={hrefDoComparativo(anoDoMes(mes))}
       aria-current={marcada ? "page" : undefined}
       className={`pressiona mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-card border px-4 text-xs font-bold ${
         marcada
