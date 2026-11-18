@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BotaoDoUsuario } from "@/features/aparencia/clerk/BotaoDoUsuario";
 import type { Tema } from "@/features/aparencia/tema/tema";
+import { COLUNA_DO_APP } from "@/features/shell/colunaDoApp";
 import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
+import { cn } from "@/lib/cn";
 
 /**
  * Cabeçalho da área interna — Server Component.
@@ -11,8 +13,10 @@ import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
  *
  * Perdeu a prop `nome` na D8 — quem sabe o nome e a foto agora é o Clerk, e
  * sem foto o widget mostra iniciais sozinho. A moldura de `(app)` continua
- * chamando `garantirUsuario()`, que nunca foi por causa do nome: é a garantia
- * da linha no banco (D5) antes de qualquer filha ler por `user_id`.
+ * chamando `garantirUsuario()`, que nunca foi por causa do nome: garante a
+ * linha no banco (D5) na carga inicial. Não é ela que protege as filhas: cada
+ * página ou action que lê por `user_id` chama `garantirUsuario()` por conta
+ * própria, e o acesso é decidido pelo proxy.
  */
 export function CabecalhoApp({
   mesReferencia,
@@ -33,7 +37,7 @@ export function CabecalhoApp({
       className="sticky top-0 z-10 border-b border-border bg-bg/92 backdrop-blur-md"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
-      <div className="mx-auto flex h-[62px] w-full max-w-5xl items-center gap-4 px-5">
+      <div className={cn(COLUNA_DO_APP, "flex h-[62px] items-center gap-4")}>
         <div className="min-w-0">
           <p className="font-mono text-4xs font-bold tracking-[2px] text-primary uppercase">
             6 Potes

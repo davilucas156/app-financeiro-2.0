@@ -4,7 +4,7 @@ import { letraAtual } from "@/features/aparencia/letra/letraAtual";
 import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 
 export const metadata: Metadata = {
-  title: "Configurações · Painel Financeiro 6 Potes",
+  title: "Configurações",
 };
 
 /**
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
  *
  * ⚠ **Não chama `garantirUsuario()`, e não é esquecimento.** Esta é a única
  * tela de `(app)` que não lê nada por `user_id` — a preferência é do aparelho,
- * não da conta. A garantia da linha no banco continua acontecendo na moldura de
- * `(app)`, por onde esta rota passa como todas as outras.
+ * não da conta. A proteção de acesso é do proxy, e esta página não lê dado por
+ * `user_id`, então não depende da linha do usuário.
  */
 export default async function ConfiguracoesPage() {
   const [tema, letra] = await Promise.all([temaAtual(), letraAtual()]);

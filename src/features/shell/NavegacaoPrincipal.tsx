@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { ROTAS_INTERNAS, type RotaInterna } from "@/features/shell/rotas";
@@ -9,8 +9,8 @@ import { ROTAS_INTERNAS, type RotaInterna } from "@/features/shell/rotas";
 /**
  * Navegação principal da área interna.
  *
- * **Único componente `"use client"` do projeto até aqui**, e por um motivo
- * específico: destacar o item ativo exige `usePathname()`, que é hook. O
+ * **O único componente da área interna que precisa de `usePathname`**, e por um
+ * motivo específico: destacar o item ativo exige `usePathname()`, que é hook. O
  * cabeçalho, os layouts e as páginas continuam no servidor.
  *
  * Uma definição (`rotas.ts`), duas apresentações: barra inferior no mobile,
@@ -79,41 +79,38 @@ function Icone({ href }: { href: RotaInterna["href"] }) {
     className: "size-4 shrink-0",
   };
 
-  if (href === "/dashboard") {
-    // Barras — o painel.
-    return (
+  // Exaustivo: uma rota nova em `RotaInterna["href"]` sem SVG aqui é erro de tipo,
+  // em vez de herdar o ícone de outra aba.
+  const svgs: Record<RotaInterna["href"], () => ReactElement> = {
+    "/dashboard": () => (
+      // Barras — o painel.
       <svg {...comum}>
         <path d="M4 16V9M10 16V4M16 16v-5" />
       </svg>
-    );
-  }
-
-  if (href === "/upload") {
-    // Seta para cima saindo de uma base — enviar arquivo.
-    return (
+    ),
+    "/upload": () => (
+      // Seta para cima saindo de uma base — enviar arquivo.
       <svg {...comum}>
         <path d="M10 13V4M6.5 7.5 10 4l3.5 3.5M4 15h12" />
       </svg>
-    );
-  }
-
-  if (href === "/revisao") {
-    // Check dentro de círculo — revisar/confirmar.
-    return (
+    ),
+    "/revisao": () => (
+      // Check dentro de círculo — revisar/confirmar.
       <svg {...comum}>
         <path d="M6.5 10.5 9 13l5-5.5" />
         <circle cx="10" cy="10" r="7" />
       </svg>
-    );
-  }
+    ),
+    "/regras": () => (
+      // Faders — as regras que se ajustam.
+      <svg {...comum}>
+        <path d="M4 5h12M4 10h12M4 15h12" />
+        <circle cx="8" cy="5" r="1.6" />
+        <circle cx="13" cy="10" r="1.6" />
+        <circle cx="7" cy="15" r="1.6" />
+      </svg>
+    ),
+  };
 
-  // Faders — as regras que se ajustam.
-  return (
-    <svg {...comum}>
-      <path d="M4 5h12M4 10h12M4 15h12" />
-      <circle cx="8" cy="5" r="1.6" />
-      <circle cx="13" cy="10" r="1.6" />
-      <circle cx="7" cy="15" r="1.6" />
-    </svg>
-  );
+  return svgs[href]();
 }

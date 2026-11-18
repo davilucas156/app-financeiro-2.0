@@ -1,23 +1,27 @@
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 import { CabecalhoApp } from "@/features/shell/CabecalhoApp";
+import { COLUNA_DO_APP } from "@/features/shell/colunaDoApp";
 import { NavegacaoPrincipal } from "@/features/shell/NavegacaoPrincipal";
+import { cn } from "@/lib/cn";
 
 /**
- * Moldura da área interna (`/dashboard`, `/upload`, `/revisao`).
+ * Moldura da área interna (todas as rotas de `(app)`).
  *
- * **Esta moldura não protege nada.** Quem bloqueia requisição sem sessão é o
- * middleware, no servidor, na tarefa D1. Renderizar o shell não é evidência
- * de que o usuário está autenticado.
+ * **Quem decide o acesso é o proxy** (`src/proxy.ts`), no servidor, antes de
+ * qualquer página renderizar. Renderizar esta moldura não é evidência de nada.
  *
- * O que ela faz é **garantir a linha do usuário no banco** (D5) antes de
- * qualquer filha ler dados por `user_id` — a moldura é o único ponto por onde
- * `/dashboard`, `/upload` e `/revisao` passam sem exceção.
+ * O que ela faz é **garantir a linha do usuário no banco** (D5) na carga
+ * inicial. Um layout **não re-executa** na navegação entre páginas filhas, então
+ * essa garantia não se repete a cada clique. Por isso a obrigação é de **cada
+ * página e cada action** que lê por `user_id`: chamar `garantirUsuario()` por
+ * conta própria. Não confie no layout para isso.
  *
- * `force-dynamic` por causa do mês no cabeçalho: pré-renderizado no build, o
- * mês congelaria na data do deploy — um deploy em agosto continuaria dizendo
- * "agosto" em setembro. Quando o mês virar um estado escolhido pelo usuário
- * (spec do dashboard), essa decisão será revisitada.
+ * `force-dynamic` declara a intenção de não pré-renderizar: pré-renderizado no
+ * build, o mês do cabeçalho congelaria na data do deploy. É redundante, porque
+ * `auth()` e `cookies()` já tornam a rota dinâmica, mas fica explícito. Quando o
+ * mês virar um estado escolhido pelo usuário (spec do dashboard), essa decisão
+ * será revisitada.
  */
 export const dynamic = "force-dynamic";
 
@@ -40,7 +44,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <CabecalhoApp mesReferencia={mesAtualPtBr()} tema={await temaAtual()} />
 
       {/* Espaço inferior no mobile para a barra fixa não cobrir o conteúdo. */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 pb-28 md:pb-8">
+      <main className={cn(COLUNA_DO_APP, "flex-1 py-8 pb-28 md:pb-8")}>
         {children}
       </main>
 
