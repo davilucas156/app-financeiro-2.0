@@ -6,6 +6,7 @@ import {
   FONTES_DE_SUGESTAO,
   type FonteDeSugestao,
 } from "@/features/classificacao/motor/sugestoes";
+import { ehCheckViolado } from "@/lib/erroDoPostgres";
 import { ehUuid } from "@/lib/uuid";
 import {
   decidirLancamento,
@@ -55,6 +56,16 @@ export async function decidir(
 
     return resultado;
   } catch (erro) {
+    // `CHECK` estourado é erro do app, não da escolha: "tente de novo" faria a
+    // pessoa repetir um toque que vai falhar do mesmo jeito.
+    if (ehCheckViolado(erro)) {
+      console.error("[revisao] decisão recusada pelo CHECK do banco", erro);
+      return {
+        ok: false,
+        erro: "O problema não está na sua escolha: o app tentou gravar este lançamento de um jeito que não consegue. Nada foi alterado — recarregue a tela e, se repetir, avise quem mantém o app.",
+      };
+    }
+
     console.error("[revisao] falha ao gravar a decisão", erro);
     return {
       ok: false,
@@ -71,12 +82,15 @@ export async function decidir(
  * banco; conferir aqui devolve uma frase em vez de um 500.
  */
 function montar(e: EntradaDaDecisao): Decisao | null {
-  if (!ehUuid(e.lancamentoId)) return null;
+  // A entrada vem do cliente e pode ser null, mesmo com o tipo dizendo o contrário.
+  if (!e || !ehUuid(e.lancamentoId)) return null;
 
   if (e.tipo === "categoria") {
     if (!e.categoriaId || !ehUuid(e.categoriaId)) return null;
 
-    const fonteDaSugestao = FONTES_DE_SUGESTAO.find((f) => f === e.fonteDaSugestao);
+    const fonteDaSugestao = FONTES_DE_SUGESTAO.find(
+      (f) => f === e.fonteDaSugestao,
+    );
 
     return {
       tipo: "categoria",

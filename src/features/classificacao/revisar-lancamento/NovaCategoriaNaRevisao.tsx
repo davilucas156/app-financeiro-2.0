@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import { criarEUsarAqui } from "@/features/categorias/nomear-categoria/criarEClassificar.action";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
@@ -68,12 +69,16 @@ export function NovaCategoriaNaRevisao({
         potes={potes}
         aoSalvar={(v) =>
           comecar(async () => {
-            const r = await criarEUsarAqui({ ...v, lancamentoId });
-            if (r.ok) {
-              setErro(null);
-              setAberto(false);
-            } else {
-              setErro(r.erro);
+            setErro(null);
+            try {
+              const r = await criarEUsarAqui({ ...v, lancamentoId });
+              if (r.ok) {
+                setAberto(false);
+              } else {
+                setErro(r.erro);
+              }
+            } catch {
+              setErro(FALHA_DE_CONEXAO);
             }
           })
         }

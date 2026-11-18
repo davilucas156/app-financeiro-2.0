@@ -3,6 +3,8 @@ import { prepararLancamentos } from "@/features/upload/ler-arquivo/preparar";
 import type { Lancamento } from "@/features/upload/ler-arquivo/lancamentos";
 import {
   classificarImportacao,
+  problemaDaClassificacao,
+  type ClassificacaoNaImportacao,
   VALOR_ALTO_CENTAVOS,
   type RegraAplicavel,
 } from "./classificarImportacao";
@@ -175,5 +177,76 @@ describe("todo lançamento recebe uma decisão", () => {
     for (const p of preparados) {
       expect(r.porImpressao.has(p.impressao), p.descricao).toBe(true);
     }
+  });
+});
+
+describe("problemaDaClassificacao", () => {
+  const pendente: ClassificacaoNaImportacao = {
+    categoriaId: null,
+    classificadoPor: null,
+    regraId: null,
+    regraChave: null,
+    status: "importado",
+    motivo: null,
+  };
+
+  const porRegra: ClassificacaoNaImportacao = {
+    categoriaId: "c1",
+    classificadoPor: "regra",
+    regraId: "r1",
+    regraChave: "descricao_contem:PADARIA",
+    status: "importado",
+    motivo: null,
+  };
+
+  it("aceita o pendente, o classificado por regra e o excluído", () => {
+    expect(problemaDaClassificacao(pendente)).toBeNull();
+    expect(problemaDaClassificacao(porRegra)).toBeNull();
+    expect(
+      problemaDaClassificacao({ ...pendente, status: "excluido", motivo: "x" }),
+    ).toBeNull();
+  });
+
+  it("recusa categoria sem procedência, e o contrário", () => {
+    expect(problemaDaClassificacao({ ...pendente, categoriaId: "c1" })).toMatch(
+      /juntas/,
+    );
+    expect(
+      problemaDaClassificacao({ ...pendente, classificadoPor: "regra" }),
+    ).toMatch(/juntas/);
+  });
+
+  it("recusa chave de regra em lançamento que não veio de regra", () => {
+    expect(
+      problemaDaClassificacao({ ...pendente, regraChave: "descricao_contem:X" }),
+    ).toMatch(/chave da regra/);
+  });
+
+  it("recusa classificado por regra sem a regra ou sem a chave", () => {
+    expect(problemaDaClassificacao({ ...porRegra, regraId: null })).toMatch(
+      /precisa da regra/,
+    );
+    expect(problemaDaClassificacao({ ...porRegra, regraChave: null })).toMatch(
+      /precisa da regra/,
+    );
+  });
+
+  it("recusa excluído com categoria", () => {
+    expect(
+      problemaDaClassificacao({ ...porRegra, status: "excluido" }),
+    ).toMatch(/excluído/);
+  });
+});
+
+describe("tudo o que o motor produz é coerente", () => {
+  it("pendente, classificado, valor alto e excluído passam pela conferência", () => {
+    const preparados = preparar([
+      lanc({ linha: 1 }),
+      lanc({ linha: 2, descricao: "LOJA QUALQUER BETIM BRA" }),
+      lanc({ linha: 3, valorCentavos: VALOR_ALTO_CENTAVOS }),
+    ]);
+
+    // Se alguma classificação fosse incoerente, `classificarImportacao` lançaria.
+    expect(() => classificarImportacao(preparados, [REGRA_PADARIA])).not.toThrow();
   });
 });

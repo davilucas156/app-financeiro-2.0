@@ -4,7 +4,7 @@ import { listarPendentes } from "@/features/classificacao/revisar-lancamento/lis
 import { TelaDeRevisao } from "@/features/classificacao/revisar-lancamento/TelaDeRevisao";
 
 export const metadata: Metadata = {
-  title: "Revisar · Painel Financeiro 6 Potes",
+  title: "Revisar",
 };
 
 /**
@@ -30,7 +30,7 @@ export default async function RevisaoPage() {
       categorias={categorias}
       potes={potes}
       voltar={voltar}
-      mes={pendentes[0]?.data.slice(0, 7) ?? ""}
+      mes={pendentes[0]?.mesReferencia ?? ""}
     />
   );
 }

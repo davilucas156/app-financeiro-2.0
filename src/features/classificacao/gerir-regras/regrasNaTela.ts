@@ -20,7 +20,6 @@ export type RegraNaTela = {
   categoriaEmoji: string;
   poteNome: string;
   poteCor: string;
-  prioridade: number;
   origem: "seed" | "correcao";
   /**
    * Quantos lançamentos vieram dela.
@@ -43,6 +42,49 @@ export type RegraNaTela = {
  */
 export function textoEhEditavel(criterio: Criterio): boolean {
   return criterio.tipo === "descricao_contem" || criterio.tipo === "pessoa";
+}
+
+/**
+ * O maior texto que a edição aceita.
+ *
+ * Medido nos extratos reais do repositório (475 lançamentos): o maior trecho
+ * ou nome que o app gera tem 54 caracteres, e a maior descrição inteira, 70.
+ * 120 dá mais que o dobro de folga sobre o pior caso medido. Não é um limite
+ * do app — descrição de banco não tem teto —, então o servidor só o cobra de
+ * texto **novo** (`erroDoTamanhoDoTexto`): uma regra que o próprio app criou
+ * maior que isto continua podendo mudar de destino.
+ */
+export const TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA = 120;
+
+/** O texto que o campo de edição mostra: o termo, o nome, ou vazio. */
+export function textoEditavelDe(criterio: Criterio): string {
+  switch (criterio.tipo) {
+    case "descricao_contem":
+      return criterio.termo;
+    case "pessoa":
+      return criterio.nome;
+    case "valor_direcao":
+      return "";
+  }
+}
+
+/**
+ * A recusa para um texto grande demais, ou `null`.
+ *
+ * Texto igual ao já gravado passa, por maior que seja: quem só troca o destino
+ * reenvia o texto como está, e recusá-lo travaria uma regra que o próprio app
+ * criou.
+ */
+export function erroDoTamanhoDoTexto(
+  texto: string,
+  textoAtual: string,
+): string | null {
+  const limpo = texto.trim();
+
+  if (limpo.length <= TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA) return null;
+  if (limpo === textoAtual.trim()) return null;
+
+  return `O texto da regra pode ter no máximo ${TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA} caracteres.`;
 }
 
 /** O rótulo humano do tipo, para a tela não mostrar `descricao_contem`. */

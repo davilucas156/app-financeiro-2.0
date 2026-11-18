@@ -246,7 +246,12 @@ export async function decidirNaTransacao(
    */
   if (antes.status === "excluido") return { ok: false, erro: NAO_ENCONTRADO };
 
-  if (decisao.tipo === "confirmar" && antes.status !== "revisao_pendente") {
+  // Sem categoria não há o que confirmar: a categoria foi apagada em outra aba,
+  // e "está certo" gravaria `importado` sem categoria e apagaria o motivo.
+  if (
+    decisao.tipo === "confirmar" &&
+    (antes.status !== "revisao_pendente" || antes.categoriaId === null)
+  ) {
     return { ok: false, erro: NAO_ENCONTRADO };
   }
 

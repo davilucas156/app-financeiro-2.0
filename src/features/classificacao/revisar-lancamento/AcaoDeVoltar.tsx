@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { cn } from "@/lib/cn";
 import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { desfazer } from "./desfazerDecisao.action";
 import type { PodeVoltar } from "./desfazer";
@@ -13,7 +12,7 @@ import type { PodeVoltar } from "./desfazer";
  *
  * E isso é a parte importante. O botão esteve apagado desde a D4 porque
  * desfazer não existia — fingir que funcionava seria pior. Agora ele apaga
- * **só** quando é verdade que não há passo anterior: primeira decisão do mês,
+ * **só** quando é verdade que não há passo anterior: primeira decisão da conta,
  * ou um desfazer que já aconteceu.
  *
  * ## Ele existe também na tela vazia
@@ -21,14 +20,13 @@ import type { PodeVoltar } from "./desfazer";
  * Ao classificar o último pendente a tela vira "Nada pendente", e o botão mora
  * dentro do componente do lançamento. Sem duplicá-lo lá, ele sumiria
  * exatamente na decisão mais provável de se querer desfazer.
+ *
+ * ## Não usa `AcaoDeDecidir`
+ *
+ * `AcaoDeDecidir` recebe uma `EntradaDaDecisao` e chama `decidir`; o Voltar não
+ * tem entrada nenhuma, só o estado apagado/aceso do botão, e chama `desfazer`.
  */
-export function AcaoDeVoltar({
-  voltar,
-  className,
-}: {
-  voltar: PodeVoltar | null;
-  className?: string;
-}) {
+export function AcaoDeVoltar({ voltar }: { voltar: PodeVoltar | null }) {
   const [desfazendo, iniciar] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
 
@@ -58,10 +56,7 @@ export function AcaoDeVoltar({
             }
           })
         }
-        className={cn(
-          "inline-flex min-h-11 w-full items-center justify-center rounded-card border border-border2 bg-card px-3 text-xs font-bold text-text transition-colors hover:bg-card2 disabled:cursor-not-allowed disabled:opacity-40",
-          className,
-        )}
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-card border border-border2 bg-card px-3 text-xs font-bold text-text transition-colors enabled:hover:bg-card2 disabled:cursor-not-allowed disabled:opacity-40"
       >
         ← Voltar
       </button>

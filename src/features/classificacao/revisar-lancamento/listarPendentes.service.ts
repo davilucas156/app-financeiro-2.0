@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
 import {
   buckets,
   categories,
@@ -8,6 +8,10 @@ import {
   transactions,
 } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import {
+  chaveDaCategoria,
+  mapaDeIdPorChave,
+} from "@/features/classificacao/motor/chaveDaCategoria";
 import { pessoaDe } from "@/features/classificacao/motor/pessoa";
 import type { Classificado } from "@/features/classificacao/motor/sugestoes";
 import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
@@ -29,8 +33,16 @@ import {
  * (`references/architecture.md`, Thin Client / Fat Server).
  */
 
+/**
+ * O mês em que o lançamento conta (`transactions.mes_referencia`).
+ *
+ * Não é a data: numa parcela de cartão o mês é o da fatura, e a tela precisa
+ * dele para não recalcular "data → mês" por conta própria.
+ */
+export type PendenteComMes = PendenteParaRevisar & { mesReferencia: string };
+
 export type DadosDaRevisao = {
-  pendentes: PendenteParaRevisar[];
+  pendentes: PendenteComMes[];
   categorias: CategoriaEscolhivel[];
   /**
    * Os nove potes, para o "+ Nova categoria" da C2 da spec 05.
@@ -68,6 +80,7 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
           data: transactions.data,
           origem: transactions.origem,
           parcela: transactions.parcela,
+          mesReferencia: transactions.mesReferencia,
           categoriaDoBanco: transactions.categoriaDoBanco,
           motivo: transactions.motivo,
           categoriaId: transactions.categoriaId,
@@ -121,6 +134,7 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
             isNotNull(transactions.categoriaId),
           ),
         )
+        .orderBy(desc(transactions.data), desc(transactions.id))
         .limit(TETO_DE_HISTORICO),
 
       /*
@@ -167,7 +181,7 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
   const categoriasEscolhiveis: CategoriaEscolhivel[] = categoriasDoBanco.map(
     (c) => ({
       id: c.id,
-      chave: `${c.poteSlug}/${c.slug}`,
+      chave: chaveDaCategoria(c.poteSlug, c.slug),
       nome: c.nome,
       emoji: c.emoji,
       ordem: c.ordem,
@@ -183,9 +197,11 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
     }),
   );
 
-  const idPorChave = new Map(
-    categoriasEscolhiveis.map((c) => [c.chave, c.id] as [string, string]),
-  );
+  const idPorChave = mapaDeIdPorChave(categoriasEscolhiveis);
+
+  // `prepararRevisao` não conhece o mês; o id é a ponte entre a linha e o
+  // pendente que ela devolve.
+  const mesPorId = new Map(linhas.map((l) => [l.id, l.mesReferencia]));
 
   return {
     categorias: categoriasEscolhiveis,
@@ -201,8 +217,8 @@ export async function listarPendentes(userId: string): Promise<DadosDaRevisao> {
         // Pix nunca lembraria como voce classificou a mesma pessoa antes.
         pessoa: pessoaDe(h.descricao),
         categoriaId: h.categoriaId!,
-        chaveDaCategoria: `${h.poteSlug}/${h.categoriaSlug}`,
+        chaveDaCategoria: chaveDaCategoria(h.poteSlug, h.categoriaSlug),
       })),
-    }),
+    }).map((p) => ({ ...p, mesReferencia: mesPorId.get(p.id) ?? "" })),
   };
 }

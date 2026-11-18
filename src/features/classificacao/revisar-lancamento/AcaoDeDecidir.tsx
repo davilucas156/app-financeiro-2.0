@@ -8,10 +8,13 @@ import { decidir, type EntradaDaDecisao } from "./decidirLancamento.action";
 /**
  * Um botão que grava uma decisão da revisão (tarefa D4).
  *
- * Existe como componente próprio porque três lugares diferentes precisam do
- * mesmo comportamento com aparências diferentes: a sugestão, a categoria da
- * lista e as saídas do topo. Duplicar o `useTransition` nos três garantiria
- * que um deles esqueceria de bloquear o toque duplo.
+ * Existe como componente próprio porque as duas saídas de `TelaDeRevisao`
+ * ("Fora do cálculo" e "Está certo") precisam do mesmo comportamento com
+ * aparências diferentes. Duplicar o `useTransition` nas duas garantiria que
+ * uma delas esqueceria de bloquear o toque duplo.
+ *
+ * `Sugestoes` e `ListaDeCategorias` não gravam nada: só disparam `aoEscolher`,
+ * e quem segue é a `PerguntaDeRegra`.
  *
  * ## O toque duplo não pode gravar duas vezes
  *

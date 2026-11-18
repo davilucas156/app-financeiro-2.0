@@ -7,6 +7,7 @@ import {
   transactions,
 } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { chaveDaCategoria } from "@/features/classificacao/motor/chaveDaCategoria";
 import { oQueEstaRegraProcura, type RegraNaTela } from "./regrasNaTela";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 
@@ -32,7 +33,6 @@ export async function listarRegras(userId: string): Promise<DadosDasRegras> {
         id: classificationRules.id,
         criterio: classificationRules.criterio,
         categoriaId: classificationRules.categoriaId,
-        prioridade: classificationRules.prioridade,
         origem: classificationRules.origem,
         categoriaNome: categories.nome,
         categoriaEmoji: categories.emoji,
@@ -100,14 +100,13 @@ export async function listarRegras(userId: string): Promise<DadosDasRegras> {
       categoriaEmoji: l.categoriaEmoji,
       poteNome: l.poteNome,
       poteCor: l.poteCor,
-      prioridade: l.prioridade,
       origem: l.origem,
       jaClassificou: l.jaClassificou,
     })),
 
     categorias: categoriasDoBanco.map((c) => ({
       id: c.id,
-      chave: `${c.poteSlug}/${c.slug}`,
+      chave: chaveDaCategoria(c.poteSlug, c.slug),
       nome: c.nome,
       emoji: c.emoji,
       ordem: c.ordem,

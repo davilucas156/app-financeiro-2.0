@@ -7,6 +7,7 @@ import type {
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { CategoriaEscolhivel } from "./categorias";
+import { rotuloDaFonte } from "./rotuloDaFonte";
 
 /**
  * Os até 3 botões de sugestão (tarefa B2).
@@ -15,8 +16,9 @@ import type { CategoriaEscolhivel } from "./categorias";
  *
  * Sugestão anônima é palpite que você aceita no escuro. Com a procedência, dá
  * para saber se está confiando em você mesmo do mês passado ou num rótulo do
- * banco que já se provou errado — e é o que deixa o LLM entrar depois como
- * mais uma fonte, sem mudar esta tela.
+ * banco que já se provou errado. Uma fonte nova (o LLM, por exemplo) não entra
+ * calada: o `Record` de `rotuloDaFonte.ts` obriga a rotulá-la, e o compilador
+ * falha até isso ser feito.
  *
  * ## Quando não há sugestão, não há seção
  *
@@ -24,14 +26,6 @@ import type { CategoriaEscolhivel } from "./categorias";
  * nenhuma. Uma seção vazia dizendo "sem sugestões" só empurraria a lista
  * completa — que é o caminho de verdade — mais para baixo.
  */
-
-/** Uma palavra por fonte, para o rótulo caber no polegar. */
-const ROTULO: Record<FonteDeSugestao, string> = {
-  "voce-ja-classificou": "seu histórico",
-  "mesma-contraparte": "mesma pessoa",
-  "categoria-do-banco": "palpite do banco",
-  "pote-do-banco": "banco + histórico",
-};
 
 export function Sugestoes({
   sugestoes,
@@ -78,7 +72,7 @@ export function Sugestoes({
                 </span>
 
                 <span className="shrink-0 font-mono text-4xs tracking-[1px] text-dim uppercase">
-                  {ROTULO[s.fonte]}
+                  {rotuloDaFonte(s.fonte)}
                 </span>
               </button>
             </li>

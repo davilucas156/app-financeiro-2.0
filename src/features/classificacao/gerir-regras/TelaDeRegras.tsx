@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { contar } from "@/lib/plural";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { CartaoDaRegra } from "./CartaoDaRegra";
 import type { RegraNaTela } from "./regrasNaTela";
@@ -35,12 +35,16 @@ export function TelaDeRegras({
           emoji="🎛️"
           titulo="Nenhuma regra ainda"
           descricao="Regras nascem quando você classifica um lançamento e responde “Sempre”. A partir daí o app repete a sua decisão sozinho."
+          acao={
+            // Cópia da classe do botão primário (um BotaoLink virá depois).
+            <Link
+              href="/revisao"
+              className="inline-flex min-h-11 items-center rounded-card bg-primary px-5 text-sm font-bold text-bg transition-colors hover:bg-orange"
+            >
+              Ir para a revisão
+            </Link>
+          }
         />
-        <div className="mt-4 flex justify-center">
-          <Link href="/revisao">
-            <Button>Ir para a revisão</Button>
-          </Link>
-        </div>
       </>
     );
   }
@@ -52,9 +56,7 @@ export function TelaDeRegras({
       <Card className="border-blue/20 bg-blue/8">
         <p className="text-xs leading-relaxed text-dim">
           <strong className="font-bold text-blue">
-            {regras.length === 1
-              ? "1 regra classificando por você."
-              : `${regras.length} regras classificando por você.`}
+            {contar(regras.length, "regra", "regras")} classificando por você.
           </strong>{" "}
           Mexer aqui vale{" "}
           <strong className="text-text">daqui para frente</strong> — o que uma

@@ -8,6 +8,7 @@ import {
   comTextoNovo,
   regraValida,
 } from "@/features/classificacao/motor/regras";
+import { erroDoTamanhoDoTexto, textoEditavelDe } from "./regrasNaTela";
 
 /**
  * Editar e apagar regra (tarefa D9).
@@ -62,6 +63,13 @@ export async function editarRegra(
     .limit(1);
 
   if (!regra) return { ok: false, erro: NAO_ENCONTRADA };
+
+  // O campo do cliente tem `maxLength`, mas isso é conforto, não defesa.
+  const tamanho =
+    dados.texto === undefined
+      ? null
+      : erroDoTamanhoDoTexto(dados.texto, textoEditavelDe(regra.criterio));
+  if (tamanho) return { ok: false, erro: tamanho };
 
   // A categoria também vem do cliente, e o `where` da regra não protege o
   // destino dela — mesma conferência da D4.

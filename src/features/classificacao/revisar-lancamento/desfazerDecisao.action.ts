@@ -24,10 +24,12 @@ export async function desfazer(): Promise<ResultadoDoDesfazer> {
     if (resultado.ok) {
       // O lançamento reaberto volta para a fila e — porque a fila é ordenada
       // por data e você sempre decide o primeiro — volta para o topo dela.
-      // Painel e upload contam pendências, então também mudaram.
+      // Painel e upload contam pendências, e o comparativo mede a cobertura
+      // de cada mês — tudo isso também mudou.
       revalidatePath("/revisao");
       revalidatePath("/dashboard");
       revalidatePath("/upload");
+      revalidatePath("/comparativo");
     }
 
     return resultado;

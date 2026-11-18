@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { rotuloDeOrigem } from "@/features/upload/enviar-extrato/exibirEnvio";
 import { diaEMes, emReais } from "@/lib/dinheiro";
 import type { PendenteParaRevisar } from "./pendentes";
 
@@ -51,9 +52,7 @@ export function CartaoDoLancamento({ l }: { l: PendenteParaRevisar }) {
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Badge variant="dim">
-          {l.origem === "csv_cartao" ? "Cartão" : "Conta"}
-        </Badge>
+        <Badge variant="dim">{rotuloDeOrigem(l.origem)}</Badge>
 
         {l.parcela && <Badge variant="dim">Parcela {l.parcela}</Badge>}
 

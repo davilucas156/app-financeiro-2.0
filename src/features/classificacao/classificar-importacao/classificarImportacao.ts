@@ -25,7 +25,18 @@ import type { LancamentoPreparado } from "@/features/upload/ler-arquivo/preparar
 /** Uma regra do banco, com a chave que vai ser congelada na procedência. */
 export type RegraAplicavel = Regra & { chave: string };
 
-export type Decisao = {
+/**
+ * O que a importação grava em cada lançamento: categoria, procedência e estado.
+ *
+ * ⚠ **Não é a `Decisao` de `revisar-lancamento`.** Aquela é o que *você*
+ * escolhe na tela de revisão; esta é o que o *motor* resolve na importação. Os
+ * dois já tiveram o mesmo nome e se confundiam.
+ *
+ * Os campos anuláveis não impedem combinações sem sentido — por isso
+ * `problemaDaClassificacao` confere as invariantes antes de qualquer coisa ir
+ * ao banco, em vez de deixar o `CHECK` estourar no meio da gravação.
+ */
+export type ClassificacaoNaImportacao = {
   categoriaId: string | null;
   classificadoPor: "regra" | null;
   regraId: string | null;
@@ -36,8 +47,8 @@ export type Decisao = {
 };
 
 export type ResultadoDaClassificacao = {
-  /** Uma decisão por lançamento, indexada pela impressão digital. */
-  porImpressao: Map<string, Decisao>;
+  /** Uma classificação por lançamento, indexada pela impressão digital. */
+  porImpressao: Map<string, ClassificacaoNaImportacao>;
   classificados: number;
   pendentes: number;
   /** Classificados que ainda assim vão passar pela sua vista. */
@@ -46,11 +57,53 @@ export type ResultadoDaClassificacao = {
 
 export { VALOR_ALTO_CENTAVOS };
 
+/**
+ * Erro do **app**, e não do arquivo: o motor produziu uma classificação que o
+ * banco recusaria. Tem tipo próprio para a tela dizer isso com todas as letras
+ * — "não é o seu arquivo" — em vez de um genérico "não deu certo".
+ */
+export class ClassificacaoIncoerente extends Error {
+  constructor(descricao: string) {
+    super(descricao);
+    this.name = "ClassificacaoIncoerente";
+  }
+}
+
+/**
+ * Por que esta classificação não poderia ser gravada, ou `null` se pode.
+ *
+ * Espelha os `CHECK` de `transactions` (`transactions_classificacao_ck` e
+ * `transactions_regra_chave_ck`) e acrescenta o que o motor promete além deles:
+ * o lançamento classificado por regra carrega a regra **e** a chave congelada, e
+ * o excluído não tem categoria.
+ */
+export function problemaDaClassificacao(
+  c: ClassificacaoNaImportacao,
+): string | null {
+  if ((c.categoriaId === null) !== (c.classificadoPor === null)) {
+    return "categoria e procedência têm de vir juntas ou ausentes juntas";
+  }
+
+  if (c.regraChave !== null && c.classificadoPor !== "regra") {
+    return "só um lançamento classificado por regra pode ter a chave da regra";
+  }
+
+  if (c.classificadoPor === "regra" && (c.regraId === null || c.regraChave === null)) {
+    return "lançamento classificado por regra precisa da regra e da chave congelada";
+  }
+
+  if (c.status === "excluido" && c.categoriaId !== null) {
+    return "lançamento excluído do cálculo não pode ter categoria";
+  }
+
+  return null;
+}
+
 export function classificarImportacao(
   preparados: LancamentoPreparado[],
   regras: RegraAplicavel[],
 ): ResultadoDaClassificacao {
-  const porImpressao = new Map<string, Decisao>();
+  const porImpressao = new Map<string, ClassificacaoNaImportacao>();
   let classificados = 0;
   let pendentes = 0;
   let conferir = 0;
@@ -115,6 +168,17 @@ export function classificarImportacao(
       status,
       motivo,
     });
+  }
+
+  // Antes de devolver, e portanto antes de qualquer gravação: uma combinação
+  // impossível aparece aqui, com o motivo, e não como erro de banco no meio da
+  // transação.
+  for (const [impressao, classificacao] of porImpressao) {
+    const problema = problemaDaClassificacao(classificacao);
+
+    if (problema) {
+      throw new ClassificacaoIncoerente(`${problema} (impressão ${impressao})`);
+    }
   }
 
   return { porImpressao, classificados, pendentes, conferir };

@@ -4,7 +4,7 @@ import { listarRegras } from "@/features/classificacao/gerir-regras/listarRegras
 import { TelaDeRegras } from "@/features/classificacao/gerir-regras/TelaDeRegras";
 
 export const metadata: Metadata = {
-  title: "Regras · Painel Financeiro 6 Potes",
+  title: "Regras",
 };
 
 /**

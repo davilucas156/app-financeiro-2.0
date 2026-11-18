@@ -1,5 +1,6 @@
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
 import { normalizarDescricao } from "@/features/upload/ler-arquivo/preparar";
+import { prefixoDoPote } from "./chaveDaCategoria";
 import { trechoEstavel } from "./trecho";
 
 /**
@@ -182,7 +183,7 @@ function maisUsadaNoPote(
   const contagem = new Map<string, number>();
 
   for (const h of historico) {
-    if (!h.chaveDaCategoria.startsWith(`${pote}/`)) continue;
+    if (!h.chaveDaCategoria.startsWith(prefixoDoPote(pote))) continue;
     contagem.set(h.categoriaId, (contagem.get(h.categoriaId) ?? 0) + 1);
   }
 

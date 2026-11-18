@@ -2,8 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
+import { contar } from "@/lib/plural";
 import {
   agruparPorPote,
   type CategoriaEscolhivel,
@@ -11,6 +14,8 @@ import {
 import { apagar, editar } from "./mexerNaRegra.action";
 import {
   rotuloDoTipo,
+  TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA,
+  textoEditavelDe,
   textoEhEditavel,
   type RegraNaTela,
 } from "./regrasNaTela";
@@ -71,15 +76,25 @@ export function CartaoDaRegra({
       <p className="mt-2 text-xs text-dim">
         {regra.jaClassificou === 0
           ? "Ainda não classificou nada."
-          : regra.jaClassificou === 1
-            ? "Já classificou 1 lançamento."
-            : `Já classificou ${regra.jaClassificou} lançamentos.`}
+          : `Já classificou ${contar(regra.jaClassificou, "lançamento", "lançamentos")}.`}
       </p>
 
       {modo === "vendo" && (
         <div className="mt-4 flex gap-2">
-          <Secundario onClick={() => setModo("editando")}>Editar</Secundario>
-          <Secundario onClick={() => setModo("apagando")}>Apagar</Secundario>
+          <Button
+            variant="secondary"
+            className="flex-1 text-xs"
+            onClick={() => setModo("editando")}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="secondary"
+            className="flex-1 text-xs"
+            onClick={() => setModo("apagando")}
+          >
+            Apagar
+          </Button>
         </div>
       )}
 
@@ -108,12 +123,7 @@ function Editor({
   aoFechar: () => void;
 }) {
   const editavel = textoEhEditavel(regra.criterio);
-  const textoAtual =
-    regra.criterio.tipo === "descricao_contem"
-      ? regra.criterio.termo
-      : regra.criterio.tipo === "pessoa"
-        ? regra.criterio.nome
-        : "";
+  const textoAtual = textoEditavelDe(regra.criterio);
 
   const [texto, setTexto] = useState(textoAtual);
   const [categoriaId, setCategoriaId] = useState(regra.categoriaId);
@@ -127,14 +137,18 @@ function Editor({
   const salvar = () =>
     iniciar(async () => {
       setErro(null);
-      const r = await editar({
-        id: regra.id,
-        categoriaId,
-        texto: editavel ? texto : undefined,
-      });
+      try {
+        const r = await editar({
+          id: regra.id,
+          categoriaId,
+          texto: editavel ? texto : undefined,
+        });
 
-      if (r.ok) aoFechar();
-      else setErro(r.erro);
+        if (r.ok) aoFechar();
+        else setErro(r.erro);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
 
   return (
@@ -152,6 +166,7 @@ function Editor({
           */}
           <input
             value={texto}
+            maxLength={TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA}
             onChange={(e) => setTexto(e.target.value)}
             disabled={salvando}
             className="mt-1.5 min-h-11 w-full rounded-card border border-border2 bg-bg px-3 font-mono text-sm text-text disabled:opacity-40"
@@ -192,12 +207,22 @@ function Editor({
       </p>
 
       <div className="mt-4 flex gap-2">
-        <Primario onClick={salvar} carregando={salvando}>
+        <Button
+          variant="primary"
+          className="flex-1"
+          onClick={salvar}
+          loading={salvando}
+        >
           Salvar
-        </Primario>
-        <Secundario onClick={aoFechar} desabilitado={salvando}>
+        </Button>
+        <Button
+          variant="secondary"
+          className="flex-1 text-xs"
+          onClick={aoFechar}
+          disabled={salvando}
+        >
           Cancelar
-        </Secundario>
+        </Button>
       </div>
 
       {erro && (
@@ -230,21 +255,32 @@ function Exclusao({
       </p>
 
       <div className="mt-4 flex gap-2">
-        <Primario
+        <Button
+          variant="primary"
+          className="flex-1"
           onClick={() =>
             iniciar(async () => {
               setErro(null);
-              const r = await apagar(regra.id);
-              if (!r.ok) setErro(r.erro);
+              try {
+                const r = await apagar(regra.id);
+                if (!r.ok) setErro(r.erro);
+              } catch {
+                setErro(FALHA_DE_CONEXAO);
+              }
             })
           }
-          carregando={apagando}
+          loading={apagando}
         >
           Apagar
-        </Primario>
-        <Secundario onClick={aoFechar} desabilitado={apagando}>
+        </Button>
+        <Button
+          variant="secondary"
+          className="flex-1 text-xs"
+          onClick={aoFechar}
+          disabled={apagando}
+        >
           Manter
-        </Secundario>
+        </Button>
       </div>
 
       {erro && (
@@ -253,48 +289,5 @@ function Exclusao({
         </p>
       )}
     </div>
-  );
-}
-
-function Primario({
-  onClick,
-  carregando,
-  children,
-}: {
-  onClick: () => void;
-  carregando: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={carregando}
-      aria-busy={carregando || undefined}
-      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-4 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      {children}
-    </button>
-  );
-}
-
-function Secundario({
-  onClick,
-  desabilitado = false,
-  children,
-}: {
-  onClick: () => void;
-  desabilitado?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={desabilitado}
-      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text transition-colors hover:bg-card2 disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      {children}
-    </button>
   );
 }

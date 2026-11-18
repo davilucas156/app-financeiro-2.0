@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Criterio } from "@/features/classificacao/motor/regras";
-import { oQueEstaRegraProcura, textoEhEditavel } from "./regrasNaTela";
+import {
+  erroDoTamanhoDoTexto,
+  oQueEstaRegraProcura,
+  TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA,
+  textoEditavelDe,
+  textoEhEditavel,
+} from "./regrasNaTela";
 
 const contem: Criterio = { tipo: "descricao_contem", termo: "PETROBRAS" };
 const pessoa: Criterio = { tipo: "pessoa", nome: "FULANA DE TAL" };
@@ -115,5 +121,36 @@ describe("a faixa de valor aparece na frase", () => {
     expect(
       oQueEstaRegraProcura({ tipo: "descricao_contem", termo: "PETROBRAS" }),
     ).toBe("PETROBRAS");
+  });
+});
+
+describe("tamanho do texto da regra (S12)", () => {
+  const max = TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA;
+
+  it("texto no limite passa", () => {
+    expect(erroDoTamanhoDoTexto("A".repeat(max), "PETROBRAS")).toBeNull();
+  });
+
+  it("texto com um caractere a mais é recusado, com o limite na mensagem", () => {
+    expect(erroDoTamanhoDoTexto("A".repeat(max + 1), "PETROBRAS")).toBe(
+      `O texto da regra pode ter no máximo ${max} caracteres.`,
+    );
+  });
+
+  it("espaço nas pontas não conta (o servidor grava o texto aparado)", () => {
+    expect(erroDoTamanhoDoTexto(` ${"A".repeat(max)} `, "X")).toBeNull();
+  });
+
+  it("texto maior que o limite, mas igual ao já gravado, passa", () => {
+    // Regra que o próprio app criou maior que o teto: trocar só o destino
+    // reenvia o texto como está.
+    const longo = "A".repeat(max + 30);
+    expect(erroDoTamanhoDoTexto(longo, longo)).toBeNull();
+  });
+
+  it("o texto editável sai do termo ou do nome, e é vazio por valor", () => {
+    expect(textoEditavelDe(contem)).toBe("PETROBRAS");
+    expect(textoEditavelDe(pessoa)).toBe("FULANA DE TAL");
+    expect(textoEditavelDe(porValor)).toBe("");
   });
 });
