@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { FUNDO_ESCURO } from "@/features/aparencia/tema/coresDoSistema";
+import { DESCRICAO_DO_APP, NOME_DO_APP } from "@/lib/nomeDoApp";
 
 /**
  * O que o celular precisa saber para instalar o app (spec 07).
@@ -11,14 +13,14 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Painel Financeiro 6 Potes",
+    name: NOME_DO_APP,
     /*
      * ⚠ **12 caracteres, contados.** É o rótulo embaixo do ícone na tela
      * inicial, e o Android e o iOS cortam com reticências o que passar disso.
      * "Painel Financeiro" viraria "Painel Fina…", que não identifica nada.
      */
     short_name: "6 Potes",
-    description: "Controle financeiro pessoal pelo método dos 6 potes.",
+    description: DESCRICAO_DO_APP,
 
     /*
      * ⚠ **`/` e não `/dashboard`.**
@@ -31,8 +33,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
 
     display: "standalone",
-    background_color: "#060608", // --color-bg: a mesma tela de abertura do app
-    theme_color: "#060608",
+    background_color: FUNDO_ESCURO, // --color-bg: a mesma tela de abertura do app
+    theme_color: FUNDO_ESCURO,
     lang: "pt-BR",
     dir: "ltr",
 

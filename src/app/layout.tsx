@@ -2,7 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Syne, DM_Mono } from "next/font/google";
 import { letraAtual } from "@/features/aparencia/letra/letraAtual";
+import {
+  FUNDO_CLARO,
+  FUNDO_ESCURO,
+} from "@/features/aparencia/tema/coresDoSistema";
 import { temaAtual } from "@/features/aparencia/tema/temaAtual";
+import { DESCRICAO_DO_APP, NOME_DO_APP } from "@/lib/nomeDoApp";
 import "./globals.css";
 
 // Syne é fonte variável: carrega a faixa de pesos inteira, sem `weight`.
@@ -37,8 +42,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const claro = (await temaAtual()) === "claro";
 
   return {
-    title: "Painel Financeiro 6 Potes",
-    description: "Controle financeiro pessoal pelo método dos 6 potes.",
+    /*
+     * O `template` vale para as páginas filhas (inclusive as dos route groups),
+     * não para este segmento: `default` é o título de quem não define o seu.
+     */
+    title: { default: NOME_DO_APP, template: `%s · ${NOME_DO_APP}` },
+    description: DESCRICAO_DO_APP,
 
     /*
      * O que muda quando o app é aberto pelo ícone da tela inicial (spec 07).
@@ -82,7 +91,7 @@ export async function generateViewport(): Promise<Viewport> {
      * em uso, para a moldura do sistema desaparecer dentro do app em vez de
      * emoldurá-lo.
      */
-    themeColor: claro ? "#eeeef3" : "#060608",
+    themeColor: claro ? FUNDO_CLARO : FUNDO_ESCURO,
 
     /*
      * ⚠ **`viewportFit: "cover"` por causa do `black-translucent`.** Com a
