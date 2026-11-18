@@ -1,6 +1,10 @@
 import type { CSSProperties } from "react";
 import { BRANCO } from "./contraste";
-import { corParaFundoClaro, corParaTexto, FUNDO_ESCURO } from "./corNoTema";
+import {
+  corParaFundoClaro,
+  corParaTexto,
+  SUPERFICIE_ESCURA_MAIS_CLARA,
+} from "./corNoTema";
 
 /**
  * O `style` de qualquer coisa pintada com a cor de um pote (tarefa D2 da
@@ -75,7 +79,7 @@ export function estiloDoPote(cor: string): CSSProperties {
  */
 export function estiloDoTextoDoPote(cor: string): CSSProperties {
   return {
-    "--pote-texto-escuro": corParaTexto(cor, FUNDO_ESCURO),
+    "--pote-texto-escuro": corParaTexto(cor, SUPERFICIE_ESCURA_MAIS_CLARA),
     "--pote-texto-claro": corParaTexto(cor, BRANCO),
     /* Claro primeiro, escuro depois — a ordem dos argumentos de `light-dark()`. */
     color: "light-dark(var(--pote-texto-claro), var(--pote-texto-escuro))",

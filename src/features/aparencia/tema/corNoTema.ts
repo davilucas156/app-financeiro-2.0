@@ -1,4 +1,11 @@
-import { BRANCO, contraste, emRgb, luminancia, type Rgb } from "./contraste";
+import {
+  BRANCO,
+  contraste,
+  emHex,
+  emRgb,
+  luminancia,
+  type Rgb,
+} from "./contraste";
 
 /**
  * A cor do pote num fundo claro (tarefa A3 da spec 08).
@@ -53,32 +60,7 @@ export const CONTRASTE_MINIMO_DE_PREENCHIMENTO = 3;
  * página inteira em branco.
  */
 export function corParaFundoClaro(hex: string): string {
-  const rgb = emRgb(hex);
-  if (rgb === null) return hex;
-
-  if (contraste(rgb, BRANCO) >= CONTRASTE_MINIMO_DE_PREENCHIMENTO) return hex;
-
-  const { matiz, saturacao, brilho } = emHsl(rgb);
-
-  /*
-   * Passo de 1%, do brilho atual para baixo. O laço termina sempre: no limite,
-   * brilho zero é preto, que dá 21 contra branco.
-   *
-   * Busca linear e não binária de propósito — são no máximo cem voltas de
-   * aritmética, e o resultado é **o primeiro brilho que passa**, ou seja, a cor
-   * mais próxima da original que serve. Uma busca binária chegaria em outro
-   * ponto por um detalhe de arredondamento, e a cor do pote mudaria de tom
-   * entre dois deploys sem ninguém ter mexido em nada.
-   */
-  for (let b = Math.round(brilho * 100); b >= 0; b--) {
-    const candidata = emRgbDeHsl(matiz, saturacao, b / 100);
-
-    if (contraste(candidata, BRANCO) >= CONTRASTE_MINIMO_DE_PREENCHIMENTO) {
-      return emHex(candidata);
-    }
-  }
-
-  return "#000000";
+  return ajustarBrilho(hex, BRANCO, CONTRASTE_MINIMO_DE_PREENCHIMENTO);
 }
 
 /**
@@ -99,9 +81,13 @@ export const CONTRASTE_MINIMO_DE_TEXTO = 4.5;
  * uma escolha de paleta.
  *
  * Se o `globals.css` ganhar uma superfície escura mais clara que esta, este
- * valor sobe junto.
+ * valor sobe junto — e o teste de espelho em `coresDoSistema.test.ts` (compara
+ * com `--color-card2`) falha até isso acontecer.
+ *
+ * ⚠ **Não confundir com `FUNDO_ESCURO` de `coresDoSistema.ts`**, que é
+ * `--color-bg` (`#060608`), a superfície escura mais *escura*.
  */
-export const FUNDO_ESCURO: Rgb = [0x16, 0x16, 0x1c];
+export const SUPERFICIE_ESCURA_MAIS_CLARA: Rgb = [0x16, 0x16, 0x1c];
 
 /**
  * A cor do pote quando ela vira **texto** (tarefa A2 da spec 15).
@@ -131,39 +117,7 @@ export const FUNDO_ESCURO: Rgb = [0x16, 0x16, 0x1c];
  * ⚠ **Hex ilegível volta intacto.** `buckets.cor` é `text` no Postgres.
  */
 export function corParaTexto(hex: string, fundo: Rgb): string {
-  const rgb = emRgb(hex);
-  if (rgb === null) return hex;
-
-  if (contraste(rgb, fundo) >= CONTRASTE_MINIMO_DE_TEXTO) return hex;
-
-  const { matiz, saturacao, brilho } = emHsl(rgb);
-
-  /*
-   * Fundo escuro pede letra mais clara; fundo claro pede mais escura. O ponto
-   * de virada é a luminância que divide os dois casos do próprio WCAG.
-   */
-  const clareando = luminancia(fundo) < LUMINANCIA_DO_MEIO;
-  const passo = clareando ? 1 : -1;
-
-  /*
-   * Passo de 1%, busca linear, do brilho atual para o extremo. Termina sempre:
-   * branco dá 21 contra qualquer fundo escuro, e preto dá 21 contra qualquer
-   * fundo claro.
-   *
-   * ⚠ **Linear e não binária, igual à irmã, e pelo mesmo motivo:** o resultado
-   * é o **primeiro** brilho que passa. Uma busca binária pararia em outro ponto
-   * por um detalhe de arredondamento, e a cor do pote mudaria de tom entre dois
-   * deploys sem ninguém ter mexido em nada.
-   */
-  for (let b = Math.round(brilho * 100); b >= 0 && b <= 100; b += passo) {
-    const candidata = emRgbDeHsl(matiz, saturacao, b / 100);
-
-    if (contraste(candidata, fundo) >= CONTRASTE_MINIMO_DE_TEXTO) {
-      return emHex(candidata);
-    }
-  }
-
-  return clareando ? "#ffffff" : "#000000";
+  return ajustarBrilho(hex, fundo, CONTRASTE_MINIMO_DE_TEXTO);
 }
 
 /**
@@ -174,6 +128,56 @@ export function corParaTexto(hex: string, fundo: Rgb): string {
  * próprio WCAG produz, e não um palpite.
  */
 const LUMINANCIA_DO_MEIO = 0.179;
+
+/**
+ * O miolo das duas funções de cima: mexe só no brilho de `hex` até ele atingir
+ * o contraste `minimo` contra `fundo`.
+ *
+ * ⚠ **Só o brilho muda; o matiz e a saturação ficam.** A cor **é** a identidade
+ * do pote em várias telas, e Transporte e Liberdade Financeira precisam
+ * continuar sendo duas coisas diferentes depois de ajustados. Mexer no matiz
+ * para "melhorar o número" trocaria o pote de cor, que é o único jeito de errar
+ * feio aqui.
+ *
+ * ⚠ **A direção sai da luminância do fundo, aqui dentro.** Fundo escuro pede cor
+ * mais clara; fundo claro pede mais escura (o ponto de virada é
+ * `LUMINANCIA_DO_MEIO`). Quem chama diz contra o que vai medir, e não para que
+ * lado andar: um parâmetro `clarear: boolean` deixaria a chamada errada ser
+ * escrita — e ela passaria, devolvendo uma cor que some no tema em que o outro
+ * estilo a mostra.
+ *
+ * ⚠ **Hex que não dá para ler volta intacto.** `buckets.cor` é `text` no
+ * Postgres; devolver o que veio deixa a barra errada, e lançar deixaria a
+ * página inteira em branco. O mesmo vale para o hex que já passa: não se mexe no
+ * que está certo.
+ *
+ * ⚠ **Busca linear e não binária, de propósito.** Passo de 1% do brilho, do
+ * atual para o extremo — são no máximo cem voltas de aritmética, e o resultado é
+ * **o primeiro brilho que passa**, ou seja, a cor mais próxima da original que
+ * serve. Uma busca binária pararia em outro ponto por um detalhe de
+ * arredondamento, e a cor do pote mudaria de tom entre dois deploys sem ninguém
+ * ter mexido em nada. O laço termina sempre: branco dá 21 contra qualquer fundo
+ * escuro, e preto dá 21 contra qualquer fundo claro.
+ */
+function ajustarBrilho(hex: string, fundo: Rgb, minimo: number): string {
+  const rgb = emRgb(hex);
+  if (rgb === null) return hex;
+
+  if (contraste(rgb, fundo) >= minimo) return hex;
+
+  const { matiz, saturacao, brilho } = emHsl(rgb);
+
+  const clareando = luminancia(fundo) < LUMINANCIA_DO_MEIO;
+  const passo = clareando ? 1 : -1;
+
+  for (let b = Math.round(brilho * 100); b >= 0 && b <= 100; b += passo) {
+    const candidata = emRgbDeHsl(matiz, saturacao, b / 100);
+
+    if (contraste(candidata, fundo) >= minimo) return emHex(candidata);
+  }
+
+  return clareando ? "#ffffff" : "#000000";
+}
 
 /**
  * O matiz de uma cor, em graus (0 a 360) — ou `null` se o hex não der para ler.
@@ -246,9 +250,4 @@ function emRgbDeHsl(matiz: number, saturacao: number, brilho: number): Rgb {
     Math.round((g + m) * 255),
     Math.round((b + m) * 255),
   ];
-}
-
-function emHex([r, g, b]: Rgb): string {
-  const canal = (v: number) => v.toString(16).padStart(2, "0");
-  return `#${canal(r)}${canal(g)}${canal(b)}`;
 }

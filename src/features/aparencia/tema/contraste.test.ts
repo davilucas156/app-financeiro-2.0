@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BRANCO, contraste, emRgb, luminancia } from "./contraste";
+import { BRANCO, contraste, emHex, emRgb, luminancia } from "./contraste";
+import { FUNDO_ESCURO } from "./coresDoSistema";
 
 /** Atalho: só para o teste ficar legível. */
 function razao(a: string, b: string): number {
@@ -20,8 +21,8 @@ describe("a régua, aferida antes de medir qualquer coisa (A1)", () => {
   });
 
   it("a ordem dos argumentos não muda a resposta", () => {
-    expect(razao("#060608", "#e8e8f0")).toBeCloseTo(
-      razao("#e8e8f0", "#060608"),
+    expect(razao(FUNDO_ESCURO, "#e8e8f0")).toBeCloseTo(
+      razao("#e8e8f0", FUNDO_ESCURO),
       10,
     );
   });
@@ -33,8 +34,6 @@ describe("a régua, aferida antes de medir qualquer coisa (A1)", () => {
 });
 
 describe("a medição que motivou a spec 08 (descoberta 2)", () => {
-  const FUNDO_ESCURO = "#060608"; // --color-bg de hoje
-
   it("⚠ o verde e o dourado despencam num fundo claro", () => {
     /*
      * São as duas cores que carregam significado na tela: verde é "entrou" e
@@ -76,5 +75,20 @@ describe("hex que não dá para ler", () => {
     expect(emRgb("ff5000")).toEqual([255, 80, 0]);
     expect(emRgb("  #ff5000  ")).toEqual([255, 80, 0]);
     expect(emRgb("#f50")).toEqual([255, 85, 0]);
+  });
+});
+
+describe("emHex, o caminho de volta de emRgb", () => {
+  it("serializa preto e branco", () => {
+    expect(emHex([0, 0, 0])).toBe("#000000");
+    expect(emHex(BRANCO)).toBe("#ffffff");
+  });
+
+  it("preenche com zero o canal de um dígito hex", () => {
+    expect(emHex([5, 10, 255])).toBe("#050aff");
+  });
+
+  it("é o inverso de emRgb", () => {
+    expect(emRgb(emHex([255, 80, 0]))).toEqual([255, 80, 0]);
   });
 });

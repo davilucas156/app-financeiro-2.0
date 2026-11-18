@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { BRANCO } from "./contraste";
-import { corParaFundoClaro, corParaTexto, FUNDO_ESCURO } from "./corNoTema";
+import {
+  corParaFundoClaro,
+  corParaTexto,
+  SUPERFICIE_ESCURA_MAIS_CLARA,
+} from "./corNoTema";
 import { estiloDoPote, estiloDoTextoDoPote } from "./estiloDoPote";
 
 /**
@@ -111,7 +115,7 @@ const textoDoPote = (cor: string) =>
 describe("a cor do pote como letra chega ao elemento", () => {
   it("carrega as duas versões de texto", () => {
     expect(estiloDoTextoDoPote(VERDE)).toMatchObject({
-      "--pote-texto-escuro": corParaTexto(VERDE, FUNDO_ESCURO),
+      "--pote-texto-escuro": corParaTexto(VERDE, SUPERFICIE_ESCURA_MAIS_CLARA),
       "--pote-texto-claro": corParaTexto(VERDE, BRANCO),
     });
   });

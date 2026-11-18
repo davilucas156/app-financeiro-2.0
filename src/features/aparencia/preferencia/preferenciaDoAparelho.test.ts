@@ -50,4 +50,12 @@ describe("o que veio no cookie vira um dos valores da lista", () => {
   it("lista vazia devolve sempre o padrão", () => {
     expect(escolhaValida([] as readonly string[], "azul", "azul")).toBe("azul");
   });
+
+  it("número cai no padrão, sem lançar", () => {
+    expect(escolhaValida(CORES, "azul", 123)).toBe("azul");
+  });
+
+  it("objeto cai no padrão, sem lançar", () => {
+    expect(escolhaValida(CORES, "azul", {})).toBe("azul");
+  });
 });

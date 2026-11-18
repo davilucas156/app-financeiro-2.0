@@ -51,9 +51,9 @@ export const VALIDADE_DO_COOKIE_SEG = 60 * 60 * 24 * 365;
 export function escolhaValida<T extends string>(
   valores: readonly T[],
   padrao: T,
-  valor: string | undefined | null,
+  valor: unknown,
 ): T {
-  if (valor === undefined || valor === null) return padrao;
+  if (typeof valor !== "string") return padrao;
 
   const limpo = valor.trim().toLowerCase();
 

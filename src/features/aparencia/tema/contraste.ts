@@ -52,6 +52,12 @@ export function emRgb(cor: string): Rgb | null {
   return null;
 }
 
+/** O inverso de `emRgb`: `#rrggbb` em minúsculas, sempre com seis dígitos. */
+export function emHex([r, g, b]: Rgb): string {
+  const canal = (v: number) => v.toString(16).padStart(2, "0");
+  return `#${canal(r)}${canal(g)}${canal(b)}`;
+}
+
 /** Luminância relativa, no espaço linear — não é o brilho do HSL. */
 export function luminancia([r, g, b]: Rgb): number {
   const canal = (v: number) => {

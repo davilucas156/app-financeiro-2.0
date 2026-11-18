@@ -44,9 +44,10 @@ export function SeletorDeTema({ escolhido }: { escolhido: Tema }) {
    * poderiam discordar. Preso ao estado, o atributo é sempre o que a tela
    * mostra.
    *
-   * ⚠ **A action não revalida nada**, então este efeito é o único jeito de a
-   * cor mudar sem recarregar. É de propósito: revalidar a raiz para trocar uma
-   * variável de CSS custaria uma ida ao servidor e um render da árvore inteira.
+   * ⚠ **A gravação do cookie já faz o servidor re-renderizar a página e os
+   * layouts, e trazer o estado final.** Este efeito só **antecipa** a cor, para
+   * o toque responder na hora sem esperar a ida ao servidor. Não é o único
+   * caminho: é a antecipação, não a fonte da verdade.
    */
   useEffect(() => {
     document.documentElement.dataset.tema = tema;

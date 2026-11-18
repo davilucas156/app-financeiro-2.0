@@ -29,8 +29,8 @@ export type Tema = (typeof TEMAS)[number];
  * ⚠ **Quem resolve "sistema" é o CSS**, por `prefers-color-scheme`, e não o
  * servidor — que não tem como saber a configuração do aparelho de quem pediu a
  * página. O tipo existe para os poucos lugares onde a resposta precisa chegar
- * como valor, e não como cascata: a cor do pote (A3) e o objeto de aparência do
- * Clerk (descoberta 4).
+ * como valor, e não como cascata: hoje, só o objeto de aparência do Clerk
+ * (descoberta 4).
  */
 export type TemaEfetivo = "escuro" | "claro";
 

@@ -43,6 +43,11 @@ export function SeletorDeLetra({ escolhido }: { escolhido: Tamanho }) {
    * lint do React 19 recusa — com razão: no toque seguinte o estado e o DOM
    * poderiam discordar. Preso ao estado, o atributo é sempre o que a tela
    * mostra. Foi assim que o `SeletorDeTema` acabou.
+   *
+   * ⚠ **A gravação do cookie já faz o servidor re-renderizar a página e os
+   * layouts, e trazer o estado final.** Este efeito só **antecipa** o tamanho,
+   * para o toque responder na hora sem esperar a ida ao servidor. Não é o único
+   * caminho: é a antecipação, não a fonte da verdade.
    */
   useEffect(() => {
     document.documentElement.dataset.letra = tamanho;

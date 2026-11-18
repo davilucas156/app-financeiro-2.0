@@ -5,8 +5,8 @@ import {
   CONTRASTE_MINIMO_DE_TEXTO,
   corParaFundoClaro,
   corParaTexto,
-  FUNDO_ESCURO,
   matizEmGraus,
+  SUPERFICIE_ESCURA_MAIS_CLARA,
 } from "./corNoTema";
 
 /**
@@ -33,6 +33,13 @@ function contrasteContraBranco(hex: string): number {
   return contraste(rgb, BRANCO);
 }
 
+/** `matizEmGraus` sem o `null`: o teste só mede hex que sabe que é válido. */
+function matizOuFalha(hex: string): number {
+  const matiz = matizEmGraus(hex);
+  if (matiz === null) throw new Error(`hex inválido: ${hex}`);
+  return matiz;
+}
+
 describe("a cor do pote num fundo claro (A3)", () => {
   it("⚠ os nove potes aparecem — todos passam da régua de preenchimento", () => {
     /*
@@ -57,11 +64,11 @@ describe("a cor do pote num fundo claro (A3)", () => {
      * Um grau de folga cobre o arredondamento de ida e volta por RGB de 8 bits.
      */
     for (const [pote, hex] of Object.entries(CORES_DOS_POTES)) {
-      const antes = matizEmGraus(hex);
-      const depois = matizEmGraus(corParaFundoClaro(hex));
+      const antes = matizOuFalha(hex);
+      const depois = matizOuFalha(corParaFundoClaro(hex));
 
       expect(antes, pote).not.toBeNull();
-      expect(depois, pote).toBeCloseTo(antes as number, 0);
+      expect(depois, pote).toBeCloseTo(antes, 0);
     }
   });
 
@@ -73,7 +80,7 @@ describe("a cor do pote num fundo claro (A3)", () => {
      * pote ela é.
      */
     const distancia = (a: string, b: string) =>
-      Math.abs((matizEmGraus(a) as number) - (matizEmGraus(b) as number));
+      Math.abs(matizOuFalha(a) - matizOuFalha(b));
 
     const antes = distancia("#00c8d4", "#00e5a0");
     const depois = distancia(
@@ -148,10 +155,10 @@ function contrasteContra(hex: string, fundo: Rgb): number {
 describe("a cor do pote como texto (A2)", () => {
   it("⚠ as nove passam da régua de leitura no tema escuro", () => {
     for (const [pote, hex] of Object.entries(CORES_DOS_POTES)) {
-      const cor = corParaTexto(hex, FUNDO_ESCURO);
+      const cor = corParaTexto(hex, SUPERFICIE_ESCURA_MAIS_CLARA);
 
       expect(
-        contrasteContra(cor, FUNDO_ESCURO),
+        contrasteContra(cor, SUPERFICIE_ESCURA_MAIS_CLARA),
         `${pote} (${hex} → ${cor})`,
       ).toBeGreaterThanOrEqual(CONTRASTE_MINIMO_DE_TEXTO);
     }
@@ -176,10 +183,12 @@ describe("a cor do pote como texto (A2)", () => {
      * letra no tema escuro. É o caso que prova que a função faz alguma coisa:
      * sem ele, um `return hex` passaria em tudo acima.
      */
-    expect(corParaTexto("#5a5a70", FUNDO_ESCURO)).not.toBe("#5a5a70");
+    expect(corParaTexto("#5a5a70", SUPERFICIE_ESCURA_MAIS_CLARA)).not.toBe(
+      "#5a5a70",
+    );
 
     const intactas = Object.values(CORES_DOS_POTES).filter(
-      (hex) => corParaTexto(hex, FUNDO_ESCURO) === hex,
+      (hex) => corParaTexto(hex, SUPERFICIE_ESCURA_MAIS_CLARA) === hex,
     );
 
     expect(intactas).toHaveLength(Object.keys(CORES_DOS_POTES).length - 1);
@@ -187,29 +196,29 @@ describe("a cor do pote como texto (A2)", () => {
 
   it("⚠ o tom fica — o pote não troca de cor", () => {
     for (const [pote, hex] of Object.entries(CORES_DOS_POTES)) {
-      const antes = matizEmGraus(hex);
+      const antes = matizOuFalha(hex);
 
       expect(antes, pote).not.toBeNull();
       expect(
-        matizEmGraus(corParaTexto(hex, FUNDO_ESCURO)),
+        matizOuFalha(corParaTexto(hex, SUPERFICIE_ESCURA_MAIS_CLARA)),
         `${pote} no escuro`,
-      ).toBeCloseTo(antes as number, 0);
+      ).toBeCloseTo(antes, 0);
       expect(
-        matizEmGraus(corParaTexto(hex, BRANCO)),
+        matizOuFalha(corParaTexto(hex, BRANCO)),
         `${pote} no claro`,
-      ).toBeCloseTo(antes as number, 0);
+      ).toBeCloseTo(antes, 0);
     }
   });
 
   it("⚠ dois potes de tom parecido continuam sendo dois potes", () => {
     // Transporte e Liberdade Financeira, os dois mais próximos: 23°.
     const distancia = (a: string, b: string) =>
-      Math.abs((matizEmGraus(a) as number) - (matizEmGraus(b) as number));
+      Math.abs(matizOuFalha(a) - matizOuFalha(b));
 
     expect(
       distancia(
-        corParaTexto("#00c8d4", FUNDO_ESCURO),
-        corParaTexto("#00e5a0", FUNDO_ESCURO),
+        corParaTexto("#00c8d4", SUPERFICIE_ESCURA_MAIS_CLARA),
+        corParaTexto("#00e5a0", SUPERFICIE_ESCURA_MAIS_CLARA),
       ),
     ).toBeGreaterThan(20);
   });
@@ -220,28 +229,30 @@ describe("a cor do pote como texto (A2)", () => {
      * `#ffffff` para tudo passaria em todos os anteriores e apagaria a
      * identidade dos nove potes de uma vez.
      */
-    const cor = corParaTexto("#5a5a70", FUNDO_ESCURO);
+    const cor = corParaTexto("#5a5a70", SUPERFICIE_ESCURA_MAIS_CLARA);
 
-    expect(contrasteContra(cor, FUNDO_ESCURO)).toBeGreaterThanOrEqual(
-      CONTRASTE_MINIMO_DE_TEXTO,
-    );
-    expect(contrasteContra(cor, FUNDO_ESCURO)).toBeLessThan(
+    expect(
+      contrasteContra(cor, SUPERFICIE_ESCURA_MAIS_CLARA),
+    ).toBeGreaterThanOrEqual(CONTRASTE_MINIMO_DE_TEXTO);
+    expect(contrasteContra(cor, SUPERFICIE_ESCURA_MAIS_CLARA)).toBeLessThan(
       CONTRASTE_MINIMO_DE_TEXTO + 0.6,
     );
   });
 
   it("cor que já passa volta intacta", () => {
-    expect(corParaTexto("#ffc94d", FUNDO_ESCURO)).toBe("#ffc94d");
+    expect(corParaTexto("#ffc94d", SUPERFICIE_ESCURA_MAIS_CLARA)).toBe(
+      "#ffc94d",
+    );
   });
 
   it("hex que não dá para ler volta como veio", () => {
-    expect(corParaTexto("verde", FUNDO_ESCURO)).toBe("verde");
+    expect(corParaTexto("verde", SUPERFICIE_ESCURA_MAIS_CLARA)).toBe("verde");
     expect(corParaTexto("", BRANCO)).toBe("");
   });
 
   it("é estável: a mesma entrada dá a mesma saída", () => {
-    const uma = corParaTexto("#5a5a70", FUNDO_ESCURO);
-    expect(corParaTexto("#5a5a70", FUNDO_ESCURO)).toBe(uma);
-    expect(corParaTexto(uma, FUNDO_ESCURO)).toBe(uma);
+    const uma = corParaTexto("#5a5a70", SUPERFICIE_ESCURA_MAIS_CLARA);
+    expect(corParaTexto("#5a5a70", SUPERFICIE_ESCURA_MAIS_CLARA)).toBe(uma);
+    expect(corParaTexto(uma, SUPERFICIE_ESCURA_MAIS_CLARA)).toBe(uma);
   });
 });
