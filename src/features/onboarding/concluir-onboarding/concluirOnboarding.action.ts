@@ -1,8 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { ROTA_PASSOS } from "@/features/autenticacao/rotas-de-acesso";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
 import { concluirOnboarding } from "@/features/onboarding/concluir-onboarding/concluirOnboarding.service";
+import type { EstadoOnboarding } from "@/features/onboarding/concluir-onboarding/concluirOnboarding.types";
 
 /**
  * O que o botão "Começar" chama (tarefa D7).
@@ -11,10 +13,7 @@ import { concluirOnboarding } from "@/features/onboarding/concluir-onboarding/co
  * o lê da sessão no servidor, e os potes vêm do módulo do servidor. Um
  * cliente que pudesse enviar a lista de potes poderia enviar qualquer outra
  * (`references/architecture.md`, Thin Client / Fat Server).
- */
-export type EstadoOnboarding = "erro" | null;
-
-/**
+ *
  * A assinatura tem dois parâmetros ignorados porque é assim que o
  * `useActionState` chama a action: estado anterior e `FormData`. Nenhum dos
  * dois é lido — ver acima.
@@ -53,5 +52,5 @@ export async function prepararConta(
    * A `/passos` termina com "Enviar extrato", então o caminho até o painel não
    * ficou mais longo: ficou explicado.
    */
-  redirect("/passos");
+  redirect(ROTA_PASSOS);
 }

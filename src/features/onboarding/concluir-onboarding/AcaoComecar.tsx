@@ -3,10 +3,8 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import {
-  prepararConta,
-  type EstadoOnboarding,
-} from "@/features/onboarding/concluir-onboarding/concluirOnboarding.action";
+import { prepararConta } from "@/features/onboarding/concluir-onboarding/concluirOnboarding.action";
+import type { EstadoOnboarding } from "@/features/onboarding/concluir-onboarding/concluirOnboarding.types";
 
 /**
  * O botão "Começar" e os estados dele (tarefa D7).

@@ -31,7 +31,7 @@ export function linhasDePotes(userId: string): NovoPote[] {
 /**
  * As categorias só podem ser montadas depois que os potes existem, porque
  * cada uma precisa do `bucket_id`. O mapa vem do banco, não do `returning`
- * do insert — ver o comentário na action.
+ * do insert — ver o comentário em `concluirOnboarding.service.ts`.
  *
  * `userId` é gravado também na categoria, mesmo sendo derivável do pote: é a
  * decisão da C3 que permite toda consulta filtrar por `user_id` sem `join`.

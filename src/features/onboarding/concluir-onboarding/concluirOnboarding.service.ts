@@ -3,6 +3,10 @@ import { eq, isNull, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { buckets, categories, classificationRules, users } from "@/db/schema";
+import {
+  chaveDaCategoria,
+  mapaDeIdPorChave,
+} from "@/features/classificacao/motor/chaveDaCategoria";
 import { linhasDeRegras } from "@/features/classificacao/semear-regras/linhasDeRegras";
 import { recebeRegrasBase } from "@/features/classificacao/semear-regras/quemRecebe";
 import {
@@ -114,10 +118,11 @@ async function semearRegras(
     .innerJoin(buckets, eq(buckets.id, categories.bucketId))
     .where(eq(categories.userId, userId));
 
-  const idPorChave = new Map(
-    categoriasDoUsuario.map(
-      (c) => [`${c.poteSlug}/${c.slug}`, c.id] as [string, string],
-    ),
+  const idPorChave = mapaDeIdPorChave(
+    categoriasDoUsuario.map((c) => ({
+      chave: chaveDaCategoria(c.poteSlug, c.slug),
+      id: c.id,
+    })),
   );
 
   const linhas = linhasDeRegras(
