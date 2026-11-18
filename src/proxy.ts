@@ -5,6 +5,7 @@ import {
   createRouteMatcher,
 } from "@clerk/nextjs/server";
 import { estaConvidado } from "@/features/autenticacao/allowlist";
+import { ROTA_ACESSO_NEGADO } from "@/features/autenticacao/rotas-de-acesso";
 
 /**
  * Proteção das rotas internas (tarefa D1).
@@ -91,7 +92,7 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (!convidado) {
-    return NextResponse.redirect(new URL("/cadastrar?acesso=negado", req.url));
+    return NextResponse.redirect(new URL(ROTA_ACESSO_NEGADO, req.url));
   }
 
   return;

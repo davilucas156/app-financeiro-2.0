@@ -1,15 +1,17 @@
 import "server-only";
 import { auth } from "@clerk/nextjs/server";
-import type { Usuario } from "@/db/schema";
 import { obterUsuarioAtual } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { destinoDoUsuario } from "@/features/autenticacao/destinoDoUsuario";
+import type { DestinoInicial } from "@/features/autenticacao/rotas-de-acesso";
 
 /**
  * Para onde o usuário deve ir (tarefa D6).
  *
- * A mesma pergunta é feita em quatro rotas — `/`, `/entrar`, `/cadastrar` e
- * `/bem-vindo`. Espalhar a regra é o que garante que ela divirja: até a D5,
- * três delas respondiam com um `/dashboard` fixo que a D2 deixou provisório,
- * e nenhuma sabia de `onboarding_concluido_em`.
+ * A mesma pergunta é feita em três rotas — `/`, `/entrar` e `/cadastrar`.
+ * `/bem-vindo` não chama esta função: já tem o usuário em mãos e usa
+ * `destinoDoUsuario` direto. Espalhar a regra é o que garante que ela
+ * divirja: até a D5, três rotas respondiam com um `/dashboard` fixo que a D2
+ * deixou provisório, e nenhuma sabia de `onboarding_concluido_em`.
  *
  * | Estado | Destino |
  * |---|---|
@@ -22,33 +24,10 @@ import { obterUsuarioAtual } from "@/features/autenticacao/garantir-usuario/gara
  * foi convidado **tem** sessão, e mandá-lo para `/dashboard` só o faria bater
  * no proxy e voltar. Um salto a menos, e o destino é a única tela que essa
  * pessoa pode ver.
- */
-/**
- * A decisão em si, sem I/O — os quatro ramos da tabela acima em forma pura.
  *
- * Separada de `destinoInicial()` para poder ser exercitada nos quatro
- * estados. Pela porta de cima só dá para alcançar os que a sessão do momento
- * permite, e "onboarding concluído" é justamente o que não se alcança antes
- * da D7 existir.
- *
- * Recebe `Usuario`, não `userId` — não consulta nada, então não há como
- * usá-la para alcançar a conta alheia.
+ * A decisão pura está em `destinoDoUsuario` (testável); aqui fica só o I/O.
  */
-export function destinoDoUsuario(
-  usuario: Usuario | null,
-  temSessao: boolean,
-): string {
-  if (usuario) {
-    return usuario.onboardingConcluidoEm ? "/dashboard" : "/bem-vindo";
-  }
-
-  // Sem linha, mas **com** sessão, só há um motivo: o e-mail não está na
-  // allowlist. `obterUsuarioAtual()` devolve `null` nos dois casos, e é aqui
-  // que eles se separam.
-  return temSessao ? "/cadastrar?acesso=negado" : "/entrar";
-}
-
-export async function destinoInicial(): Promise<string> {
+export async function destinoInicial(): Promise<DestinoInicial> {
   // `obterUsuarioAtual()` **cria a linha se faltar** (D5). Numa tela de login
   // isso soa estranho, mas é o que a spec de `/entrar` pede: primeiro acesso
   // grava o usuário no banco. Visitante anônimo não paga nada — sem `userId`
@@ -56,6 +35,11 @@ export async function destinoInicial(): Promise<string> {
   const usuario = await obterUsuarioAtual();
   if (usuario) return destinoDoUsuario(usuario, true);
 
+  // `null` não quer dizer só "sem sessão" nem só "fora da allowlist":
+  // `obterUsuarioAtual()` também devolve `null` quando `salvarUsuario`
+  // responde `ignorado_sem_email` ou `usuario: null` (salvar-usuario.ts).
+  // Por isso a sessão é consultada de novo — é ela que separa `/entrar` de
+  // `/cadastrar?acesso=negado`.
   const { userId } = await auth();
 
   return destinoDoUsuario(null, Boolean(userId));

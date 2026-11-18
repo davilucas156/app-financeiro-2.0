@@ -1,6 +1,10 @@
 // `@clerk/types` foi descontinuado no Core 3 e o tipo `Appearance` virou
 // `ClerkAppearanceTheme`. Os tipos vêm do subpath do SDK.
 import type { ClerkAppearanceTheme } from "@clerk/nextjs/types";
+import {
+  FUNDO_CLARO,
+  FUNDO_ESCURO,
+} from "@/features/aparencia/tema/coresDoSistema";
 import type { TemaEfetivo } from "@/features/aparencia/tema/tema";
 
 /**
@@ -43,7 +47,7 @@ const ESCURO: ClerkAppearanceTheme = {
     colorForeground: "#e8e8f0", // --color-text
 
     colorPrimary: "#ff5000", // --color-primary
-    colorPrimaryForeground: "#060608", // --color-bg (texto sobre o laranja)
+    colorPrimaryForeground: FUNDO_ESCURO, // --color-bg (texto sobre o laranja)
 
     colorMuted: "#16161c", // --color-card2
     colorMutedForeground: "#7d7d96", // --color-dim
@@ -75,7 +79,7 @@ const CLARO: ClerkAppearanceTheme = {
      * ilegível. É `--claro-bg`, que é quase branco — o mesmo token dos dois
      * lados, valendo coisas opostas.
      */
-    colorPrimaryForeground: "#eeeef3", // --claro-bg
+    colorPrimaryForeground: FUNDO_CLARO, // --claro-bg
 
     colorMuted: "#e9e9f0", // --claro-card2
     colorMutedForeground: "#61617a", // --claro-dim

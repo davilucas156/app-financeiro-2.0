@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
+import type { ClerkAppearanceTheme } from "@clerk/nextjs/types";
 import { aparenciaClerk } from "@/features/autenticacao/aparencia-clerk";
 import type { Tema } from "@/features/aparencia/tema/tema";
 import { useTemaEfetivo } from "@/features/aparencia/tema/useTemaEfetivo";
-import { linkSolicitarAcesso } from "@/features/autenticacao/contato";
 
 /**
  * Classes do widget, no vocabulário Tailwind do resto do app (`Button`,
@@ -62,40 +62,19 @@ const ELEMENTOS_DO_WIDGET = {
   formButtonPrimary:
     "min-h-11 rounded-card bg-primary text-sm font-bold text-bg transition-colors hover:bg-orange",
   footer: "hidden!",
-};
+} satisfies NonNullable<ClerkAppearanceTheme["elements"]>;
 
 /**
  * Tela de entrar (tarefa D2 — widget real do Clerk).
  *
  * Os estados de carregando e erro deixaram de ser nossos: o widget cuida dos
- * dois. O que continua nosso é a recusa por convite, decidida **no servidor**
- * na tarefa D3 — por isso `naoConvidado` ainda não tem quem o alimente.
+ * dois.
  */
-export function FazerLogin({
-  naoConvidado = false,
-  tema,
-}: {
-  naoConvidado?: boolean;
-  tema: Tema;
-}) {
+export function FazerLogin({ tema }: { tema: Tema }) {
   const aparencia = aparenciaClerk(useTemaEfetivo(tema));
 
   return (
     <div>
-      {naoConvidado && (
-        <div
-          role="alert"
-          className="mb-4 rounded-pote border border-gold/20 bg-gold/8 px-3.5 py-3"
-        >
-          <p className="text-xs font-bold text-gold">
-            Esse e-mail ainda não tem acesso ao app.
-          </p>
-          <p className="mt-1.5 text-xs text-dim">
-            O acesso está fechado enquanto o app é validado.
-          </p>
-        </div>
-      )}
-
       <SignIn
         appearance={{ ...aparencia, elements: ELEMENTOS_DO_WIDGET }}
         // `fallback` e não `force`: assim o `redirect_url` da query string
@@ -110,24 +89,13 @@ export function FazerLogin({
       />
 
       <p className="mt-5 text-center text-xs text-dim">
-        {naoConvidado ? (
-          <a
-            href={linkSolicitarAcesso()}
-            className="font-bold text-text underline underline-offset-4"
-          >
-            Solicitar acesso
-          </a>
-        ) : (
-          <>
-            Não tem conta?{" "}
-            <Link
-              href="/cadastrar"
-              className="font-bold text-text underline underline-offset-4"
-            >
-              Solicitar acesso
-            </Link>
-          </>
-        )}
+        Não tem conta?{" "}
+        <Link
+          href="/cadastrar"
+          className="font-bold text-text underline underline-offset-4"
+        >
+          Solicitar acesso
+        </Link>
       </p>
     </div>
   );

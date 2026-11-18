@@ -1,3 +1,5 @@
+import { NOME_DO_APP } from "@/lib/nomeDoApp";
+
 /**
  * Contato para quem tenta entrar sem convite.
  *
@@ -20,6 +22,11 @@
 export const EMAIL_CONTATO = "davilucascarmo156@gmail.com";
 
 export function linkSolicitarAcesso() {
-  const assunto = encodeURIComponent("Acesso ao Painel Financeiro 6 Potes");
+  const assunto = encodeURIComponent(`Acesso ao ${NOME_DO_APP}`);
+  return `mailto:${EMAIL_CONTATO}?subject=${assunto}`;
+}
+
+export function linkEnviarCsvDeOutroBanco() {
+  const assunto = encodeURIComponent("CSV de outro banco");
   return `mailto:${EMAIL_CONTATO}?subject=${assunto}`;
 }

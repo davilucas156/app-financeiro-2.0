@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garantirUsuario.service";
+import { destinoDoUsuario } from "@/features/autenticacao/destinoDoUsuario";
+import { ROTA_BEM_VINDO } from "@/features/autenticacao/rotas-de-acesso";
 import { ConcluirOnboarding } from "@/features/onboarding/concluir-onboarding/ConcluirOnboarding";
 
 export const metadata: Metadata = {
-  title: "Bem-vindo · Painel Financeiro 6 Potes",
+  title: "Bem-vindo",
 };
 
 /**
@@ -24,7 +26,11 @@ export default async function BemVindoPage() {
   // Spec de `/bem-vindo`: "abre já tendo concluído o onboarding → redireciona
   // para `/dashboard`". Sem isso, dá para reabrir a tela de primeiro acesso
   // meses depois — e tocar em "Começar" de novo.
-  if (usuario.onboardingConcluidoEm) redirect("/dashboard");
+  //
+  // Com usuário presente `destinoDoUsuario` só devolve `/bem-vindo` (ficar) ou
+  // `/dashboard`, então não há laço.
+  const destino = destinoDoUsuario(usuario, true);
+  if (destino !== ROTA_BEM_VINDO) redirect(destino);
 
   return <ConcluirOnboarding nome={usuario.nome ?? undefined} />;
 }

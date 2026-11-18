@@ -9,6 +9,7 @@ import {
   comoIdDeSessaoAutenticada,
   salvarUsuario,
 } from "@/features/autenticacao/salvar-usuario";
+import { ROTA_ENTRAR } from "@/features/autenticacao/rotas-de-acesso";
 
 /**
  * Garantia de usuário no banco (tarefa D5).
@@ -134,6 +135,6 @@ export const obterUsuarioAtual = cache(async (): Promise<Usuario | null> => {
  */
 export async function garantirUsuario(): Promise<Usuario> {
   const usuario = await obterUsuarioAtual();
-  if (!usuario) redirect("/entrar");
+  if (!usuario) redirect(ROTA_ENTRAR);
   return usuario;
 }

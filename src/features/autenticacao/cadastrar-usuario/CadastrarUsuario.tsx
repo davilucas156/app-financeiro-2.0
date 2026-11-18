@@ -75,15 +75,17 @@ export function CadastrarUsuario({
         />
       )}
 
-      <p className="mt-5 text-center text-xs text-dim">
-        Já tem acesso?{" "}
-        <Link
-          href="/entrar"
-          className="font-bold text-text underline underline-offset-4"
-        >
-          Entrar
-        </Link>
-      </p>
+      {!naoConvidado && (
+        <p className="mt-5 text-center text-xs text-dim">
+          Já tem acesso?{" "}
+          <Link
+            href="/entrar"
+            className="font-bold text-text underline underline-offset-4"
+          >
+            Entrar
+          </Link>
+        </p>
+      )}
     </Card>
   );
 }

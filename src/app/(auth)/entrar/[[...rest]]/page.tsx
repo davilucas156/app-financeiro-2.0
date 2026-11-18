@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import { destinoInicial } from "@/features/autenticacao/destino-inicial";
 import { temaAtual } from "@/features/aparencia/tema/temaAtual";
 import { FazerLogin } from "@/features/autenticacao/fazer-login/FazerLogin";
+import { ROTA_ENTRAR } from "@/features/autenticacao/rotas-de-acesso";
 
 export const metadata: Metadata = {
-  title: "Entrar · Painel Financeiro 6 Potes",
+  title: "Entrar",
 };
 
 /**
@@ -20,7 +21,7 @@ export default async function EntrarPage() {
   // quem sabe de allowlist e de onboarding — antes daqui saía um
   // `/dashboard` fixo, e o primeiro acesso caía no lugar errado.
   const destino = await destinoInicial();
-  if (destino !== "/entrar") redirect(destino);
+  if (destino !== ROTA_ENTRAR) redirect(destino);
 
   return <FazerLogin tema={await temaAtual()} />;
 }
