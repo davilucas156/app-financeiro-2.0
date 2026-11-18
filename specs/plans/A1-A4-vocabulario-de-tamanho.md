@@ -67,7 +67,7 @@ duas linhas que ela não pode mudar.
 | `features/categorias/gerir-categorias/CartaoDaCategoria.tsx`       | 1   | 1    | 4    |
 | `features/categorias/gerir-categorias/TelaDeCategorias.tsx`        |     | 4    | 1    |
 | `features/categorias/nomear-categoria/FormularioDeCategoria.tsx`   | 3   |      | 3    |
-| `features/categorias/nomear-categoria/NovaCategoriaNaRevisao.tsx`  |     |      | 1    |
+| `features/classificacao/revisar-lancamento/NovaCategoriaNaRevisao.tsx` |     |      | 1    |
 | `features/classificacao/gerir-regras/CartaoDaRegra.tsx`            | 3   |      | 3    |
 | `features/classificacao/gerir-regras/TelaDeRegras.tsx`             |     |      | 1    |
 | `features/classificacao/revisar-lancamento/AcaoDeDecidir.tsx`      |     |      | 1    |

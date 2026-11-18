@@ -3,7 +3,7 @@
 **Etapa:** 3 (Plan) do workflow `dev-workflow-davi`
 **Tarefa:** D2 de `specs/05-categorias-do-usuario.tarefas.md`
 **Camada:** FRONT-INTEGRADO
-**Arquivos:** `categorias/nomear-categoria/{criarEClassificar.service.ts,criarEClassificar.action.ts,NovaCategoriaNaRevisao.tsx}`,
+**Arquivos:** `categorias/nomear-categoria/{criarEClassificar.service.ts,criarEClassificar.action.ts}` e `classificacao/revisar-lancamento/NovaCategoriaNaRevisao.tsx`,
 `categorias/gerir-categorias/mexerNaCategoria.service.ts`,
 `classificacao/revisar-lancamento/{decidirLancamento.service.ts,TelaDeRevisao.tsx}`
 

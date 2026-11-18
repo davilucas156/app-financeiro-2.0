@@ -102,10 +102,17 @@ src/features/
 ├── revisao-transacoes/
 │   ├── revisar-transacao/
 │   └── confirmar-mes/
-└── dashboard/
-    ├── ver-resumo-do-mes/
-    ├── ver-potes/
-    └── ver-comparativo-anual/
+└── painel/                          # o que hoje existe; `ls` diz a verdade
+    ├── comparar-meses/
+    ├── fora-da-conta/
+    ├── navegar-entre-meses/
+    ├── painel-do-mes/
+    ├── remover-o-mes/
+    ├── renda-do-mes/
+    ├── somar-o-mes/
+    ├── trazer-de-volta/
+    ├── trocar-categoria/
+    └── veredito-do-mes/
 ```
 
 Arquivos dentro de cada pasta de comportamento:
@@ -330,6 +337,10 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   - `corParaTexto(hex, fundo)` — para **letra** (spec 15). Mira **4.5**, e
     recebe o fundo porque no escuro ela precisa clarear e no claro escurecer.
 
+  As duas são finas sobre uma privada `ajustarBrilho(hex, fundo, minimo)` (busca
+  linear de 1%, direção decidida pela luminância do fundo); `emHex` mora em
+  `contraste.ts`, ao lado do seu inverso `emRgb`.
+
   ⚠ **A régua muda com o uso, e não com o gosto.** Exigir 4.5 do preenchimento
   escureceria os nove potes muito além do necessário; aceitar 3 na letra deixa
   o número do cartão do ano ilegível. As duas preservam o matiz, porque a cor
@@ -368,8 +379,9 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
 - **Moldura pública** — `src/app/(auth)/layout.tsx` — coluna centrada com a
   marca ("Painel Financeiro / 6 Potes"). Compartilhada por `/entrar` e
   `/cadastrar`; a marca vive aqui para as duas telas não divergirem.
-- **`LogoGoogle`** — `src/features/autenticacao/LogoGoogle.tsx` — SVG inline.
-- **`EMAIL_CONTATO` / `linkSolicitarAcesso()`** — `src/features/autenticacao/contato.ts`.
+- **`EMAIL_CONTATO` / `linkSolicitarAcesso()` / `linkEnviarCsvDeOutroBanco()`** —
+  `src/features/autenticacao/contato.ts`. Quem monta um `mailto:` novo acrescenta
+  a função aqui, em vez de escrever `mailto:${EMAIL_CONTATO}?subject=…` no JSX.
 - **`estaConvidado()`** — `src/features/autenticacao/allowlist.ts` — o portão
   do acesso por convite. Usado em **três** lugares (proxy, webhook, garantia de
   primeira requisição); nenhum deles reimplementa a checagem.
@@ -378,9 +390,14 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   allowlist e o `on conflict (id) do update`. Chamada pelo webhook (D4) e pela
   garantia de primeira requisição (D5): duas cópias divergiriam, e a que
   divergisse viraria a porta dos fundos por onde entra quem a D3 barrou.
-- **`destinoInicial()` / `destinoDoUsuario()`** —
-  `src/features/autenticacao/destino-inicial.ts` — para onde o usuário vai, ver
-  a seção "Destino inicial" abaixo.
+- **`destinoInicial()`** — `src/features/autenticacao/destino-inicial.ts` —
+  chamado por `/`, `/entrar` e `/cadastrar`. Ver "Destino inicial" abaixo.
+- **`destinoDoUsuario()`** — `src/features/autenticacao/destinoDoUsuario.ts` —
+  a decisão pura, sem I/O (testada). `/bem-vindo` a chama direto.
+- **Constantes de rota de acesso** — `src/features/autenticacao/rotas-de-acesso.ts`
+  — `ROTA_ENTRAR`, `ROTA_ACESSO_NEGADO`, `ROTA_BEM_VINDO`, `ROTA_PAINEL`,
+  `ROTA_PASSOS` (o redirect do onboarding e o botão do painel vazio) e
+  `foiRecusado()`. Puro, sem `server-only`, importável pelo `proxy.ts`.
 - **`obterUsuarioAtual()` / `garantirUsuario()`** —
   `src/features/autenticacao/garantir-usuario/garantirUsuario.service.ts` — ver
   a seção "Garantia de usuário" abaixo.
@@ -395,9 +412,8 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   do `readme.md`. Nenhuma categoria foi inventada — "Metas / Sonhos" tem uma
   só (Giulia) porque é o que existe.
 
-> **Compartilhado entre comportamentos, o lugar é o pai.** `LogoGoogle` e
-> `contato.ts` ficam em `autenticacao/`, não dentro de `fazer-login/` ou
-> `cadastrar-usuario/`. Os dois comportamentos continuam sem depender **um do
+> **Compartilhado entre comportamentos, o lugar é o pai.** `contato.ts` fica em
+> `autenticacao/`, não dentro de `fazer-login/` ou `cadastrar-usuario/`. Os dois comportamentos continuam sem depender **um do
 > outro** — dependem do pai comum. Duplicar seria pior: o dia em que o e-mail
 > mudasse, uma das telas ficaria com o valor velho.
 
@@ -406,14 +422,131 @@ A credencial vem da Vercel: `npx vercel env pull .env.local`.
   passo, em vez de um vazio mudo.
 - **Moldura interna** — `src/app/(app)/layout.tsx` + `src/features/shell/` —
   cabeçalho fixo (app, mês, avatar) e navegação. `rotas.ts` é a definição
-  única das três rotas internas: acrescentar rota é acrescentar entrada lá,
-  não editar um `<nav>` à mão.
+  única das rotas **do menu** (hoje 4; `(app)` tem 9 pastas, o resto é alcançado
+  por link): acrescentar item de menu é acrescentar entrada lá, não editar um
+  `<nav>` à mão. A largura e o recuo da coluna (`COLUNA_DO_APP`, em
+  `src/features/shell/colunaDoApp.ts`) moram num lugar só para o cabeçalho e o
+  conteúdo não desalinharem.
 
 > **A moldura interna não protege nada.** Quem bloqueia requisição sem sessão
 > é o `src/proxy.ts` (D1), no servidor. Renderizar o shell nunca é evidência
-> de que o usuário está autenticado. O que a moldura **faz** é chamar
-> `garantirUsuario()` (D5), porque é o único ponto por onde as três rotas
-> internas passam sem exceção.
+> de que o usuário está autenticado. O layout chama `garantirUsuario()` (D5),
+> mas **um layout não re-executa na navegação entre páginas filhas** (só na
+> carga inicial): essa chamada é defesa em profundidade, não a garantia. A
+> obrigação é de **cada página e action** que lê por `user_id`.
+
+- **`ListaDeCategorias`** — `src/features/classificacao/revisar-lancamento/ListaDeCategorias.tsx`
+  — seletor de categorias agrupado por pote, com busca. Usado pela `/revisao`
+  (`TelaDeRevisao`) e por `painel/trocar-categoria`. `atualId` marca a categoria
+  atual sem permitir tocá-la.
+- **`categorias.ts`** (mesma pasta) — o tipo `CategoriaEscolhivel` e as funções
+  puras `agruparPorPote` e `filtrarCategorias`. `gerir-regras` e `categorias/`
+  importam só o tipo; o componente acima não é usado por elas.
+- **`FormularioDeCategoria`** + **`validarCategoria()`** —
+  `src/features/categorias/nomear-categoria/` — o formulário único de criar e
+  renomear categoria, reusado pela `/categorias` e pela `/revisao`
+  (`NovaCategoriaNaRevisao`). `validarCategoria` é a **mesma** função no cliente
+  (feedback rápido) e no servidor (a validação que vale); não escreva outra regra
+  de nome/emoji.
+- **`src/lib/mes.ts`** — mês como texto `"AAAA-MM"`: `formatoDeMesValido` (01 a
+  12, mais estrito que o `check` do banco), `rotuloDeMes`, `rotuloCurtoDeMes`,
+  `nomeDoMes`, `anoDoMes`, `abreviacaoDoMes`, `mesDeData` e `mesAtual`, estes
+  dois em UTC. Sem `Intl`. Use este arquivo em vez de regex ou
+  `toLocaleString` novos.
+- **`mesDoLancamento()`** — `src/features/upload/importar-extrato/mesDoLancamento.ts`
+  — em que mês cada lançamento importado conta: conta e cartão à vista pela
+  data; parcela de cartão pelo mês da fatura. Leia o cabeçalho antes de mudar a
+  regra, porque o erro não estoura: só muda o mês errado.
+- **Par de valor igual, dois mecanismos.** Não crie um terceiro pareador:
+  - **`preparar.ts`** (`src/features/upload/ler-arquivo/`) — na importação,
+    pareia entrada com saída de mesmo valor dentro de
+    `JANELA_DE_PAR_EM_DIAS` (7 dias), inclusive contra o que já está gravado.
+    Marca os dois como `excluido`: **saem da conta**.
+  - **`paresDeValorIdentico.ts`** (`src/features/painel/somar-o-mes/`) — no
+    painel, marca para conferência todo lançamento de mesmo valor em direções
+    opostas dentro do pote do mês. **Só avisa**: os dois continuam somando.
+  - Em uma frase: um decide na importação e tira o par do cálculo; o outro roda
+    no painel, não tira nada, e só aponta.
+- **Limites de envio** — `src/features/upload/limites.ts` — `EXTENSOES_ACEITAS`
+  (`as const`), `ACCEPT_DO_INPUT` (o `accept` do input), `LIMITE_EM_TEXTO` e
+  `recusar()`, que devolve a mensagem ou `null`. **Cliente e servidor usam a
+  mesma função**: o servidor repete extensão, tamanho e vazio na action de envio
+  (antes de `arrayBuffer()`), no service e em `lerTexto` (formatos). `CAMPOS_DE_ENVIO`
+  (`"conta"`, `"cartao"`) é a lista e dela deriva o tipo `CampoDeEnvio`. O
+  `bodySizeLimit` de `next.config.ts` (4 MB) é o teto do corpo inteiro: dois
+  arquivos de 2 MB já o estouram (decisão em aberto).
+- **`ensinavel`** — `ResultadoImportacao` (`importarExtrato.service.ts`) — o
+  servidor marca o erro de reconhecimento do formato; o `FormularioDeEnvio` lê
+  esse campo para oferecer "ensinar o formato", em vez de casar o texto da mensagem.
+- **`CampoDeArquivo`** + **`estadoDoCampo()`** — `src/features/upload/enviar-extrato/`
+  — o campo de arquivo é burro (o `<label>` inteiro é o alvo de toque).
+  `estadoDoCampo()` decide o visual: erro > enviando > escolhido > vazio.
+- **`chaveDaCategoria()`, `prefixoDoPote()`, `mapaDeIdPorChave()`** —
+  `src/features/classificacao/motor/chaveDaCategoria.ts` — o contrato `pote/categoria`
+  entre quem monta o mapa (onboarding, painel, categorias, revisão) e quem o
+  consulta (`semente.ts`, `sugestoes.ts`). Não escreva o template à mão.
+- **`FUNDO_ESCURO` / `FUNDO_CLARO`** — `src/features/aparencia/tema/coresDoSistema.ts`
+  — fundos que não passam pelo CSS (cor da barra, manifesto, Clerk). O teste
+  `coresDoSistema.test.ts` lê `globals.css`; `seletoresDoCss.test.ts` confere
+  `data-tema` e `data-letra`. **Não confunda com `SUPERFICIE_ESCURA_MAIS_CLARA`**
+  (`corNoTema.ts`, `[0x16,0x16,0x1c]` = `--color-card2`): é a régua de contraste da
+  letra do pote, também vigiada por teste contra o CSS.
+- **Testes de guarda** (leem arquivos do projeto como texto e falham quando duas
+  cópias divergem): `src/app/rotasProtegidas.test.ts` (cada pasta de `(app)` e
+  `/bem-vindo` precisa estar no `createRouteMatcher` do `proxy.ts`: rota nova
+  esquecida falha o teste), `src/features/onboarding/potesNoCss.test.ts`
+  (`POTES_PADRAO[].hex` × `--color-pote-*` do `globals.css`).
+- **`rotuloDaFonte()`** — `src/features/classificacao/revisar-lancamento/rotuloDaFonte.ts`
+  — o rótulo legível de cada fonte de sugestão ("seu histórico", "mesma pessoa"…).
+  `Sugestoes.tsx` e `procedencia()` do painel usam o mesmo; uma fonte nova quebra o
+  `tsc` até ser rotulada. Mora à parte do motor porque `motor/sugestoes.ts` importa
+  `preparar` (`node:crypto`) e um import de valor dele quebraria o bundle do cliente.
+- **`bancosDeCodigo()`** — `src/features/upload/ler-arquivo/bancosDeCodigo.ts` — os
+  bancos (e seus arquivos) que o app lê, em ordem pt-BR; `TelaDeFormatos` e a ajuda
+  de `/passos` usam a mesma função.
+- **`mesesDisponiveis()`** + `JANELA_DE_MESES` —
+  `src/features/upload/enviar-extrato/mesesDisponiveis.ts` — os meses oferecidos no
+  envio (18, do mais recente ao mais antigo, sem futuro, em UTC).
+- **`hrefDosPassos()`** / **`voltarParaDe()`** —
+  `src/features/ajuda/pegar-o-extrato/hrefDosPassos.ts` — o contrato `?de=upload` da
+  `/passos`: o emissor e a lista fechada (anti open-redirect) do receptor num lugar só.
+  `voltarParaDe(unknown)` devolve o tipo `DestinoDeVoltar` (`"/upload" | "/dashboard"`),
+  que é o tipo da prop `voltarPara` do `PassoAPasso`; a rota vem de `ROTA_PASSOS`.
+- **`TAMANHO_MAXIMO_DO_TEXTO_DA_REGRA`** / **`erroDoTamanhoDoTexto()`** /
+  **`textoEditavelDe()`** — `src/features/classificacao/gerir-regras/regrasNaTela.ts`
+  (sem `server-only`, o cliente usa o `maxLength`) — o teto de 120 caracteres do texto
+  editável de uma regra. O servidor só o cobra de texto **novo**: o texto igual ao já
+  gravado passa, porque a descrição de banco não tem teto e uma regra criada pelo app
+  maior que isso precisa continuar podendo mudar de destino.
+- **`NOME_DO_APP` / `DESCRICAO_DO_APP`** — `src/lib/nomeDoApp.ts` — manifesto,
+  assunto do e-mail de acesso e `<title>`. As páginas passam só o prefixo
+  (`title: "Painel"`); o `title.template` do `layout.tsx` acrescenta o nome.
+- **`mediaDoPainel()`** — `src/features/painel/comparar-meses/mediaDoPainel.ts` —
+  a média da frase do painel, recortada pelo ano como a `/comparativo`. Painel e
+  comparativo recortam igual por construção. Recebe `cobertura`, não o histórico caro.
+- **`PoteDoComparativo`** — `src/features/painel/comparar-meses/poteDoComparativo.ts`
+  — `Pick` de `PoteNoPainel` (id, nome, emoji, cor). Não redefina o pote à mão.
+- **`anoAnteriorDe()`** (com `anosDoHistorico`, `anoEscolhido`, `mesesDoAno`) —
+  `src/features/painel/comparar-meses/anoDoComparativo.ts` — o recorte por ano.
+  Passar só os meses de um ano recorta a tela inteira.
+- **`PainelVazio`** — `src/features/painel/painel-do-mes/PainelVazio.tsx` — o
+  estado de quem não tem mês: aponta para `/upload` e para `/passos`.
+- **`fraseDaCobertura()`** — `src/features/painel/somar-o-mes/fraseDaCobertura.ts`
+  — o aviso de cobertura do topo do painel. Omite a parte sem dinheiro
+  (`saiuPct`/`entrouPct` nulos) em vez de dizer "0%".
+- **`esquecerFormato()`** — `src/features/upload/formatos-do-usuario/esquecerFormato.action.ts`
+  — apaga um formato pelo id, conferindo `ehUuid` e o dono via `apagarFormato`;
+  revalida `/formatos` e `/upload`.
+- **`somaDasMetas()`** + **`ResumoDasMetas`** — `src/features/categorias/definir-meta/`
+  — a soma dos percentuais de gasto com meta e a frase dela. A função não tem
+  variante de erro: informa, não trava. `ResumoDasMetas` traz o aviso de renda
+  não declarada, sem o qual a meta parece não ter salvado.
+- **`linhasDePotes()`** + **`linhasDeCategorias()`** — `src/features/onboarding/concluir-onboarding/seed.ts`
+  — `POTES_PADRAO` traduzido para linhas de `buckets` e `categories`. Puro:
+  sem sessão e sem transação.
+- **`restaurarMetasDoPadrao()`** — `src/features/categorias/definir-meta/restaurarMetas.service.ts`
+  — devolve o percentual de `METAS_DO_PADRAO` aos potes de gasto, numa transação.
+  Pote fora da semente não é tocado. Zero potes não é erro.
 
 ### `imports` e `transactions` (C1/C2 da spec 02)
 
@@ -467,6 +600,17 @@ perderia um lançamento real por causa do primeiro.
 > põe linhas no mês seguinte. Remover um mês leva essas linhas junto, e a tela
 > conta isso antes de confirmar.
 
+> **"Mês" são dois campos, e não é o mesmo mês.**
+>
+> - `imports.mesReferencia` é o mês que o usuário escolheu no envio. É o que
+>   `listarImportacoes` ordena.
+> - `transactions.mesReferencia` é o mês em que cada lançamento conta: conta e
+>   cartão à vista pela data; só parcela de cartão pelo mês da fatura. É o que
+>   `enviosDoMes` (painel/remover) agrupa.
+>
+> Consequência: um envio sem lançamentos gravados aparece
+> na lista de `/upload`, mas não aparece na remoção do mês.
+
 > ⚠ **O Drizzle envolve o erro do Postgres: o nome da constraint vive em
 > `error.cause`, não em `error.message`.** Um teste que só olha a mensagem
 > reporta falha justamente quando o banco fez o certo. Já me custou uma
@@ -505,7 +649,10 @@ público, separada por vírgula, comparada normalizada. Quem não está cai em
   tamanho; se incomodar, publicar o e-mail como claim customizado.
 
 **Aparência do Clerk:** `src/features/autenticacao/aparencia-clerk.ts`, com as
-cores vindo de `var(--color-*)` em vez de hex. Atenção aos nomes: o **Core 3
+cores em **hex literal**, não `var(--color-*)` — exceção documentada em
+"Armadilha do Clerk" abaixo. O fundo do tema que o sistema desenha vem de
+`src/features/aparencia/tema/coresDoSistema.ts`, espelho de `globals.css`.
+Atenção aos nomes: o **Core 3
 renomeou** as variáveis — não existem mais `colorText`, `colorTextSecondary`,
 `colorInputBackground` nem `colorInputText`; o par é `color*` /
 `color*Foreground`.
@@ -516,8 +663,8 @@ protegidas é escrita à mão no middleware, e isso é deliberado: derivá-la de
 puramente visual — tirasse a rota da proteção junto, em silêncio. Ao criar
 rota interna, acrescente ao matcher.
 
-Protegidas hoje: `/dashboard`, `/upload`, `/revisao` e `/bem-vindo`.
-`/bem-vindo` está lá mesmo não aparecendo no menu.
+A lista atual está em `src/proxy.ts` (`ehRotaProtegida`), escrita à mão de
+propósito e comentada ali. Não copie a lista para cá: ela envelhece.
 
 **Não usar `auth.protect()` sozinho.** Ele responde **404** para quem não tem
 sessão — verificado na D1. Esconder a rota não é o comportamento da spec: quem
@@ -616,8 +763,11 @@ essa janela. Duas portas, de propósito:
 | `obterUsuarioAtual()` | devolve `null` | D6, que precisa **decidir** o destino |
 | `garantirUsuario()` | `redirect("/entrar")` | rotas internas, que não têm decisão a tomar |
 
-Chamada em `src/app/(app)/layout.tsx` e em `/bem-vindo`. **Rota interna nova
-precisa chamar uma das duas** antes de ler qualquer coisa por `user_id`.
+Chamada em `/bem-vindo`, no layout de `(app)` (só na carga inicial: um layout não
+re-executa na navegação entre páginas filhas) e, sobretudo, **em cada página e
+action** que lê por `user_id`. **Rota interna nova precisa chamar uma das duas**
+antes de ler qualquer coisa por `user_id` — nunca confie no layout. As exceções
+são `/configuracoes` e `/passos`, que não leem dado do usuário.
 
 - **Caminho quente é um `SELECT` por chave primária.** Só quando a linha falta
   é que se paga uma ida ao Clerk (`currentUser()`) — o que acontece uma vez na
@@ -642,8 +792,9 @@ precisa chamar uma das duas** antes de ler qualquer coisa por `user_id`.
 
 ### Destino inicial (D6)
 
-`src/features/autenticacao/destino-inicial.ts` responde a única pergunta que
-quatro rotas fazem:
+`src/features/autenticacao/destino-inicial.ts` (`destinoInicial()`) responde a
+única pergunta que três rotas fazem. As constantes de destino moram em
+`rotas-de-acesso.ts`:
 
 | Estado | Destino |
 |---|---|
@@ -656,14 +807,15 @@ A segunda linha não está na spec da raiz: é consequência da D3. Quem não fo
 convidado **tem** sessão, e mandá-lo para `/dashboard` só o faria bater no
 proxy e voltar.
 
-Chamam: `/` (que não tem tela — decide e desvia), `/entrar`, `/cadastrar` e
-`/bem-vindo`. Até a D5, três delas respondiam com um `/dashboard` fixo que a
+Chamam `destinoInicial()`: `/` (que não tem tela — decide e desvia), `/entrar` e
+`/cadastrar`. `/bem-vindo` já tem o usuário em mãos e chama `destinoDoUsuario()`
+direto. Até a D5, três delas respondiam com um `/dashboard` fixo que a
 D2 deixou provisório, e nenhuma sabia de `onboarding_concluido_em`.
 
 - **A decisão é de Server Component, com `redirect()` antes de renderizar.** O
   navegador recebe 307 e nunca pinta tela de espera.
-- **`destinoDoUsuario()` é pura** (recebe `Usuario`, não consulta nada), para
-  ser exercitável nos quatro estados. Pela porta de cima só se alcança o
+- **`destinoDoUsuario()` é pura** (recebe `Usuario`, não consulta nada, em
+  `destinoDoUsuario.ts`, testado), para ser exercitável nos quatro estados. Pela porta de cima só se alcança o
   estado que a sessão do momento permite.
 - **`/entrar` grava no banco**, e isso é intencional: a spec diz que o
   primeiro acesso grava o usuário. Visitante anônimo não paga — sem `userId`,
@@ -679,7 +831,8 @@ D2 deixou provisório, e nenhuma sabia de `onboarding_concluido_em`.
 ### Onboarding — a gravação (D7)
 
 `src/features/onboarding/concluir-onboarding/` — o botão "Começar" grava, numa
-**única transação**, 8 potes, 22 categorias e `onboarding_concluido_em`.
+**única transação**, 8 potes, 22 categorias, as regras-base (ver abaixo) e
+`onboarding_concluido_em`. Depois disso vai para `/passos`, não para o painel.
 
 São 8 e não 6: os dois de fora do rateio (`percentual_meta` nulo) existem
 desde a C3. Criar só 6 deixaria gasto sem pote onde cair.
@@ -687,8 +840,11 @@ desde a C3. Criar só 6 deixaria gasto sem pote onde cair.
 | Arquivo | Papel |
 |---|---|
 | `seed.ts` | traduz `POTES_PADRAO` para linhas do banco. Sem sessão, sem transação |
-| `concluirOnboarding.service.ts` | a transação |
-| `concluirOnboarding.action.ts` | server action; pega o usuário de `garantirUsuario()` |
+| `concluirOnboarding.service.ts` | a transação: potes, categorias, regras, `onboarding_concluido_em` |
+| `concluirOnboarding.action.ts` | server action; pega o usuário de `garantirUsuario()`; redireciona para `/passos` |
+| `concluirOnboarding.types.ts` | o tipo `EstadoOnboarding`, fora do arquivo `"use server"` |
+| `classificacao/semear-regras/linhasDeRegras.ts` | helper puro: `regrasSemente` → linhas de `classification_rules` |
+| `classificacao/semear-regras/quemRecebe.ts` | helper `server-only`: `recebeRegrasBase(email)`, lendo `EMAILS_COM_REGRAS_BASE` |
 | `AcaoComecar.tsx` | o único pedaço de cliente da tela |
 
 - **A transação é o motivo de a C1 ter escolhido o driver WebSocket** do Neon
@@ -702,9 +858,10 @@ desde a C3. Criar só 6 deixaria gasto sem pote onde cair.
   duas requisições simultâneas não deslocarem a data para frente.
 - **A tela continua Server Component**; só `AcaoComecar` é cliente, então
   `POTES_PADRAO` inteiro não entra no bundle.
-- **`classification_rules` ficou de fora** (C5, adiada para a spec do motor de
-  classificação): a tabela não existe, e criá-la só para semear seria
-  construir o consumidor depois do consumido.
+- **As regras-base entram na mesma transação** (`semearRegras`), depois das
+  categorias, porque cada regra aponta para um `categoria_id`. Só recebe quem
+  está em `EMAILS_COM_REGRAS_BASE`. O `on conflict do nothing` é deliberado:
+  se o Davi corrigiu uma regra semeada, rodar de novo não a devolve ao seed.
 
 > ⚠ **`on conflict do nothing` não devolve a linha que já existia.** O mapa
 > `slug → id` dos potes vem de um `select` depois do insert, não do
