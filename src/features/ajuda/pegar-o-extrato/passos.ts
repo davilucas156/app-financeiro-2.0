@@ -1,4 +1,4 @@
-import { FORMATOS } from "@/features/upload/ler-arquivo/formatos";
+import { bancosDeCodigo } from "@/features/upload/ler-arquivo/bancosDeCodigo";
 
 /**
  * O passo a passo de como pegar o extrato (spec 09, tarefa C1).
@@ -80,11 +80,7 @@ const PASSOS_POR_BANCO: Record<string, PassoDoBanco[]> = {
  * uma ordem que não seja a de quem foi implementado primeiro.
  */
 export function ajudaPorBanco(): AjudaDeBanco[] {
-  const bancos = [...new Set(FORMATOS.map((f) => f.banco))].sort((a, b) =>
-    a.localeCompare(b, "pt-BR"),
-  );
-
-  return bancos.map((banco) => ({
+  return bancosDeCodigo().map(({ banco }) => ({
     banco,
     passos: PASSOS_POR_BANCO[banco] ?? [],
   }));
@@ -98,5 +94,5 @@ export function ajudaPorBanco(): AjudaDeBanco[] {
  * e achar que acabou.
  */
 export function arquivosDoBanco(banco: string): string[] {
-  return FORMATOS.filter((f) => f.banco === banco).map((f) => f.nome);
+  return bancosDeCodigo().find((b) => b.banco === banco)?.arquivos ?? [];
 }

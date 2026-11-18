@@ -10,16 +10,17 @@ import { getDb } from "@/lib/db";
 /**
  * A lista "Já importados" (tarefa D4).
  *
- * ⚠ **Não recebe `userId` de fora.** Quem chama é a página, e o id sai de
- * `garantirUsuario()`. Uma função que aceitasse qualquer id seria uma forma de
- * ler o histórico de outra pessoa, protegida apenas por ninguém chamar errado
- * (`references/architecture.md`, Thin Client / Fat Server) — a mesma decisão
- * que manteve `resolverUsuario` privado na spec 01.
+ * ⚠ **O isolamento é por convenção, não por assinatura.** A função recebe
+ * `userId` e o usa no `where`, mas nada impede outro chamador de passar outro
+ * id. Hoje o único chamador é a página, que passa o `usuario.id` vindo de
+ * `garantirUsuario()`, e é isso que mantém o histórico de cada pessoa separado
+ * (`references/architecture.md`, Thin Client / Fat Server).
  */
 
 /**
- * 18 meses × 2 arquivos = 36. O teto existe para a consulta não crescer sem
- * fim, não porque 60 seja um número especial.
+ * A janela do seletor (`JANELA_DE_MESES`, em `mesesDisponiveis.ts`) × 2
+ * arquivos = 36 envios num uso normal; 60 deixa folga sobre isso. O teto existe
+ * para a consulta não crescer sem fim, não porque 60 seja um número especial.
  */
 const TETO = 60;
 

@@ -25,9 +25,13 @@ export async function desfazerEnvio(
     const resultado = await desfazerImportacao(usuario.id, importId);
 
     if (resultado.ok) {
-      // A lista perdeu uma linha e o painel perdeu lançamentos.
+      // A lista perdeu uma linha e o painel perdeu lançamentos — inclusive os
+      // que estavam na fila da `/revisao`. A cobertura do `/comparativo` também
+      // mudou, porque ela conta os lançamentos do envio.
       revalidatePath("/upload");
       revalidatePath("/dashboard");
+      revalidatePath("/revisao");
+      revalidatePath("/comparativo");
     }
 
     return resultado;

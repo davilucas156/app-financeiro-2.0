@@ -17,9 +17,9 @@ import {
   previaDoMapeamento,
   type Previa,
 } from "@/features/upload/ler-arquivo/previa";
-import { TAMANHO_MAXIMO } from "@/features/upload/limites";
+import { recusar } from "@/features/upload/limites";
 import { validarMapeamento } from "./formatoDoUsuario";
-import { apagarFormato, salvarFormato } from "./formatosDoUsuario.service";
+import { salvarFormato } from "./formatosDoUsuario.service";
 
 /**
  * Ensinar o app a ler um arquivo (spec 11, tarefas C2, D2 e D4).
@@ -36,8 +36,8 @@ import { apagarFormato, salvarFormato } from "./formatosDoUsuario.service";
  *   `references/architecture.md`.
  * - **O `File` fica na aba e cada chamada o reenvia** — o que se faz aqui.
  *
- * O custo é reenviar até 2 MB por ajuste, num arquivo que o limite já prende em
- * 2 MB, e são poucos ajustes, cada um deliberado. Em troca, os bytes nunca
+ * O custo é reenviar até o limite de `TAMANHO_MAXIMO` por ajuste, num arquivo
+ * que esse mesmo limite já prende, e são poucos ajustes, cada um deliberado. Em troca, os bytes nunca
  * tocam disco e o parsing nunca sai do servidor.
  */
 
@@ -142,24 +142,6 @@ export async function ensinarFormato(
   return { ok: true, id: salvo.id };
 }
 
-export async function esquecerFormato(
-  id: string,
-): Promise<{ ok: boolean; erro?: string }> {
-  const usuario = await garantirUsuario();
-
-  if (typeof id !== "string" || id === "") {
-    return { ok: false, erro: "Formato não encontrado." };
-  }
-
-  const apagado = await apagarFormato(usuario.id, id);
-  if (!apagado) return { ok: false, erro: "Formato não encontrado." };
-
-  revalidatePath("/formatos");
-  revalidatePath("/upload");
-
-  return { ok: true };
-}
-
 /** Os bytes do arquivo virando texto, com o mesmo limite do `/upload`. */
 async function lerTexto(
   formData: FormData,
@@ -171,13 +153,12 @@ async function lerTexto(
   }
 
   // O cliente já recusa, mas validação de cliente é conveniência, não defesa —
-  // a mesma frase que a `importarExtrato` escreveu na spec 02.
-  if (arquivo.size > TAMANHO_MAXIMO) {
-    return {
-      ok: false,
-      erro: "Esse arquivo é grande demais. O limite é 2 MB.",
-    };
-  }
+  // a mesma frase que a `importarExtrato` escreveu na spec 02. Roda **antes** de
+  // `arrayBuffer()` (o `size` do `File` se sabe sem ler; o Next já bufferizou o
+  // corpo, então o que se evita é só a cópia para `Uint8Array`) e com a mesma
+  // função do cliente: extensão, tamanho e vazio.
+  const problema = recusar(arquivo);
+  if (problema) return { ok: false, erro: problema };
 
   return decodificar(new Uint8Array(await arquivo.arrayBuffer()));
 }

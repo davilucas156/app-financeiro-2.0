@@ -13,6 +13,7 @@ import { classificarImportacao } from "@/features/classificacao/classificar-impo
 import { mesDoLancamento } from "@/features/upload/importar-extrato/mesDoLancamento";
 import { formatosDoUsuario } from "@/features/upload/formatos-do-usuario/formatosDoUsuario.service";
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
+import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
 import { paraLancamentos } from "@/features/upload/ler-arquivo/lancamentos";
 import {
   prepararLancamentos,
@@ -23,7 +24,7 @@ import {
   reconhecer,
   type Reconhecimento,
 } from "@/features/upload/ler-arquivo/reconhecer";
-import { TAMANHO_MAXIMO } from "@/features/upload/limites";
+import { recusar, type CampoDeEnvio } from "@/features/upload/limites";
 
 /**
  * A gravação da importação (tarefa D2).
@@ -38,8 +39,6 @@ import { TAMANHO_MAXIMO } from "@/features/upload/limites";
  * (`references/architecture.md`, Thin Client / Fat Server).
  */
 
-export type CampoDeEnvio = "conta" | "cartao";
-
 export type ArquivoRecebido = {
   campo: CampoDeEnvio;
   nome: string;
@@ -51,7 +50,7 @@ export type ResumoDeArquivoImportado = {
   nome: string;
   origem: Origem;
   entraram: number;
-  ignoradas: { linha: number; motivo: string; conteudo: string }[];
+  ignoradas: LinhaIgnorada[];
   /** `true` quando o hash já existia: nada foi gravado deste arquivo. */
   jaImportado: boolean;
 };
@@ -71,7 +70,15 @@ export type ResultadoImportacao =
       /** Classificados que ainda assim pedem confirmação — valor alto. */
       conferir: number;
     }
-  | { ok: false; erro: string };
+  | {
+      ok: false;
+      erro: string;
+      /**
+       * O erro é de reconhecimento do formato: o cliente pode oferecer ensinar
+       * o formato. Ausente nos demais erros (tamanho, campo trocado, mês...).
+       */
+      ensinavel?: boolean;
+    };
 
 const ORIGEM_DO_CAMPO: Record<CampoDeEnvio, Origem> = {
   conta: "csv_conta",
@@ -116,20 +123,26 @@ export async function importarExtrato(
   const lidos: Lido[] = [];
 
   for (const arquivo of arquivos) {
-    if (arquivo.bytes.byteLength > TAMANHO_MAXIMO) {
-      // O cliente já recusa (D3), mas validação de cliente é conveniência,
-      // não defesa.
-      return {
-        ok: false,
-        erro: `"${arquivo.nome}" é grande demais. O limite é 2 MB.`,
-      };
+    // O cliente já recusa (D3), mas validação de cliente é conveniência, não
+    // defesa — por isso o servidor repete **todas** as checagens (extensão,
+    // tamanho, vazio), com a mesma função.
+    const problema = recusar({
+      name: arquivo.nome,
+      size: arquivo.bytes.byteLength,
+    });
+    if (problema) {
+      return { ok: false, erro: `${arquivo.nome}: ${problema}` };
     }
 
     const reconhecido = reconhecer(arquivo.bytes, doUsuario);
     if (!reconhecido.ok) {
       // Recusa os **dois** arquivos: a transação é conjunta, e gravar metade
       // faria o usuário reenviar tudo com o `on conflict` escondendo o resto.
-      return { ok: false, erro: `${arquivo.nome}: ${reconhecido.mensagem}` };
+      return {
+        ok: false,
+        erro: `${arquivo.nome}: ${reconhecido.mensagem}`,
+        ensinavel: true,
+      };
     }
 
     const origem = reconhecido.formato.origem;

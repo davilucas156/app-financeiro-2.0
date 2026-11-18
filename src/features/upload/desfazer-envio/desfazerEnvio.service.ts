@@ -2,7 +2,11 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { imports, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
-import { ehUuid } from "@/lib/uuid";
+import {
+  recusaDoImportId,
+  resultadoDoDesfazer,
+  type ResultadoDesfazer,
+} from "./respostaDoDesfazer";
 
 /**
  * Desfazer uma importação (tarefa D5).
@@ -14,24 +18,18 @@ import { ehUuid } from "@/lib/uuid";
  * (`references/architecture.md`, Thin Client / Fat Server).
  */
 
-export type ResultadoDesfazer =
-  | { ok: true; lancamentosApagados: number; nomeArquivo: string }
-  | { ok: false; erro: string };
+export type { ResultadoDesfazer };
 
-/**
- * Envio inexistente e envio de outro dono devolvem **a mesma** frase. Se a
- * resposta diferenciasse os dois, ela viraria uma forma de descobrir quais
- * ids existem.
+/*
+ * Envio inexistente, envio de outro dono e id malformado devolvem **a mesma**
+ * frase — ver `respostaDoDesfazer.ts`, onde ela está sob teste.
  */
-const NAO_ENCONTRADO = "Esse envio não está mais aqui. A lista foi atualizada.";
-
 export async function desfazerImportacao(
   userId: string,
   importId: string,
 ): Promise<ResultadoDesfazer> {
-  // Recusa antes de tocar no banco: um id fora do formato nunca existiria, e
-  // o Postgres devolveria erro de tipo em vez de "não encontrado".
-  if (!ehUuid(importId)) return { ok: false, erro: NAO_ENCONTRADO };
+  const recusa = recusaDoImportId(importId);
+  if (recusa) return recusa;
 
   return getDb().transaction(async (tx) => {
     /**
@@ -48,7 +46,7 @@ export async function desfazerImportacao(
       .where(and(eq(imports.id, importId), eq(imports.userId, userId)))
       .limit(1);
 
-    if (!envio) return { ok: false, erro: NAO_ENCONTRADO };
+    if (!envio) return resultadoDoDesfazer(undefined, 0);
 
     /**
      * Apago os lançamentos **explicitamente** em vez de deixar o
@@ -73,10 +71,6 @@ export async function desfazerImportacao(
       .delete(imports)
       .where(and(eq(imports.id, importId), eq(imports.userId, userId)));
 
-    return {
-      ok: true,
-      lancamentosApagados: apagados.length,
-      nomeArquivo: envio.nomeArquivo,
-    };
+    return resultadoDoDesfazer(envio, apagados.length);
   });
 }

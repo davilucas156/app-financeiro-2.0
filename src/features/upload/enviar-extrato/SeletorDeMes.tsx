@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { mesDeData, rotuloDeMes } from "@/lib/mes";
+import { rotuloDeMes } from "@/lib/mes";
 
 /**
  * Mês de referência da importação (tarefa B1) — **protótipo visual**.
@@ -19,23 +19,6 @@ import { mesDeData, rotuloDeMes } from "@/lib/mes";
  * espera ver tudo em outubro e encontra as compras em setembro, o que parece
  * defeito e é o conserto.
  */
-
-/**
- * Os últimos meses até o atual. **Futuro fica de fora**: extrato de mês que
- * ainda não aconteceu não existe, e oferecer a opção só convida ao engano.
- */
-export function mesesDisponiveis(hoje = new Date(), quantos = 18): string[] {
-  const lista: string[] = [];
-
-  for (let i = 0; i < quantos; i++) {
-    const d = new Date(
-      Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() - i, 1),
-    );
-    lista.push(mesDeData(d));
-  }
-
-  return lista;
-}
 
 export function SeletorDeMes({
   valor,

@@ -4,7 +4,7 @@ import { formatosNaTela } from "@/features/upload/formatos-do-usuario/formatosDo
 import { TelaDeFormatos } from "@/features/upload/formatos-do-usuario/TelaDeFormatos";
 
 export const metadata: Metadata = {
-  title: "Formatos · Painel Financeiro 6 Potes",
+  title: "Formatos",
 };
 
 /**

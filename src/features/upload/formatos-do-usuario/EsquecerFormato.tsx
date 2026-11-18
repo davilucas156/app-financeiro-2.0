@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
-import { esquecerFormato } from "./ensinarFormato.action";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
+import { esquecerFormato } from "./esquecerFormato.action";
 
 /**
  * Apagar um formato ensinado (spec 11, tarefa D4).
@@ -61,16 +62,26 @@ export function EsquecerFormato({ id, nome }: { id: string; nome: string }) {
         <Button
           loading={apagando}
           onClick={() =>
-            transicao(() => {
-              void esquecerFormato(id).then((r) => {
-                if (!r.ok) setErro(r.erro ?? "Não deu para esquecer.");
-              });
+            transicao(async () => {
+              setErro(null);
+              try {
+                const r = await esquecerFormato(id);
+                if (!r.ok) setErro(r.erro);
+              } catch {
+                setErro(FALHA_DE_CONEXAO);
+              }
             })
           }
         >
           Esquecer
         </Button>
-        <Button variant="secondary" onClick={() => setConfirmando(false)}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setConfirmando(false);
+            setErro(null);
+          }}
+        >
           Cancelar
         </Button>
       </div>

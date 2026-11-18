@@ -8,11 +8,13 @@ import { PainelDeMapeamento } from "@/features/upload/formatos-do-usuario/Painel
 import { ResumoDaImportacao } from "@/features/upload/enviar-extrato/ResumoDaImportacao";
 import { SeletorDeMes } from "@/features/upload/enviar-extrato/SeletorDeMes";
 import { enviarExtrato } from "@/features/upload/importar-extrato/importarExtrato.action";
-import type {
-  CampoDeEnvio,
-  ResultadoImportacao,
-} from "@/features/upload/importar-extrato/importarExtrato.service";
-import { formatarTamanho, recusar } from "@/features/upload/limites";
+import { estadoDoCampo } from "@/features/upload/enviar-extrato/estadoDoCampo";
+import type { ResultadoImportacao } from "@/features/upload/importar-extrato/importarExtrato.service";
+import {
+  formatarTamanho,
+  recusar,
+  type CampoDeEnvio,
+} from "@/features/upload/limites";
 import { erroDoActionState } from "@/lib/erroDoActionState";
 
 /**
@@ -101,10 +103,11 @@ export function FormularioDeEnvio({
   /*
    * ⚠ **Só o erro de reconhecimento vira convite para ensinar.** Campo trocado
    * ou arquivo grande demais não se resolvem com um formato novo, e oferecer o
-   * botão ali mandaria a pessoa mapear um arquivo que o app já sabe ler.
+   * botão ali mandaria a pessoa mapear um arquivo que o app já sabe ler. Quem
+   * decide é o servidor, que marca o erro como `ensinavel` — ler o texto da
+   * mensagem quebrava quando a frase mudava ("faltou a coluna" no singular).
    */
-  const podeEnsinar =
-    erroDoServidor !== null && /reconheci|faltar/i.test(erroDoServidor);
+  const podeEnsinar = resultado?.ok === false && resultado.ensinavel === true;
 
   const paraEnsinar =
     escolhidos.conta?.arquivo ?? escolhidos.cartao?.arquivo ?? null;
@@ -120,15 +123,11 @@ export function FormularioDeEnvio({
               nome="conta"
               rotulo={ROTULO.conta}
               descricao="CSV do Inter, com Data Lançamento, Descrição, Valor e Saldo."
-              estado={
-                erros.conta
-                  ? "erro"
-                  : enviando
-                    ? "enviando"
-                    : escolhidos.conta
-                      ? "escolhido"
-                      : "vazio"
-              }
+              estado={estadoDoCampo({
+                erro: erros.conta,
+                enviando,
+                escolhido: escolhidos.conta,
+              })}
               arquivo={escolhidos.conta ?? undefined}
               erro={erros.conta ?? undefined}
               onArquivo={(a) => aoEscolher("conta", a)}
@@ -139,15 +138,11 @@ export function FormularioDeEnvio({
               rotulo={ROTULO.cartao}
               descricao="CSV da fatura. Dá para enviar só a conta e mandar o cartão depois."
               opcional
-              estado={
-                erros.cartao
-                  ? "erro"
-                  : enviando
-                    ? "enviando"
-                    : escolhidos.cartao
-                      ? "escolhido"
-                      : "vazio"
-              }
+              estado={estadoDoCampo({
+                erro: erros.cartao,
+                enviando,
+                escolhido: escolhidos.cartao,
+              })}
               arquivo={escolhidos.cartao ?? undefined}
               erro={erros.cartao ?? undefined}
               onArquivo={(a) => aoEscolher("cartao", a)}

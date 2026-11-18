@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { LinhasIgnoradas } from "@/features/upload/enviar-extrato/LinhasIgnoradas";
 import type { LinhaIgnorada } from "@/features/upload/ler-arquivo/lancamentos";
+import { VALOR_ALTO_CENTAVOS } from "@/features/classificacao/motor/valorAlto";
+import { contar } from "@/lib/plural";
 import {
   paraDecidir,
   tudoResolvido,
@@ -40,7 +42,7 @@ export type DadosDoResumo = {
   arquivos: ResumoDeArquivo[];
   /** Pagamento de fatura e afins: entram, mas fora do cálculo. */
   excluidos: number;
-  /** Pares que se anularam entre si e já saíram da conta do mês. */
+  /** Lançamentos que se anularam em pares (cada par tem dois lados) e já saíram da conta do mês. */
   anulados: number;
   /** O motor bateu regra (D1). */
   classificados: number;
@@ -118,7 +120,7 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
               {a.rotulo}
             </span>
             <span className="shrink-0 font-mono text-2xs text-dim">
-              {a.entraram} lançamentos
+              {contar(a.entraram, "lançamento", "lançamentos")}
             </span>
           </div>
         ))}
@@ -150,8 +152,8 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
             <Badge variant="gold">Conferir</Badge>
             <p className="text-xs leading-relaxed text-dim">
               {dados.conferir === 1
-                ? "1 lançamento foi classificado por uma regra, mas passa de R$ 200"
-                : `${dados.conferir} lançamentos foram classificados por regra, mas passam de R$ 200`}
+                ? `1 lançamento foi classificado por uma regra, mas passa de R$ ${VALOR_ALTO_CENTAVOS / 100}`
+                : `${dados.conferir} lançamentos foram classificados por regra, mas passam de R$ ${VALOR_ALTO_CENTAVOS / 100}`}
               . Já estão no lugar — é só confirmar que a categoria está certa.
               Regra errada em valor alto é o erro mais caro, e o mais fácil de
               não notar.
@@ -179,9 +181,10 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
           <div className="flex items-start gap-3">
             <Badge variant="blue">Fora do cálculo</Badge>
             <p className="text-xs leading-relaxed text-dim">
-              {dados.excluidos} lançamentos são pagamento de fatura. Continuam
-              guardados, mas não contam como gasto — senão o mesmo dinheiro
-              sairia duas vezes.
+              {contar(dados.excluidos, "lançamento", "lançamentos")}{" "}
+              {dados.excluidos === 1 ? "é" : "são"} pagamento de fatura.
+              Continuam guardados, mas não contam como gasto — senão o mesmo
+              dinheiro sairia duas vezes.
             </p>
           </div>
         </Card>

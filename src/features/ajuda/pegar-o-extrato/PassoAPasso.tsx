@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Voltar } from "@/components/ui/Voltar";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { EMAIL_CONTATO } from "@/features/autenticacao/contato";
+import { linkEnviarCsvDeOutroBanco } from "@/features/autenticacao/contato";
+import type { DestinoDeVoltar } from "./hrefDosPassos";
 import { ajudaPorBanco, arquivosDoBanco } from "./passos";
 
 /**
@@ -25,7 +26,7 @@ import { ajudaPorBanco, arquivosDoBanco } from "./passos";
  * A lista de bancos é **derivada** de `FORMATOS`, então esta tela não tem como
  * prometer um banco que o app não lê.
  */
-export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
+export function PassoAPasso({ voltarPara }: { voltarPara: DestinoDeVoltar }) {
   const bancos = ajudaPorBanco();
 
   return (
@@ -52,7 +53,7 @@ export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
           separador, vírgula decimal e codificação são as quatro coisas que todo
           mundo supõe e quase todo mundo erra. Se o seu banco for outro,{" "}
           <a
-            href={`mailto:${EMAIL_CONTATO}?subject=${encodeURIComponent("CSV de outro banco")}`}
+            href={linkEnviarCsvDeOutroBanco()}
             className="underline underline-offset-4"
           >
             mande o CSV
@@ -77,7 +78,7 @@ export function PassoAPasso({ voltarPara }: { voltarPara: string }) {
           ) : (
             <ol className="mt-3 space-y-2">
               {passos.map((passo, i) => (
-                <li key={passo.titulo}>
+                <li key={i}>
                   <Card className="flex gap-3 p-4">
                     <span
                       aria-hidden="true"

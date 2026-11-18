@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/Card";
 import { EstadoVazio } from "@/components/ui/EstadoVazio";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Voltar } from "@/components/ui/Voltar";
-import { FORMATOS } from "@/features/upload/ler-arquivo/formatos";
+import { rotuloDeOrigem } from "@/features/upload/enviar-extrato/exibirEnvio";
+import { bancosDeCodigo } from "@/features/upload/ler-arquivo/bancosDeCodigo";
 import { EsquecerFormato } from "./EsquecerFormato";
 import type { FormatoNaTela } from "./formatosDoUsuario.service";
 
@@ -73,19 +74,13 @@ export function TelaDeFormatos({ formatos }: { formatos: FormatoNaTela[] }) {
  * alguém tirasse o formato de lá.
  */
 function DeCodigo() {
-  const bancos = [...new Set(FORMATOS.map((f) => f.banco))].sort((a, b) =>
-    a.localeCompare(b, "pt-BR"),
-  );
-
   return (
     <Card>
-      {bancos.map((banco) => (
+      {bancosDeCodigo().map(({ banco, arquivos }) => (
         <div key={banco} className="not-first:mt-3">
           <p className="text-2xs font-bold text-text">{banco}</p>
           <p className="mt-1 text-3xs leading-relaxed text-dim">
-            {FORMATOS.filter((f) => f.banco === banco)
-              .map((f) => f.nome)
-              .join(" · ")}
+            {arquivos.join(" · ")}
           </p>
         </div>
       ))}
@@ -97,9 +92,7 @@ function DeCodigo() {
 }
 
 function CartaoDoFormato({ formato }: { formato: FormatoNaTela }) {
-  const colunas = Object.entries(formato.colunas)
-    .map(([, nome]) => nome)
-    .join(", ");
+  const colunas = Object.values(formato.colunas).join(", ");
 
   return (
     <Card>
@@ -108,7 +101,7 @@ function CartaoDoFormato({ formato }: { formato: FormatoNaTela }) {
           {formato.banco}
         </p>
         <span className="shrink-0 font-mono text-4xs tracking-wider text-dim uppercase">
-          {formato.origem === "csv_conta" ? "conta" : "cartão"}
+          {rotuloDeOrigem(formato.origem)}
         </span>
       </div>
 

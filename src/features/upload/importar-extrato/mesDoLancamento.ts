@@ -1,4 +1,5 @@
 import type { Origem } from "@/features/upload/ler-arquivo/formatos";
+import type { Lancamento } from "@/features/upload/ler-arquivo/lancamentos";
 
 /**
  * Em que mês cada lançamento conta.
@@ -50,13 +51,8 @@ import type { Origem } from "@/features/upload/ler-arquivo/formatos";
  * escrita quando a regra antiga foi feita, que permitiu consertá-la agora.
  */
 export function mesDoLancamento(
-  lancamento: {
-    origem: Origem;
-    /** `YYYY-MM-DD`. No cartão parcelado, a data da **compra**. */
-    data: string;
-    /** `"4/12"` quando parcelado; `null` à vista ou fora do cartão. */
-    parcela: string | null;
-  },
+  /** No cartão parcelado, `data` é a data da **compra**, não a da cobrança. */
+  lancamento: Pick<Lancamento, "data" | "parcela"> & { origem: Origem },
   /** `YYYY-MM` — o mês que o usuário escolheu ao enviar a fatura. */
   mesDaFatura: string,
 ): string {

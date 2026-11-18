@@ -2,7 +2,7 @@ import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 import { userFormats } from "@/db/schema";
 import { getDb } from "@/lib/db";
-import type { Formato } from "@/features/upload/ler-arquivo/formatos";
+import type { Formato, Origem } from "@/features/upload/ler-arquivo/formatos";
 import { comoFormato, type MapeamentoSalvo } from "./formatoDoUsuario";
 
 /**
@@ -17,7 +17,7 @@ export type FormatoNaTela = {
   id: string;
   nome: string;
   banco: string;
-  origem: "csv_conta" | "csv_cartao";
+  origem: Origem;
   colunas: Record<string, string>;
   criadoEm: Date;
 };

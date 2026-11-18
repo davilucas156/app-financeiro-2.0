@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { voltarParaDe } from "@/features/ajuda/pegar-o-extrato/hrefDosPassos";
 import { PassoAPasso } from "@/features/ajuda/pegar-o-extrato/PassoAPasso";
 
 export const metadata: Metadata = {
-  title: "Como pegar o extrato · Painel Financeiro 6 Potes",
+  title: "Como pegar o extrato",
 };
 
 /**
@@ -22,17 +23,17 @@ export const metadata: Metadata = {
  */
 export default async function PassosPage({
   searchParams,
-}: {
-  searchParams: Promise<{ de?: string }>;
-}) {
+}: PageProps<"/passos">) {
   const { de } = await searchParams;
 
   /*
-   * ⚠ **Lista fechada, e não o valor cru.** O parâmetro vira o `href` de um
-   * link; aceitar qualquer texto deixaria montar `/passos?de=https://...` e o
-   * botão "Voltar" do nosso app levaria para fora dele.
+   * ⚠ **A lista fechada de `voltarParaDe` é o que protege.** O parâmetro vira o
+   * `href` de um link; aceitar qualquer texto deixaria montar
+   * `/passos?de=https://...` e o botão "Voltar" levaria para fora do app. Por
+   * isso `voltarParaDe` recebe `unknown`: string, lista (`?de=a&de=b`) ou
+   * ausente caem todos no painel, sem checagem de tipo aqui.
    */
-  const voltarPara = de === "upload" ? "/upload" : "/dashboard";
+  const voltarPara = voltarParaDe(de);
 
   return <PassoAPasso voltarPara={voltarPara} />;
 }

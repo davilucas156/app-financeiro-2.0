@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { EXTENSOES_ACEITAS } from "@/features/upload/limites";
+import { ACCEPT_DO_INPUT, type CampoDeEnvio } from "@/features/upload/limites";
 
 /**
  * Um campo de arquivo (tarefas B1 e D3).
@@ -25,7 +25,7 @@ export function CampoDeArquivo({
   className,
 }: {
   /** `name` do input — é por ele que a server action lê o arquivo. */
-  nome: string;
+  nome: CampoDeEnvio;
   rotulo: string;
   descricao: string;
   /** Diz na cara que dá para enviar sem este. Um campo que parece
@@ -54,7 +54,7 @@ export function CampoDeArquivo({
         <input
           type="file"
           name={nome}
-          accept={`${EXTENSOES_ACEITAS.join(",")},text/csv`}
+          accept={ACCEPT_DO_INPUT}
           disabled={travado}
           onChange={(e) => onArquivo?.(e.target.files?.[0])}
           className="sr-only"

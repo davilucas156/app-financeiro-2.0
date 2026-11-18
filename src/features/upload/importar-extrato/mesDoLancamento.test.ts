@@ -28,6 +28,19 @@ describe("mesDoLancamento", () => {
 
       expect(ponta).toEqual(["2026-07", "2026-07"]);
     });
+
+    /*
+     * Só o cartão usa o mês da fatura. Uma parcela no extrato da conta — linha
+     * que não deveria ter `parcela`, mas se tiver — segue o mês da data.
+     */
+    it("não usa o mês da fatura nem com parcela, fora do cartão", () => {
+      const mes = mesDoLancamento(
+        { origem: "csv_conta", data: "2026-07-05", parcela: "3/10" },
+        "2026-06",
+      );
+
+      expect(mes).toBe("2026-07");
+    });
   });
 
   describe("cartão", () => {
@@ -73,6 +86,33 @@ describe("mesDoLancamento", () => {
       );
 
       expect(mes).toBe("2026-10");
+    });
+
+    it("manda a compra à vista do fim do ano para o ano da compra, mesmo com fatura no ano seguinte", () => {
+      const mes = mesDoLancamento(
+        { origem: "csv_cartao", data: "2025-12-31", parcela: null },
+        "2026-01",
+      );
+
+      expect(mes).toBe("2025-12");
+    });
+
+    it("deixa a parcela no mês da fatura quando ela vira o ano", () => {
+      const mes = mesDoLancamento(
+        { origem: "csv_cartao", data: "2025-11-30", parcela: "2/6" },
+        "2026-01",
+      );
+
+      expect(mes).toBe("2026-01");
+    });
+
+    it("manda a compra à vista do dia 31 para o mês da própria data", () => {
+      const mes = mesDoLancamento(
+        { origem: "csv_cartao", data: "2026-08-31", parcela: null },
+        "2026-09",
+      );
+
+      expect(mes).toBe("2026-08");
     });
   });
 });
