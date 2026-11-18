@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { anoEscolhido, anosDoHistorico, mesesDoAno } from "./anoDoComparativo";
+import {
+  anoAnteriorDe,
+  anoEscolhido,
+  anosDoHistorico,
+  mesesDoAno,
+} from "./anoDoComparativo";
 import type { MesComCobertura } from "./comparativo";
 
 function mes(m: string, coberturaSaiuPct: number | null = 90): MesComCobertura {
@@ -68,6 +73,39 @@ describe("anoEscolhido", () => {
 
   it("sem histórico, ainda devolve o ano do mês de referência", () => {
     expect(anoEscolhido([], "2026-02", "2026")).toBe("2026");
+  });
+});
+
+describe("anoAnteriorDe", () => {
+  it("com um ano só na lista, o próprio ano não tem anterior", () => {
+    expect(anoAnteriorDe(["2026"], "2026")).toBeUndefined();
+  });
+
+  it("com um ano só na lista, um ano posterior tem esse como anterior", () => {
+    expect(anoAnteriorDe(["2025"], "2026")).toBe("2025");
+  });
+
+  it("pega o anterior mais próximo, e não o primeiro da lista", () => {
+    expect(anoAnteriorDe(["2023", "2024", "2025", "2026"], "2026")).toBe(
+      "2025",
+    );
+    expect(anoAnteriorDe(["2023", "2024", "2025", "2026"], "2025")).toBe(
+      "2024",
+    );
+  });
+
+  it("devolve undefined quando `ano` é menor que todos", () => {
+    expect(anoAnteriorDe(["2024", "2025"], "2024")).toBeUndefined();
+    expect(anoAnteriorDe(["2024", "2025"], "2019")).toBeUndefined();
+  });
+
+  it("aceita `ano` fora da lista, e acha o maior menor que ele", () => {
+    expect(anoAnteriorDe(["2023", "2026"], "2025")).toBe("2023");
+    expect(anoAnteriorDe(["2023", "2026"], "2030")).toBe("2026");
+  });
+
+  it("devolve undefined para lista vazia", () => {
+    expect(anoAnteriorDe([], "2026")).toBeUndefined();
   });
 });
 

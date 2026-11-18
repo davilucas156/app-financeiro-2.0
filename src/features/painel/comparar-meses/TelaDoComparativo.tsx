@@ -4,11 +4,13 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Voltar } from "@/components/ui/Voltar";
 import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
 import { hrefDoComparativo } from "@/features/painel/navegar-entre-meses/hrefs";
+import { anoAnteriorDe } from "./anoDoComparativo";
 import { CartoesDoAno } from "./CartoesDoAno";
 import { SecaoDoComparativo } from "./SecaoDoComparativo";
 import { SeletorDeAno } from "./SeletorDeAno";
 import type { CartaoDoAno } from "./cartaoDoAno";
 import type { Comparativo } from "./comparativo";
+import type { PoteDoComparativo } from "./poteDoComparativo";
 
 /**
  * `/comparativo` — os potes mês a mês, dentro de um ano (spec 09 A1, spec 12).
@@ -58,7 +60,7 @@ export function TelaDoComparativo({
 }: {
   comparativo: Comparativo;
   cartoes: CartaoDoAno[];
-  potes: { id: string; nome: string; emoji: string; cor: string }[];
+  potes: PoteDoComparativo[];
   /** Todos os meses da conta, para a fileira de abas. */
   meses: string[];
   /** Os anos que a conta tem. */
@@ -156,8 +158,7 @@ function AvisoDeAnoCurto({
 }) {
   if (comparativo.media.pode) return null;
 
-  const anteriores = anos.filter((a) => a < ano);
-  const anterior = anteriores.at(-1);
+  const anterior = anoAnteriorDe(anos, ano);
 
   if (anterior === undefined) return null;
 

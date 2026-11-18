@@ -5,7 +5,11 @@ import { garantirUsuario } from "@/features/autenticacao/garantir-usuario/garant
 import { formatoDeMesValido } from "@/lib/mes";
 import { enviosDoMes } from "./enviosDoMes.service";
 import { oQueSaiDoMes, type OQueSaiDoMes } from "./oQueSaiDoMes";
-import { removerOMes, type ResultadoDaRemocao } from "./removerOMes.service";
+import {
+  NAO_ENCONTRADO,
+  removerOMes,
+  type ResultadoDaRemocao,
+} from "./removerOMes.service";
 
 /**
  * O que a confirmação de "remover este mês" chama (tarefas C2 e D2).
@@ -16,8 +20,6 @@ import { removerOMes, type ResultadoDaRemocao } from "./removerOMes.service";
 
 export type ResultadoDoResumo =
   { ok: true; resumo: OQueSaiDoMes } | { ok: false; erro: string };
-
-const NAO_ENCONTRADO = "Esse mês não está mais aqui. A tela foi atualizada.";
 
 const FALHA = "Não deu para remover agora. Nada foi apagado pela metade.";
 

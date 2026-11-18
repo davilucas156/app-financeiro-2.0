@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { ListaDeCategorias } from "@/features/classificacao/revisar-lancamento/ListaDeCategorias";
 import { decidir } from "@/features/classificacao/revisar-lancamento/decidirLancamento.action";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import type { LancamentoNoPainel } from "@/features/painel/painel-do-mes/poteNoPainel";
 import { avisoDaTroca, ehTrocaDeVerdade } from "./troca";
 
@@ -62,19 +63,23 @@ export function TrocarCategoria({
     iniciar(async () => {
       setErro(null);
 
-      const r = await decidir({
-        tipo: "categoria",
-        lancamentoId: lancamento.id,
-        categoriaId: categoria.id,
-      });
+      try {
+        const r = await decidir({
+          tipo: "categoria",
+          lancamentoId: lancamento.id,
+          categoriaId: categoria.id,
+        });
 
-      if (!r.ok) {
-        setErro(r.erro);
-        return;
+        if (!r.ok) {
+          setErro(r.erro);
+          return;
+        }
+
+        setAberto(false);
+        setTrocado(true);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
       }
-
-      setAberto(false);
-      setTrocado(true);
     });
   };
 
@@ -141,7 +146,7 @@ export function TrocarCategoria({
         type="button"
         onClick={() => setAberto(false)}
         disabled={gravando}
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text transition-colors hover:bg-card2 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text transition-colors enabled:hover:bg-card2 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {gravando ? "Gravando…" : "Cancelar"}
       </button>

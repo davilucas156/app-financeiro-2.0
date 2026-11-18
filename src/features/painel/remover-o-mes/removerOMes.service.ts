@@ -47,7 +47,8 @@ export type ResultadoDaRemocao =
  * Mês inexistente, mês de outra pessoa e mês mal formado dizem **o mesmo**. Se
  * a resposta os diferenciasse, ela viraria um jeito de descobrir o que existe.
  */
-const NAO_ENCONTRADO = "Esse mês não está mais aqui. A tela foi atualizada.";
+export const NAO_ENCONTRADO =
+  "Esse mês não está mais aqui. A tela foi atualizada.";
 
 export async function removerOMes(
   userId: string,

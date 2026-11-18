@@ -1,21 +1,33 @@
 import Link from "next/link";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import { ChamadaDoComparativo } from "@/features/painel/comparar-meses/ChamadaDoComparativo";
 import type { MediaDoComparativo } from "@/features/painel/comparar-meses/comparativo";
-import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
 import { ForaDaContaNoPainel } from "@/features/painel/fora-da-conta/ForaDaContaNoPainel";
-import type { ForaDaConta } from "@/features/painel/fora-da-conta/foraDaConta";
 import { CampoDeRenda } from "@/features/painel/renda-do-mes/CampoDeRenda";
-import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
 import { AbasDoPainel } from "@/features/painel/navegar-entre-meses/AbasDoPainel";
 import { RemoverOMes } from "@/features/painel/remover-o-mes/RemoverOMes";
-import { metaDoPote } from "@/features/painel/somar-o-mes/meta";
 import { FaixaDoVeredito } from "@/features/painel/veredito-do-mes/FaixaDoVeredito";
-import { vereditoDoMes } from "@/features/painel/veredito-do-mes/veredito";
 import { CartaoDoPote } from "./CartaoDoPote";
+import type { DadosDoPainel } from "./painelDoMes.service";
 import { TopoDoMes } from "./TopoDoMes";
-import type { PoteNoPainel } from "./poteNoPainel";
+import { vereditoDoPainel } from "./vereditoDoPainel";
+
+/**
+ * Tudo o que o painel lê, mais a frase do comparativo.
+ *
+ * `DadosDoPainel` vem do serviço (`server-only`) só como `import type`, que
+ * some na compilação: a tela não carrega o serviço, só o formato dele.
+ */
+type Props = DadosDoPainel & {
+  /**
+   * Só a frase do comparativo (spec 09) — não o comparativo inteiro.
+   *
+   * O painel deixou de desenhar as barras e passou a convidar para a
+   * `/comparativo`. É o que permite ele parar de fazer a consulta cara do gasto
+   * por pote, mês a mês.
+   */
+  media: MediaDoComparativo;
+};
 
 /**
  * O painel do mês (tarefas B1, B2 e B3).
@@ -48,56 +60,23 @@ export function TelaDoPainel({
   categorias,
   media,
   foraDaConta,
-}: {
-  mes: string;
-  meses: string[];
-  entrouCentavos: number;
-  saiuCentavos: number;
-  diferencaCentavos: number;
-  cobertura: Cobertura;
-  faltamDecidir: number;
-  renda: RendaDeclarada | null;
-  potes: PoteNoPainel[];
-  categorias: CategoriaEscolhivel[];
-  /** O dinheiro que o painel não somou, e por quê. */
-  foraDaConta: ForaDaConta;
-  /**
-   * Só a frase do comparativo (spec 09) — não o comparativo inteiro.
-   *
-   * O painel deixou de desenhar as barras e passou a convidar para a
-   * `/comparativo`. É o que permite ele parar de fazer a consulta cara do gasto
-   * por pote, mês a mês.
-   */
-  media: MediaDoComparativo;
-}) {
-  /*
-   * O veredito (tarefa B1) sai daqui e não do servidor, e não é atalho: tudo o
-   * que `vereditoDoMes` precisa já chegou nesta tela, e a meta de cada pote é a
-   * mesma conta que o `CartaoDoPote` faz para desenhar a barra. Uma segunda
-   * consulta produziria os mesmos números com uma segunda chance de divergir.
-   */
-  const veredito = vereditoDoMes({
-    cobertura,
-    rendaDeclaradaCentavos: renda?.centavos ?? null,
-    saiuCentavos,
-    potes: potes
-      .filter((p) => p.tipo === "gasto")
-      .map((pote) => ({
-        nome: pote.nome,
-        emoji: pote.emoji,
-        totalCentavos: pote.totalCentavos,
-        lancamentos: pote.lancamentos,
-        metaCentavos: metaDoPote({
-          percentual: pote.percentual,
-          rendaDeclaradaCentavos: renda?.centavos ?? null,
-          totalCentavos: pote.totalCentavos,
-          lancamentos: pote.lancamentos,
-        }).metaCentavos,
-      })),
-  });
-
+}: Props) {
+  const rendaCentavos = renda?.centavos ?? null;
   const deGasto = potes.filter((p) => p.tipo === "gasto");
   const deRenda = potes.filter((p) => p.tipo === "renda");
+
+  /*
+   * O veredito (tarefa B1) sai daqui e não do servidor, e não é atalho: tudo o
+   * que ele precisa já chegou nesta tela, e a meta de cada pote é a mesma conta
+   * que o `CartaoDoPote` faz para desenhar a barra. Uma segunda consulta
+   * produziria os mesmos números com uma segunda chance de divergir.
+   */
+  const veredito = vereditoDoPainel({
+    cobertura,
+    rendaCentavos,
+    saiuCentavos,
+    potes: deGasto,
+  });
 
   return (
     <>
@@ -128,7 +107,7 @@ export function TelaDoPainel({
           <CartaoDoPote
             key={pote.id}
             pote={pote}
-            rendaDeclaradaCentavos={renda?.centavos ?? null}
+            rendaDeclaradaCentavos={rendaCentavos}
             categorias={categorias}
           />
         ))}
@@ -142,7 +121,7 @@ export function TelaDoPainel({
               <CartaoDoPote
                 key={pote.id}
                 pote={pote}
-                rendaDeclaradaCentavos={renda?.centavos ?? null}
+                rendaDeclaradaCentavos={rendaCentavos}
                 categorias={categorias}
               />
             ))}

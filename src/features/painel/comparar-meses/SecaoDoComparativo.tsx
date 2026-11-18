@@ -15,6 +15,7 @@ import type {
   LinhaDoComparativo,
   ValorNoMes,
 } from "./comparativo";
+import type { PoteDoComparativo } from "./poteDoComparativo";
 
 /**
  * O comparativo entre meses (tarefa B3).
@@ -44,7 +45,7 @@ export function SecaoDoComparativo({
 }: {
   comparativo: Comparativo;
   /** Nome, emoji e cor de cada pote, na ordem do painel. */
-  potes: { id: string; nome: string; emoji: string; cor: string }[];
+  potes: PoteDoComparativo[];
   /**
    * O mês que a frase compara com os outros (spec 09).
    *

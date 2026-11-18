@@ -121,7 +121,9 @@ export function RemoverOMes({ mes }: { mes: string }) {
           )}
 
           {erro && (
-            <p className="mt-3 text-xs leading-relaxed text-red">{erro}</p>
+            <p role="alert" className="mt-3 text-xs leading-relaxed text-red">
+              {erro}
+            </p>
           )}
         </div>
       )}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { rotuloDeMes } from "@/lib/mes";
 import { informarRenda } from "./declararRenda.action";
 import { emCentavos, paraOCampo } from "./emCentavos";
@@ -113,9 +114,13 @@ function Editor({
         return;
       }
 
-      const r = await informarRenda({ mes, centavos });
-      if (r.ok) aoFechar();
-      else setErro(r.erro);
+      try {
+        const r = await informarRenda({ mes, centavos });
+        if (r.ok) aoFechar();
+        else setErro(r.erro);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
 
   return (

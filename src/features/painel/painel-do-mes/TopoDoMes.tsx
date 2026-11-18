@@ -2,6 +2,11 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { emReais } from "@/lib/dinheiro";
 import type { Cobertura } from "@/features/painel/somar-o-mes/cobertura";
+import {
+  fraseDaCobertura,
+  fraseDosPendentes,
+} from "@/features/painel/somar-o-mes/fraseDaCobertura";
+import type { DadosDoPainel } from "./painelDoMes.service";
 
 /**
  * O topo do painel (tarefa B1).
@@ -29,13 +34,14 @@ export function TopoDoMes({
   diferencaCentavos,
   cobertura,
   faltamDecidir,
-}: {
-  entrouCentavos: number;
-  saiuCentavos: number;
-  diferencaCentavos: number;
-  cobertura: Cobertura;
-  faltamDecidir: number;
-}) {
+}: Pick<
+  DadosDoPainel,
+  | "entrouCentavos"
+  | "saiuCentavos"
+  | "diferencaCentavos"
+  | "cobertura"
+  | "faltamDecidir"
+>) {
   return (
     <>
       <Card className="mt-4 p-0">
@@ -89,16 +95,11 @@ function AvisoDeCobertura({
   return (
     <Card className="mt-3 border-gold/20 bg-gold/8">
       <p className="text-xs font-bold text-gold">
-        Estes números cobrem {cobertura.saiuPct ?? 0}% do que saiu
-        {cobertura.entrouPct !== null &&
-          ` e ${cobertura.entrouPct}% do que entrou`}
-        .
+        {fraseDaCobertura(cobertura)}
       </p>
       <p className="mt-1.5 text-xs leading-relaxed text-dim">
-        {faltamDecidir === 1
-          ? "1 lançamento ainda não caiu em pote nenhum"
-          : `${faltamDecidir} lançamentos ainda não caíram em pote nenhum`}
-        , então os potes abaixo estão incompletos.
+        {fraseDosPendentes(faltamDecidir)}, então os potes abaixo estão
+        incompletos.
       </p>
 
       <Link

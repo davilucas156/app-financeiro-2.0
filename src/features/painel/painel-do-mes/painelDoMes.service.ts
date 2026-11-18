@@ -7,8 +7,11 @@ import {
   type StatusDoLancamento,
 } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { chaveDaCategoria } from "@/features/classificacao/motor/chaveDaCategoria";
 import { naFilaDeRevisao } from "@/features/classificacao/revisar-lancamento/filaDeRevisao";
+import type { FonteDeSugestao } from "@/features/classificacao/motor/sugestoes";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
+import { rotuloDaFonte } from "@/features/classificacao/revisar-lancamento/rotuloDaFonte";
 import {
   coberturaDoMes,
   type Cobertura,
@@ -217,7 +220,7 @@ export async function dadosDoPainel(
 
   const escolhiveis: CategoriaEscolhivel[] = categoriasDoBanco.map((c) => ({
     id: c.id,
-    chave: `${c.poteSlug}/${c.slug}`,
+    chave: chaveDaCategoria(c.poteSlug, c.slug),
     nome: c.nome,
     emoji: c.emoji,
     ordem: c.ordem,
@@ -292,7 +295,7 @@ type LinhaDoBanco = {
   categoriaId: string | null;
   classificadoPor: "regra" | "sugestao" | "manual" | null;
   regraChave: string | null;
-  fonteDaSugestao: string | null;
+  fonteDaSugestao: FonteDeSugestao | null;
 };
 
 /**
@@ -308,7 +311,7 @@ function listaDoPote(
   poteId: string,
 ): LancamentoNoPainel[] {
   const doPote = linhas.filter(
-    (l) =>
+    (l): l is LinhaDoBanco & { categoriaId: string } =>
       l.status !== "excluido" &&
       l.categoriaId !== null &&
       categoriaPorId.get(l.categoriaId)?.poteId === poteId,
@@ -317,7 +320,7 @@ function listaDoPote(
   const conferir = paresDeValorIdentico(doPote);
 
   return doPote.map((l) => {
-    const categoria = categoriaPorId.get(l.categoriaId!);
+    const categoria = categoriaPorId.get(l.categoriaId);
 
     return {
       id: l.id,
@@ -325,7 +328,7 @@ function listaDoPote(
       descricao: l.descricao,
       valorCentavos: l.valorCentavos,
       direcao: l.direcao,
-      categoriaId: l.categoriaId!,
+      categoriaId: l.categoriaId,
       categoriaNome: categoria?.nome ?? "categoria removida",
       categoriaEmoji: categoria?.emoji ?? "❓",
       procedencia: procedencia(l),
@@ -343,7 +346,9 @@ function procedencia(l: LinhaDoBanco): string {
         ? `uma regra procurava por ${l.regraChave.split(":").slice(1).join(":")}`
         : "uma regra que já foi apagada";
     case "sugestao":
-      return `você aceitou a sugestão (${l.fonteDaSugestao ?? "sem fonte"})`;
+      return `você aceitou a sugestão (${
+        l.fonteDaSugestao ? rotuloDaFonte(l.fonteDaSugestao) : "sem fonte"
+      })`;
     case "manual":
       return "você escolheu";
     default:

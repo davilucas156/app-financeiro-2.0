@@ -60,6 +60,17 @@ export function anoEscolhido(
 }
 
 /**
+ * O maior ano da lista que seja menor que `ano`, ou `undefined` se não houver.
+ *
+ * Espera `anos` em ordem crescente (contrato do `anosDoHistorico`). A comparação
+ * é de texto, e vale porque o ano tem sempre quatro dígitos. `ano` não precisa
+ * estar na lista.
+ */
+export function anoAnteriorDe(anos: string[], ano: string): string | undefined {
+  return anos.filter((a) => a < ano).at(-1);
+}
+
+/**
  * Só os meses de um ano.
  *
  * Genérica sobre `MesComCobertura` porque serve às duas consultas: o histórico

@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { diaEMes, emReais } from "@/lib/dinheiro";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import type { ForaDaConta, ParAnulado } from "./foraDaConta";
-import { desfazerAnulacao } from "./../trazer-de-volta/trazerDeVolta.action";
+import { desfazerAnulacao } from "@/features/painel/trazer-de-volta/trazerDeVolta.action";
 
 /**
  * "Fora da conta deste mês" — o rastro do dinheiro que o painel não somou.
@@ -77,7 +78,7 @@ export function ForaDaContaNoPainel({ dados }: { dados: ForaDaConta }) {
       )}
 
       {temPassagens && (
-        <Card className="mt-2 border-blue/20 bg-blue/8">
+        <Card className="mt-3 border-blue/20 bg-blue/8">
           <div className="flex items-start gap-3">
             <Badge variant="blue">Passagem</Badge>
             <p className="text-xs leading-relaxed text-dim">
@@ -87,9 +88,9 @@ export function ForaDaContaNoPainel({ dados }: { dados: ForaDaConta }) {
               <strong className="font-bold text-text">
                 {emReais(dados.passagens.totalCentavos)}
               </strong>{" "}
-              são pagamento de fatura. O gasto do cartão já foi contado pela
-              fatura — contar aqui de novo faria o mesmo dinheiro sair duas
-              vezes.
+              {dados.passagens.quantas === 1 ? "é" : "são"} pagamento de fatura.
+              O gasto do cartão já foi contado pela fatura — contar aqui de novo
+              faria o mesmo dinheiro sair duas vezes.
             </p>
           </div>
         </Card>
@@ -112,8 +113,12 @@ function ParNaTela({ par }: { par: ParAnulado }) {
   const trazer = () =>
     iniciar(async () => {
       setErro(null);
-      const r = await desfazerAnulacao({ lancamentoId: par.lados[0].id });
-      if (!r.ok) setErro(r.erro);
+      try {
+        const r = await desfazerAnulacao({ lancamentoId: par.lados[0].id });
+        if (!r.ok) setErro(r.erro);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
 
   return (
@@ -155,7 +160,7 @@ function ParNaTela({ par }: { par: ParAnulado }) {
       </button>
 
       {erro && (
-        <p role="alert" className="mt-1 text-2xs leading-relaxed text-red">
+        <p role="alert" className="mt-1.5 text-2xs leading-relaxed text-red">
           {erro}
         </p>
       )}

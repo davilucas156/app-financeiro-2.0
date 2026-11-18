@@ -4,6 +4,7 @@ import { abreviacaoDoMes } from "@/lib/mes";
 import { contar } from "@/lib/plural";
 import { estiloDoTextoDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import type { CartaoDoAno } from "./cartaoDoAno";
+import type { PoteDoComparativo } from "./poteDoComparativo";
 
 /**
  * Os cartões de topo do comparativo anual (spec 12, tarefas D1 e D2; refeitos
@@ -38,7 +39,7 @@ export function CartoesDoAno({
 }: {
   cartoes: CartaoDoAno[];
   /** Nome, emoji e cor, na ordem do painel. */
-  potes: { id: string; nome: string; emoji: string; cor: string }[];
+  potes: PoteDoComparativo[];
   ano: string;
 }) {
   const porId = new Map(potes.map((p) => [p.id, p]));
@@ -120,7 +121,7 @@ function CartaoDoAnoNaTela({
   ano,
 }: {
   cartao: CartaoDoAno;
-  pote: { nome: string; emoji: string; cor: string };
+  pote: Omit<PoteDoComparativo, "id">;
   ano: string;
 }) {
   return (

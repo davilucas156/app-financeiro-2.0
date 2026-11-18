@@ -33,15 +33,18 @@ export async function desfazerAnulacao(entrada: {
 
     if (resultado.ok) {
       /*
-       * Os três que mudam de número, e por quê:
+       * Os quatro que mudam de número, e por quê:
        *
        * - o painel ganha o dinheiro de volta nas entradas e nas saídas;
        * - a `/revisao` ganha os lançamentos na fila;
-       * - o `/upload` conta pendências na tela de envio.
+       * - o `/upload` conta pendências na tela de envio;
+       * - o `/comparativo` lê a cobertura dos meses, que conta todo lançamento
+       *   fora de `excluido`.
        */
       revalidatePath("/dashboard");
       revalidatePath("/revisao");
       revalidatePath("/upload");
+      revalidatePath("/comparativo");
     }
 
     return resultado;

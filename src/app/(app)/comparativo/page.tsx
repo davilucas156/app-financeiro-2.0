@@ -8,11 +8,12 @@ import {
 import { cartoesDoAno } from "@/features/painel/comparar-meses/cartaoDoAno";
 import { compararMeses } from "@/features/painel/comparar-meses/comparativo";
 import { historicoDosMeses } from "@/features/painel/comparar-meses/historicoDosMeses.service";
+import type { PoteDoComparativo } from "@/features/painel/comparar-meses/poteDoComparativo";
 import { TelaDoComparativo } from "@/features/painel/comparar-meses/TelaDoComparativo";
 import { dadosDoPainel } from "@/features/painel/painel-do-mes/painelDoMes.service";
 
 export const metadata: Metadata = {
-  title: "Comparativo · Painel Financeiro 6 Potes",
+  title: "Comparativo",
 };
 
 /**
@@ -40,11 +41,13 @@ export const metadata: Metadata = {
  */
 export default async function ComparativoPage({
   searchParams,
-}: {
-  searchParams: Promise<{ ano?: string }>;
-}) {
+}: PageProps<"/comparativo">) {
   const usuario = await garantirUsuario();
-  const { ano: anoPedido } = await searchParams;
+  const { ano: anoDaUrl } = await searchParams;
+  /*
+   * `?ano=a&ano=b` chega como array; só a string simples vale como pedido.
+   */
+  const anoPedido = typeof anoDaUrl === "string" ? anoDaUrl : undefined;
 
   const [dados, historico] = await Promise.all([
     dadosDoPainel(usuario.id),
@@ -82,7 +85,12 @@ export default async function ComparativoPage({
       ano={ano}
       potes={(dados?.potes ?? [])
         .filter((p) => p.tipo === "gasto")
-        .map((p) => ({ id: p.id, nome: p.nome, emoji: p.emoji, cor: p.cor }))}
+        .map((p): PoteDoComparativo => ({
+          id: p.id,
+          nome: p.nome,
+          emoji: p.emoji,
+          cor: p.cor,
+        }))}
     />
   );
 }
