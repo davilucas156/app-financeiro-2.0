@@ -16,6 +16,9 @@
 /** `23505` — violação de unicidade. */
 export const UNICIDADE = "23505";
 
+/** `23514` — violação de `CHECK`. */
+export const CHECK_VIOLADO = "23514";
+
 function campo(e: unknown, nome: string): string | null {
   return typeof e === "object" && e !== null && nome in e
     ? String((e as Record<string, unknown>)[nome])
@@ -35,6 +38,10 @@ export function codigoDoErro(erro: unknown): string | null {
 
 export function ehUnicidadeViolada(erro: unknown): boolean {
   return codigoDoErro(erro) === UNICIDADE;
+}
+
+export function ehCheckViolado(erro: unknown): boolean {
+  return codigoDoErro(erro) === CHECK_VIOLADO;
 }
 
 /**
