@@ -43,7 +43,19 @@ export type MetaLida =
  */
 const MAXIMO_DE_DIGITOS = 3;
 
+/** A faixa aceita da meta, em porcentagem. */
+const MAXIMO = 100;
+
 export function lerPercentual(texto: string): MetaLida {
+  // O módulo é compartilhado: quem chega sem texto (undefined, null) é recusado
+  // com a mesma frase de entrada inválida, e nunca vira "sem meta".
+  if (typeof texto !== "string") {
+    return {
+      ok: false,
+      mensagem: `Use só números inteiros, de 0 a ${MAXIMO}.`,
+    };
+  }
+
   const limpo = texto.trim();
 
   // Campo vazio é resposta, não ausência de resposta: é assim que se tira a
@@ -59,16 +71,25 @@ export function lerPercentual(texto: string): MetaLida {
    * esse motivo.
    */
   if (!/^\d+$/.test(limpo)) {
-    return { ok: false, mensagem: "Use só números inteiros, de 0 a 100." };
+    return {
+      ok: false,
+      mensagem: `Use só números inteiros, de 0 a ${MAXIMO}.`,
+    };
   }
 
   /*
-   * Comprimento e faixa dão a **mesma** mensagem, e não é preguiça: uma
-   * string só de dígitos, por maior que seja, é um número fora da faixa. Quem
+   * Comprimento e faixa dão a **mesma** mensagem, e não é preguiça: quem
    * digitou `999` e quem digitou mil dígitos erraram a mesma coisa.
+   *
+   * ⚠ **O corte de comprimento vem antes do valor, então zeros à esquerda
+   * além do terceiro caractere são recusados** — `"0100"`, `"0030"` e
+   * `"00005"` valem 100, 30 e 5, mas têm mais de três caracteres e saem com a
+   * frase de faixa. Isso é o comportamento atual e está fixado nos testes; não
+   * é uma decisão de quem escreveu este código. Aceitar zeros à esquerda é
+   * decisão do dono do produto.
    */
-  if (limpo.length > MAXIMO_DE_DIGITOS || Number(limpo) > 100) {
-    return { ok: false, mensagem: "A meta vai de 0 a 100%." };
+  if (limpo.length > MAXIMO_DE_DIGITOS || Number(limpo) > MAXIMO) {
+    return { ok: false, mensagem: `A meta vai de 0 a ${MAXIMO}%.` };
   }
 
   /*

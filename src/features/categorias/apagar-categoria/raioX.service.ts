@@ -7,6 +7,7 @@ import {
   transactions,
 } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { chaveDaCategoria } from "@/features/classificacao/motor/chaveDaCategoria";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
 import type { OQueVaiJunto } from "./aviso";
 
@@ -118,7 +119,7 @@ export async function raioXDaCategoria(
 
   const escolhivel = (c: (typeof outras)[number]): CategoriaEscolhivel => ({
     id: c.id,
-    chave: `${c.poteSlug}/${c.slug}`,
+    chave: chaveDaCategoria(c.poteSlug, c.slug),
     nome: c.nome,
     emoji: c.emoji,
     ordem: c.ordem,

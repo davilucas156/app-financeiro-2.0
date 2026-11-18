@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { METAS_DO_PADRAO, RATEIO_DO_PADRAO } from "./metasDoPadrao";
+import { lerPercentual } from "./percentual";
 
 /**
  * O rateio que a tela **anuncia** é o mesmo que o botão **aplica**.
@@ -36,4 +37,30 @@ describe("o rateio que a tela anuncia", () => {
   it("é uma lista de inteiros separados por barra", () => {
     expect(RATEIO_DO_PADRAO).toMatch(/^\d+(\/\d+)*$/);
   });
+});
+
+describe("cada meta do padrão é um percentual que o campo aceita", () => {
+  it.each(METAS_DO_PADRAO.map((m) => [m.slug, m.percentual]))(
+    "%s é null ou inteiro entre 0 e 100",
+    (_slug, percentual) => {
+      expect(
+        percentual === null ||
+          (Number.isInteger(percentual) &&
+            (percentual as number) >= 0 &&
+            (percentual as number) <= 100),
+      ).toBe(true);
+    },
+  );
+
+  it.each(METAS_DO_PADRAO.map((m) => [m.slug, m.percentual]))(
+    "%s passa em lerPercentual(String(valor)) com ok: true",
+    (_slug, percentual) => {
+      if (percentual === null) return;
+
+      expect(lerPercentual(String(percentual))).toEqual({
+        ok: true,
+        percentual,
+      });
+    },
+  );
 });

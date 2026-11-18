@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import type { PoteNaGestao } from "@/features/categorias/gerir-categorias/categoriasNaTela";
 import { validarCategoria } from "./validar";
 
 /**
@@ -36,6 +35,13 @@ const SUGERIDOS = ["🍔", "🚗", "🏠", "💊", "🎁", "📚", "🐶", "✈�
 export type ValoresDaCategoria = { nome: string; emoji: string };
 export type ValoresComPote = ValoresDaCategoria & { poteId: string };
 
+/**
+ * O mínimo que o seletor lê de um pote. Declarado aqui e não importado de
+ * `gerir-categorias`: essa pasta importa este formulário, e o ciclo só de
+ * tipos some quando o formulário não depende dela.
+ */
+type PoteDoSeletor = { id: string; emoji: string; nome: string };
+
 type Props = {
   inicial?: Partial<ValoresComPote>;
   aoCancelar: () => void;
@@ -45,7 +51,7 @@ type Props = {
 } & (
   | {
       /** Presente = o pote se escolhe aqui e `aoSalvar` recebe o `poteId`. */
-      potes: PoteNaGestao[];
+      potes: PoteDoSeletor[];
       aoSalvar: (v: ValoresComPote) => void;
     }
   | {
@@ -78,8 +84,7 @@ export function FormularioDeCategoria({
 
   // `inicial.poteId` pode apontar para um pote que não está mais na lista.
   const pronto =
-    valida.ok &&
-    (potes === undefined || potes.some((p) => p.id === poteId));
+    valida.ok && (potes === undefined || potes.some((p) => p.id === poteId));
 
   return (
     <div className="mt-4 border-t border-border pt-4">

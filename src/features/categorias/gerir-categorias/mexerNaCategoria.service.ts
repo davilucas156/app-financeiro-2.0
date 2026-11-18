@@ -6,6 +6,7 @@ import { contar } from "@/lib/plural";
 import type { TransacaoDoBanco } from "@/lib/transacaoDoBanco";
 import { ehUnicidadeViolada, restricaoViolada } from "@/lib/erroDoPostgres";
 import type { CategoriaEscolhivel } from "@/features/classificacao/revisar-lancamento/categorias";
+import { chaveDaCategoria } from "@/features/classificacao/motor/chaveDaCategoria";
 import { slugUnico } from "@/features/categorias/nomear-categoria/slug";
 import {
   validarCategoria,
@@ -148,7 +149,7 @@ export async function criarCategoriaNaTransacao(
       // sobre a mesma linha.
       categoria: {
         id: criada.id,
-        chave: `${pote.slug}/${slug}`,
+        chave: chaveDaCategoria(pote.slug, slug),
         nome: valida.nome,
         emoji: valida.emoji,
         ordem,

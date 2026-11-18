@@ -7,7 +7,7 @@ import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
 import { mesAtual } from "@/lib/mes";
 
 export const metadata: Metadata = {
-  title: "Categorias · Painel Financeiro 6 Potes",
+  title: "Categorias",
 };
 
 /**

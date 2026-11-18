@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { Voltar } from "@/components/ui/Voltar";
 import { estiloDoPote } from "@/features/aparencia/tema/estiloDoPote";
 import { SectionTitle } from "@/components/ui/SectionTitle";
@@ -137,12 +138,16 @@ function NovaCategoria({
         potes={potes}
         aoSalvar={(v) =>
           comecar(async () => {
-            const r = await criar(v);
-            if (r.ok) {
-              setErro(null);
-              setAberto(false);
-            } else {
-              setErro(r.erro);
+            setErro(null);
+            try {
+              const r = await criar(v);
+              if (r.ok) {
+                setAberto(false);
+              } else {
+                setErro(r.erro);
+              }
+            } catch {
+              setErro(FALHA_DE_CONEXAO);
             }
           })
         }

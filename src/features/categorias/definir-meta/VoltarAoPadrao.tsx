@@ -12,7 +12,7 @@ import { restaurarMetas } from "./definirMeta.action";
  *
  * Mexer no rateio é fácil e reversível **só se houver para onde voltar**. Sem
  * isto, quem experimentou até se perder teria como saída lembrar de cabeça os
- * seis números — ou apagar a conta.
+ * percentuais do rateio — ou apagar a conta.
  *
  * ## A confirmação diz o que a restauração faz **e o que não faz**
  *
@@ -44,8 +44,8 @@ export function VoltarAoPadrao({ rateio }: { rateio: string }) {
       </p>
       <p className="mt-1.5 text-3xs leading-relaxed text-dim">
         Os potes do rateio voltam a{" "}
-        <strong className="font-bold">{rateio}</strong>, e Manutenção
-        e Outros voltam a <strong>não ter meta</strong>. Suas categorias, seus
+        <strong className="font-bold">{rateio}</strong>, e Manutenção e Outros
+        voltam a <strong>não ter meta</strong>. Suas categorias, seus
         lançamentos e os nomes dos potes{" "}
         <strong className="font-bold">não mudam</strong> — só os percentuais.
       </p>
@@ -61,6 +61,7 @@ export function VoltarAoPadrao({ rateio }: { rateio: string }) {
           loading={restaurando}
           onClick={() =>
             transicao(async () => {
+              setErro(null);
               try {
                 const r = await restaurarMetas();
                 if (r.ok) setConfirmando(false);
@@ -73,7 +74,13 @@ export function VoltarAoPadrao({ rateio }: { rateio: string }) {
         >
           Voltar ao padrão
         </Button>
-        <Button variant="secondary" onClick={() => setConfirmando(false)}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setConfirmando(false);
+            setErro(null);
+          }}
+        >
           Cancelar
         </Button>
       </div>

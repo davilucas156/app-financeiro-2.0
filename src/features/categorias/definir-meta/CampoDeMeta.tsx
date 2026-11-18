@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/Button";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import { salvarMeta } from "./definirMeta.action";
 import { lerPercentual, paraOCampo } from "./percentual";
 
@@ -60,13 +62,13 @@ export function CampoDeMeta({
         </p>
       </div>
 
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        className="shrink-0 text-xs"
         onClick={() => setEditando(true)}
-        className="inline-flex min-h-11 shrink-0 items-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text transition-colors hover:bg-card2"
       >
         {percentual === null ? "Definir" : "Mudar"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -92,9 +94,13 @@ function Editor({
     iniciar(async () => {
       setErro(null);
 
-      const r = await salvarMeta(poteId, texto);
-      if (r.ok) aoFechar();
-      else setErro(r.erro);
+      try {
+        const r = await salvarMeta(poteId, texto);
+        if (r.ok) aoFechar();
+        else setErro(r.erro);
+      } catch {
+        setErro(FALHA_DE_CONEXAO);
+      }
     });
 
   return (
@@ -141,23 +147,23 @@ function Editor({
       </p>
 
       <div className="mt-3 flex gap-2">
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          className="flex-1"
           onClick={salvar}
-          disabled={salvando || !lido.ok}
-          aria-busy={salvando || undefined}
-          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-5 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"
+          disabled={!lido.ok}
+          loading={salvando}
         >
           Salvar
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
+          className="flex-1 text-xs"
           onClick={aoFechar}
           disabled={salvando}
-          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card border border-border2 bg-card px-5 text-xs font-bold text-text transition-colors hover:bg-card2 disabled:opacity-40"
         >
           Cancelar
-        </button>
+        </Button>
       </div>
 
       {erro && (

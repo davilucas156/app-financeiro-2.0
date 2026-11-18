@@ -42,7 +42,7 @@ export function ResumoDasMetas({
       <VoltarAoPadrao rateio={rateioDoPadrao} />
 
       {!temRenda && (
-        <Card className="mt-2 border-gold/30 bg-gold/8">
+        <Card className="mt-2 border-gold/20 bg-gold/8">
           <p className="text-2xs leading-relaxed text-dim">
             <strong className="font-bold text-gold">
               As metas ainda não vão aparecer.

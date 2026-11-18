@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import {
   avisoDeApagar,
@@ -8,6 +9,7 @@ import {
 } from "@/features/categorias/apagar-categoria/aviso";
 import type { RaioXDaCategoria } from "@/features/categorias/apagar-categoria/raioX.service";
 import { FormularioDeCategoria } from "@/features/categorias/nomear-categoria/FormularioDeCategoria";
+import { FALHA_DE_CONEXAO } from "@/lib/falhaDeConexao";
 import {
   apagar,
   mover,
@@ -66,9 +68,13 @@ export function CartaoDaCategoria({
 
       {modo === "vendo" && (
         <div className="mt-3 flex flex-wrap gap-2">
-          <Secundario onClick={() => setModo("renomeando")}>
+          <Button
+            variant="secondary"
+            className="flex-1 text-xs"
+            onClick={() => setModo("renomeando")}
+          >
             Renomear
-          </Secundario>
+          </Button>
 
           {/*
             ⚠ **Mover só quando vazia** (B2, descoberta 4). A tela não esconde o
@@ -76,12 +82,22 @@ export function CartaoDaCategoria({
             procuraria um botão que viu ontem.
           */}
           {podeMover(categoria) && (
-            <Secundario onClick={() => setModo("movendo")}>
+            <Button
+              variant="secondary"
+              className="flex-1 text-xs"
+              onClick={() => setModo("movendo")}
+            >
               Mover de pote
-            </Secundario>
+            </Button>
           )}
 
-          <Secundario onClick={() => setModo("apagando")}>Apagar</Secundario>
+          <Button
+            variant="secondary"
+            className="flex-1 text-xs"
+            onClick={() => setModo("apagando")}
+          >
+            Apagar
+          </Button>
         </div>
       )}
 
@@ -138,12 +154,16 @@ function Renome({
       inicial={{ nome: categoria.nome, emoji: categoria.emoji }}
       aoSalvar={(v) =>
         comecar(async () => {
-          const r = await renomear(categoria.id, {
-            nome: v.nome,
-            emoji: v.emoji,
-          });
-          if (r.ok) aoFechar();
-          else setErro(r.erro);
+          try {
+            const r = await renomear(categoria.id, {
+              nome: v.nome,
+              emoji: v.emoji,
+            });
+            if (r.ok) aoFechar();
+            else setErro(r.erro);
+          } catch {
+            setErro(FALHA_DE_CONEXAO);
+          }
         })
       }
       aoCancelar={aoFechar}
@@ -198,19 +218,31 @@ function Mudanca({
       </p>
 
       <div className="mt-4 flex gap-2">
-        <Primario
-          desabilitado={movendo}
+        <Button
+          variant="primary"
+          className="flex-1"
+          loading={movendo}
           onClick={() =>
             comecar(async () => {
-              const r = await mover(categoria.id, destino);
-              if (r.ok) aoFechar();
-              else setErro(r.erro);
+              try {
+                const r = await mover(categoria.id, destino);
+                if (r.ok) aoFechar();
+                else setErro(r.erro);
+              } catch {
+                setErro(FALHA_DE_CONEXAO);
+              }
             })
           }
         >
           {movendo ? "Movendo…" : "Mover"}
-        </Primario>
-        <Secundario onClick={aoFechar}>Cancelar</Secundario>
+        </Button>
+        <Button
+          variant="secondary"
+          className="flex-1 text-xs"
+          onClick={aoFechar}
+        >
+          Cancelar
+        </Button>
       </div>
 
       {erro && (
@@ -359,24 +391,36 @@ function Exclusao({
       )}
 
       <div className="mt-4 flex gap-2">
-        <Primario
-          desabilitado={apagando}
+        <Button
+          variant="primary"
+          className="flex-1"
+          loading={apagando}
           onClick={() =>
             comecar(async () => {
-              const r = await apagar(
-                categoria.id,
-                movendoPara
-                  ? { tipo: "mover", categoriaId: movendoPara.id }
-                  : { tipo: "revisao" },
-              );
-              if (r.ok) aoFechar();
-              else setErro(r.erro);
+              try {
+                const r = await apagar(
+                  categoria.id,
+                  movendoPara
+                    ? { tipo: "mover", categoriaId: movendoPara.id }
+                    : { tipo: "revisao" },
+                );
+                if (r.ok) aoFechar();
+                else setErro(r.erro);
+              } catch {
+                setErro(FALHA_DE_CONEXAO);
+              }
             })
           }
         >
           {apagando ? "Apagando…" : "Apagar"}
-        </Primario>
-        <Secundario onClick={aoFechar}>Manter</Secundario>
+        </Button>
+        <Button
+          variant="secondary"
+          className="flex-1 text-xs"
+          onClick={aoFechar}
+        >
+          Manter
+        </Button>
       </div>
 
       {erro && (
@@ -423,46 +467,6 @@ function Escolha({
         }`}
       />
       {rotulo}
-    </button>
-  );
-}
-
-function Primario({
-  onClick,
-  desabilitado = false,
-  children,
-}: {
-  onClick?: () => void;
-  desabilitado?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={desabilitado}
-      aria-busy={desabilitado || undefined}
-      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card bg-primary px-4 text-sm font-bold text-bg transition-colors hover:bg-orange disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      {children}
-    </button>
-  );
-}
-
-function Secundario({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-card border border-border2 bg-card px-4 text-xs font-bold text-text transition-colors hover:bg-card2"
-    >
-      {children}
     </button>
   );
 }

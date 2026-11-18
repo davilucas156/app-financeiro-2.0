@@ -61,6 +61,35 @@ describe("o que é recusado — com frase, e nunca como sem meta", () => {
     });
   });
 
+  /*
+   * Caracterização, não aprovação: estes valores valem 100, 30 e 5, mas o corte
+   * de comprimento os recusa antes da conta. Se um dia forem aceitos, o teste
+   * vai falhar de propósito — e a mudança tem de ser decidida pelo dono.
+   */
+  it.each(["0100", "0030", "00005"])(
+    "%j é recusado por ter mais de 3 caracteres, mesmo valendo na faixa",
+    (texto) => {
+      expect(lerPercentual(texto)).toEqual({
+        ok: false,
+        mensagem: "A meta vai de 0 a 100%.",
+      });
+    },
+  );
+
+  // Não é texto: é recusado com frase, sem lançar, e nunca como sem meta.
+  it.each([undefined, null])(
+    "%j não é texto e é recusado sem lançar",
+    (valor) => {
+      const entrada = valor as unknown as string;
+
+      expect(() => lerPercentual(entrada)).not.toThrow();
+      expect(lerPercentual(entrada)).toEqual({
+        ok: false,
+        mensagem: "Use só números inteiros, de 0 a 100.",
+      });
+    },
+  );
+
   it("string gigante é recusada sem chegar ao Number", () => {
     expect(lerPercentual("1".repeat(5000))).toEqual({
       ok: false,

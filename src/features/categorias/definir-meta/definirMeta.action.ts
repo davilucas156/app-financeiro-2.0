@@ -16,7 +16,7 @@ import {
  * `garantirUsuario()` e é conferido contra o pote dentro do serviço.
  */
 
-const DEU_RUIM = "Não consegui salvar agora. Tente de novo.";
+const DEU_RUIM = "Não conseguimos salvar agora. Tente de novo.";
 
 /**
  * Duas telas, e não três.

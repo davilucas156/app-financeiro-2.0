@@ -44,16 +44,16 @@ export function somaDasMetas(potes: PoteQueConta[]): SomaDasMetas {
    * O pote de renda fica de fora pelo motivo do schema: os potes de gasto
    * repartem o que sai; entrada não se reparte.
    */
-  const comMeta = potes.filter(
-    (p) => p.tipo === "gasto" && p.percentual !== null,
+  const percentuais = potes.flatMap((p) =>
+    p.tipo === "gasto" && p.percentual !== null ? [p.percentual] : [],
   );
 
-  const soma = comMeta.reduce((total, p) => total + (p.percentual ?? 0), 0);
+  const soma = percentuais.reduce((total, p) => total + p, 0);
 
   return {
     soma,
-    potesComMeta: comMeta.length,
-    frase: frasear(soma, comMeta.length),
+    potesComMeta: percentuais.length,
+    frase: frasear(soma, percentuais.length),
   };
 }
 
