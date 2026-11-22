@@ -33,7 +33,7 @@ Tema **dark único** (não há light mode no painel atual).
 | `--border` | `#1e1e26` | Borda padrão |
 | `--border2` | `#28282f` | Borda de destaque |
 | `--text` | `#e8e8f0` | Texto principal |
-| `--dim` | `#7d7d96` | Texto secundário / rótulos — 5.06 `bg` · 4.70 `card` · 4.50 `card2` |
+| `--dim` | `#a3a3ba` | Texto secundário / rótulos — 8.20 `bg` · 7.62 `card` · 7.30 `card2` (era `#7d7d96`, 4.5: passava no WCAG e ainda era difícil de ler a 9–11px) |
 | `--dim2` | `#3a3a4a` | Texto **desabilitado** — 1.69, reprova de propósito |
 
 ⚠ **A regra dos dois cinzas, em uma frase: `dim` carrega texto; `dim2` não.**

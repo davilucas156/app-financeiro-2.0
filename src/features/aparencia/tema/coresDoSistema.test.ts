@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { emHex } from "./contraste";
+import { contraste, emHex, emRgb } from "./contraste";
 import { SUPERFICIE_ESCURA_MAIS_CLARA } from "./corNoTema";
 import { FUNDO_CLARO, FUNDO_ESCURO } from "./coresDoSistema";
 
@@ -27,6 +27,26 @@ function valorDe(variavel: string): string | undefined {
 
   return achado?.[1].toLowerCase();
 }
+
+describe("o texto secundário do escuro é legível, não só aprovado", () => {
+  it("--color-dim passa de 7 sobre a superfície mais clara", () => {
+    /*
+     * 4.5 é o mínimo do WCAG para letra de 16px, e o `--color-dim` carrega o
+     * texto de 9 a 11px do app inteiro (194 usos). Foi 4.5 e a queixa voltou:
+     * "as letras ficam pouco nítidas no escuro". 7 é o AAA.
+     */
+    const dim = emRgb(valorDe("--color-dim") ?? "");
+    expect(dim).not.toBeNull();
+
+    expect(contraste(dim!, SUPERFICIE_ESCURA_MAIS_CLARA)).toBeGreaterThan(7);
+  });
+
+  it("a fonte mono parte de peso 500", () => {
+    // O traço do DM Mono 400 some a 9–11px sobre fundo escuro; cor sozinha não
+    // resolve. O peso fica em `@layer base`, e `font-bold` continua ganhando.
+    expect(CSS).toMatch(/\.font-mono\s*\{\s*font-weight:\s*500;\s*\}/);
+  });
+});
 
 describe("cores do sistema espelham o globals.css", () => {
   it("FUNDO_ESCURO é o --color-bg", () => {

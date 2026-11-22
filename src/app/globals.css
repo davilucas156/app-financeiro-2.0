@@ -58,7 +58,17 @@
      e medida. Uma varredura de tokens sem uso vai reencontrá-lo:
      não é sujeira.
   ───────────────────────────────────────────────────────── */
-  --color-dim: #7d7d96; /* 5.06 bg · 4.70 card · 4.50 card2 */
+  /* ⚠ **4.5 passava na régua e continuava difícil de ler.** O WCAG
+     mede letra de 16px; este é o texto de 9 a 11px em fonte mono
+     fina sobre um fundo quase preto, onde a letra clara "sangra"
+     e parece mais fina do que é. A queixa voltou depois da spec 15
+     ("as letras do sistema ficam pouco nítidas no escuro"), e a
+     resposta foi subir para o patamar AAA (7) medido contra a
+     `--card2`, a superfície mais clara: `#7d7d96` → `#a3a3ba`.
+     O mesmo matiz, e ainda a um degrau abaixo do `--color-text`
+     (14.8 sobre `card2`), para a hierarquia entre texto e rótulo
+     continuar. */
+  --color-dim: #a3a3ba; /* 8.20 bg · 7.62 card · 7.30 card2 */
   --color-dim2: #3a3a4a; /* desabilitado — sem uso hoje, ver acima */
 
   /* ── Semânticas ───────────────────────────────────────── */
@@ -391,6 +401,23 @@
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans), system-ui, sans-serif;
+  }
+
+  /*
+    ⚠ **A fonte mono parte de 500, e não de 400.** O DM Mono 400 é fino,
+    e a 9–11px sobre fundo escuro o traço quase some — cor mais clara
+    sozinha não resolve, porque o problema é a espessura. O 500 já é
+    baixado (`layout.tsx` carrega 300, 400 e 500) e, sendo monoespaçada,
+    a fonte tem a mesma largura nos dois pesos: nenhuma linha quebra.
+
+    Fica em `@layer base` de propósito: `font-bold` e qualquer peso
+    explícito são utilitários e ganham deste, então só o texto **sem**
+    peso próprio engrossa. Vale nos dois temas — no claro o traço mais
+    firme também ajuda, e dois pesos por tema seriam um terceiro bloco de
+    seletores para manter.
+  */
+  .font-mono {
+    font-weight: 500;
   }
 
   /* Barra de rolagem fina, como no painel original. */
