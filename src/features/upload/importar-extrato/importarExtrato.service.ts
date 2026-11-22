@@ -94,6 +94,11 @@ export async function importarExtrato(
   userId: string,
   mesEscolhido: string,
   arquivos: ArquivoRecebido[],
+  /**
+   * O nome do titular, de `users.nome`: é ele que separa "dinheiro seu passando
+   * de uma conta sua para outra" de reembolso (`ehTransferenciaPropria`).
+   */
+  titular: string | null = null,
 ): Promise<ResultadoImportacao> {
   if (arquivos.length === 0) {
     return { ok: false, erro: "Escolha ao menos um arquivo." };
@@ -229,6 +234,7 @@ export async function importarExtrato(
   const preparados = prepararLancamentos(
     doArquivo,
     await vizinhosJaGravados(db, userId, doArquivo),
+    titular,
   );
 
   /*
@@ -404,6 +410,7 @@ async function vizinhosJaGravados(
 
   return db
     .select({
+      descricao: transactions.descricaoOriginal,
       data: transactions.data,
       direcao: transactions.direcao,
       valorCentavos: transactions.valorCentavos,

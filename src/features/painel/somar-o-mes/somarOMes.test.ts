@@ -126,6 +126,97 @@ describe("pote de gasto", () => {
   });
 });
 
+/**
+ * O aporte que o pote zerava.
+ *
+ * O salário entra no Inter por Pix e segue para a corretora: R$ 300 entram e
+ * R$ 300 saem, ambos classificados em Liberdade Financeira. Reembolso abate
+ * gasto, e a entrada abatia o aporte — o pote mostrava o contrário do que o
+ * usuário fez.
+ */
+describe("transferência entre contas suas num pote de gasto", () => {
+  it("a entrada sua não abate: o aporte aparece inteiro", () => {
+    const soma = somarOMes(
+      [
+        l({ direcao: "saida", valorCentavos: 30_000 }),
+        l({
+          direcao: "entrada",
+          valorCentavos: 30_000,
+          transferenciaPropria: true,
+        }),
+      ],
+      CATEGORIAS,
+    );
+
+    const p = pote(soma, GASTO.id)!;
+    expect(p.totalCentavos).toBe(30_000);
+    expect(p.entradaCentavos).toBe(0);
+    expect(p.categorias[0].totalCentavos).toBe(30_000);
+  });
+
+  it("continua na contagem do pote — está na lista, e a lista tem de bater", () => {
+    const soma = somarOMes(
+      [
+        l({ direcao: "saida", valorCentavos: 30_000 }),
+        l({
+          direcao: "entrada",
+          valorCentavos: 30_000,
+          transferenciaPropria: true,
+        }),
+      ],
+      CATEGORIAS,
+    );
+
+    expect(pote(soma, GASTO.id)!.lancamentos).toBe(2);
+  });
+
+  it("reembolso de verdade continua abatendo", () => {
+    const soma = somarOMes(
+      [
+        l({ direcao: "saida", valorCentavos: 30_000 }),
+        l({ direcao: "entrada", valorCentavos: 10_000 }),
+      ],
+      CATEGORIAS,
+    );
+
+    expect(pote(soma, GASTO.id)!.totalCentavos).toBe(20_000);
+  });
+
+  it("o total do mês e a cobertura continuam vendo a entrada", () => {
+    // `entrou` não depende de classificação nem de decisão nenhuma: é o número
+    // mais confiável da tela.
+    const soma = somarOMes(
+      [
+        l({
+          direcao: "entrada",
+          valorCentavos: 30_000,
+          transferenciaPropria: true,
+        }),
+      ],
+      CATEGORIAS,
+    );
+
+    expect(soma.entrouCentavos).toBe(30_000);
+    expect(soma.entrouClassificadoCentavos).toBe(30_000);
+  });
+
+  it("num pote de renda vale o que o usuário escolheu", () => {
+    const soma = somarOMes(
+      [
+        l({
+          direcao: "entrada",
+          valorCentavos: 30_000,
+          categoriaId: "cat-salario",
+          transferenciaPropria: true,
+        }),
+      ],
+      CATEGORIAS,
+    );
+
+    expect(pote(soma, RENDA.id)!.totalCentavos).toBe(30_000);
+  });
+});
+
 describe("pote de renda — o sinal inverte", () => {
   it("entrada soma", () => {
     const soma = somarOMes(

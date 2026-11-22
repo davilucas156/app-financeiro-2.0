@@ -358,6 +358,167 @@ describe("par que se anula", () => {
   });
 });
 
+/**
+ * Transferência entre contas suas — o caso do aporte que sumia.
+ *
+ * O salário entra no Inter por Pix e segue para a corretora: R$ 300 que entram
+ * e R$ 300 que saem, nos dois casos com o nome do titular. Era lido como
+ * "repasse que se anula", e o mês ficava como se não tivesse aportado nada.
+ */
+describe("transferência entre contas suas", () => {
+  const TITULAR = "Fulano Beltrano da Silva";
+  const ENTRADA_PROPRIA =
+    'Pix recebido: "Cp :00000000-Fulano Beltrano da Silva"';
+  const SAIDA_PROPRIA =
+    'Transferencia enviada: "102 0001 0000000 Fulano Beltrano da Silva"';
+
+  const preparar = (
+    lancamentos: Lancamento[],
+    jaNoBanco: LancamentoSalvo[] = [],
+  ) =>
+    prepararLancamentos(
+      [{ origem: "csv_conta", lancamentos }],
+      jaNoBanco,
+      TITULAR,
+    );
+
+  const entrada = (p: Partial<Lancamento> = {}) =>
+    lancamento({
+      direcao: "entrada",
+      valorCentavos: 30_000,
+      descricao: ENTRADA_PROPRIA,
+      linha: 2,
+      ...p,
+    });
+
+  const saida = (p: Partial<Lancamento> = {}) =>
+    lancamento({
+      direcao: "saida",
+      valorCentavos: 30_000,
+      descricao: SAIDA_PROPRIA,
+      linha: 3,
+      ...p,
+    });
+
+  it("tira só a entrada: a saída é o aporte e continua na conta", () => {
+    const [e, s] = preparar([entrada(), saida()]);
+
+    expect(e.marcacao).toBe("excluido");
+    expect(e.parDe).toBe(s.impressao);
+    expect(e.motivo).toContain("transferência sua");
+    expect(e.motivo).toContain(s.data);
+
+    expect(s.marcacao).toBe("normal");
+    expect(s.parDe).toBeNull();
+  });
+
+  it("vale com a saída antes da entrada no arquivo", () => {
+    const [s, e] = preparar([saida({ linha: 2 }), entrada({ linha: 3 })]);
+
+    expect(e.marcacao).toBe("excluido");
+    expect(s.marcacao).toBe("normal");
+  });
+
+  it("sem o nome do titular volta a anular os dois — o comportamento de antes", () => {
+    const sem = prepararLancamentos([
+      { origem: "csv_conta", lancamentos: [entrada(), saida()] },
+    ]);
+
+    expect(sem.map((l) => l.marcacao)).toEqual(["excluido", "excluido"]);
+  });
+
+  it("reembolso de outra pessoa continua anulando os dois lados", () => {
+    const preparados = preparar([
+      entrada({ descricao: 'Pix recebido: "Cp :00000000-Ciclana de Tal"' }),
+      saida({ descricao: 'Pix enviado: "Cp :00000000-Ciclana de Tal"' }),
+    ]);
+
+    expect(preparados.map((l) => l.marcacao)).toEqual(["excluido", "excluido"]);
+  });
+
+  it("saída para conta sua com entrada de outra pessoa: nada é anulado", () => {
+    // Pix de terceiro e aporte do mesmo valor não são o mesmo dinheiro voltando.
+    const preparados = preparar([
+      entrada({ descricao: 'Pix recebido: "Cp :00000000-Ciclana de Tal"' }),
+      saida(),
+    ]);
+
+    expect(preparados.map((l) => l.marcacao)).toEqual(["normal", "normal"]);
+  });
+
+  it("entrada sua sem saída correspondente não é tocada", () => {
+    // Pode ser salário chegando de outro banco — a spec 03 recusou decidir.
+    const [so] = preparar([entrada()]);
+
+    expect(so.marcacao).toBe("normal");
+  });
+
+  it("a saída não é consumida por um segundo par", () => {
+    const preparados = preparar([
+      entrada({ linha: 2 }),
+      saida({ linha: 3 }),
+      entrada({ linha: 4 }),
+    ]);
+
+    // A segunda entrada não tem saída livre: fica como está.
+    expect(preparados.map((l) => l.marcacao)).toEqual([
+      "excluido",
+      "normal",
+      "normal",
+    ]);
+  });
+
+  describe("com o que já está gravado", () => {
+    const antigo = (p: Partial<LancamentoSalvo> = {}): LancamentoSalvo => ({
+      descricao: SAIDA_PROPRIA,
+      data: "2026-05-30",
+      direcao: "saida",
+      valorCentavos: 30_000,
+      impressao: "antigo",
+      ...p,
+    });
+
+    it("entrada nova sua fecha com a saída antiga: só a nova sai", () => {
+      const [e] = preparar([entrada({ data: "2026-06-01" })], [antigo()]);
+
+      expect(e.marcacao).toBe("excluido");
+      expect(e.parDe).toBe("antigo");
+    });
+
+    it("saída nova fechando com entrada antiga sua: não anula o aporte", () => {
+      const [s] = preparar(
+        [saida({ data: "2026-06-01" })],
+        [
+          antigo({
+            direcao: "entrada",
+            descricao: ENTRADA_PROPRIA,
+            data: "2026-05-30",
+          }),
+        ],
+      );
+
+      // O lado antigo não pode ser marcado, e anular só a saída apagaria o aporte.
+      expect(s.marcacao).toBe("normal");
+      expect(s.parDe).toBeNull();
+    });
+
+    it("saída nova para conta sua com entrada antiga de outra pessoa: não anula", () => {
+      const [s] = preparar(
+        [saida({ data: "2026-06-01" })],
+        [
+          antigo({
+            direcao: "entrada",
+            descricao: "Pix recebido: Ciclana de Tal",
+            data: "2026-05-30",
+          }),
+        ],
+      );
+
+      expect(s.marcacao).toBe("normal");
+    });
+  });
+});
+
 describe("bordas", () => {
   it("lista vazia devolve vazio", () => {
     expect(prepararLancamentos([])).toEqual([]);
@@ -390,6 +551,7 @@ describe("bordas", () => {
  */
 describe("par com o que já está gravado", () => {
   const salvo = (p: Partial<LancamentoSalvo> = {}): LancamentoSalvo => ({
+    descricao: "PIX DE ALGUEM",
     data: "2026-05-28",
     direcao: "entrada",
     valorCentavos: 6000,

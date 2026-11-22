@@ -2,6 +2,9 @@ import "server-only";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { buckets, categories, transactions } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { nomeDoTitular } from "@/features/painel/somar-o-mes/nomeDoTitular.service";
+import { entradaNaoAbate } from "@/features/painel/somar-o-mes/somarOMes";
+import { ehTransferenciaPropria } from "@/features/upload/ler-arquivo/transferenciaPropria";
 import { coberturaDosMeses } from "./coberturaDosMeses.service";
 import type { MesNoHistorico } from "./comparativo";
 
@@ -52,7 +55,7 @@ export async function historicoDosMeses(
 ): Promise<MesNoHistorico[]> {
   const db = getDb();
 
-  const [porPote, porMes, potesDeGasto] = await Promise.all([
+  const [porPote, porMes, potesDeGasto, entradas, titular] = await Promise.all([
     db
       .select({
         mes: transactions.mesReferencia,
@@ -91,11 +94,64 @@ export async function historicoDosMeses(
       .from(buckets)
       .where(and(eq(buckets.userId, userId), eq(buckets.tipo, "gasto")))
       .orderBy(asc(buckets.ordem)),
+
+    /*
+     * ⚠ **As entradas dos potes de gasto, com a descrição**, para tirar delas as
+     * transferências que são suas. A soma em SQL abate toda entrada; quem sabe
+     * se uma é o seu próprio dinheiro passando é `ehTransferenciaPropria`, que
+     * lê texto e nome — e isso não cabe num `case when`, porque o banco guarda a
+     * descrição com acento e o nome do Clerk pode vir sem.
+     *
+     * São poucas: reembolso e transferência entre contas, não o extrato.
+     */
+    db
+      .select({
+        mes: transactions.mesReferencia,
+        poteId: buckets.id,
+        valorCentavos: transactions.valorCentavos,
+        descricao: transactions.descricaoOriginal,
+      })
+      .from(transactions)
+      .innerJoin(categories, eq(categories.id, transactions.categoriaId))
+      .innerJoin(buckets, eq(buckets.id, categories.bucketId))
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          ne(transactions.status, "excluido"),
+          eq(buckets.tipo, "gasto"),
+          eq(transactions.direcao, "entrada"),
+        ),
+      ),
+
+    nomeDoTitular(userId),
   ]);
 
   const totais = new Map(
     porPote.map((l) => [`${l.mes}:${l.poteId}`, l.totalCentavos]),
   );
+
+  /*
+   * ⚠ **Devolve o que o SQL abateu a mais.** A mesma regra do painel
+   * (`entradaNaoAbate`): a entrada sua, vinda de outra conta sua, não abate um
+   * pote de gasto. Sem isto o painel de abril mostraria R$ 300 e o comparativo
+   * R$ 200 para o mesmo pote — e o ano de aportes teria buracos.
+   */
+  for (const e of entradas) {
+    if (
+      !entradaNaoAbate(
+        {
+          direcao: "entrada",
+          transferenciaPropria: ehTransferenciaPropria(e.descricao, titular),
+        },
+        "gasto",
+      )
+    ) {
+      continue;
+    }
+
+    const chave = `${e.mes}:${e.poteId}`;
+    totais.set(chave, (totais.get(chave) ?? 0) + e.valorCentavos);
+  }
 
   return porMes.map((m) => ({
     ...m,

@@ -34,6 +34,14 @@ export type LancamentoDoMes = {
   direcao: Direcao;
   status: StatusDoLancamento;
   categoriaId: string | null;
+  /**
+   * A descrição é uma transferência entre contas suas (`ehTransferenciaPropria`).
+   * Ausente = não é.
+   *
+   * ⚠ **Só importa para entrada num pote de gasto**, onde ela deixa de abater.
+   * Ver o laço de `somarOMes`.
+   */
+  transferenciaPropria?: boolean;
 };
 
 /**
@@ -171,9 +179,31 @@ export function somarOMes(
       lancamentos: 0,
     };
 
+    /*
+     * ⚠ **Entrada sua, vinda de outra conta sua, não abate um pote de gasto.**
+     *
+     * Reembolso abate — a Uber devolve R$ 20 e o pote de transporte gasta R$ 20 a
+     * menos. Mas o salário que entra no Inter e segue para a corretora também é
+     * uma entrada, e se ela abatesse, o aporte de R$ 300 zerava no mesmo pote em
+     * que foi classificado: "Liberdade Financeira" mostrava −R$ 100 num mês em
+     * que o Davi aportou a meta inteira.
+     *
+     * O lançamento **continua no pote** e continua contado em `lancamentos` —
+     * está na lista, e uma contagem menor que a lista seria outra mentira —, só
+     * não entra no valor. Não vira exclusão porque é o usuário quem o pôs ali
+     * (por regra ou por escolha), e desfazer isso em silêncio seria o app
+     * decidindo por ele.
+     *
+     * Num pote de **renda** vale o que o usuário escolheu: se ele classificou a
+     * transferência como Salário, é renda.
+     */
+    const naoAbate = entradaNaoAbate(l, pote.tipo);
+
     for (const alvo of [noPote, naCategoria]) {
-      if (l.direcao === "entrada") alvo.entradaCentavos += l.valorCentavos;
-      else alvo.saidaCentavos += l.valorCentavos;
+      if (!naoAbate) {
+        if (l.direcao === "entrada") alvo.entradaCentavos += l.valorCentavos;
+        else alvo.saidaCentavos += l.valorCentavos;
+      }
 
       alvo.lancamentos += 1;
       alvo.totalCentavos = orientar(pote.tipo, alvo);
@@ -197,6 +227,24 @@ export function somarOMes(
     saiuClassificadoCentavos,
     entrouClassificadoCentavos,
   };
+}
+
+/**
+ * Esta entrada deixa de abater o pote em que caiu?
+ *
+ * Exportada porque a lista do painel e o comparativo precisam da **mesma**
+ * resposta que a soma — três cópias da regra seriam três totais para um pote.
+ * Ver o porquê no laço de `somarOMes`.
+ */
+export function entradaNaoAbate(
+  l: Pick<LancamentoDoMes, "direcao" | "transferenciaPropria">,
+  tipoDoPote: "gasto" | "renda",
+): boolean {
+  return (
+    l.direcao === "entrada" &&
+    l.transferenciaPropria === true &&
+    tipoDoPote === "gasto"
+  );
 }
 
 /**

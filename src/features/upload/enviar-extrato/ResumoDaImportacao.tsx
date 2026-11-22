@@ -167,10 +167,12 @@ export function ResumoDaImportacao({ dados }: { dados: DadosDoResumo }) {
           <div className="flex items-start gap-3">
             <Badge variant="gold">Anulados</Badge>
             <p className="text-xs leading-relaxed text-dim">
-              {dados.anulados} lançamentos se anulam entre si — mesmo valor,
-              sentidos opostos, datas próximas. Saíram da conta do mês para não
-              inflar as entradas. Nada foi apagado: eles aparecem no painel, em
-              &quot;fora da conta&quot;, e de lá dá para trazer de volta.
+              {dados.anulados} lançamentos saíram da conta do mês: ou se anulam
+              entre si (mesmo valor, sentidos opostos, datas próximas), ou são
+              dinheiro seu passando de uma conta sua para outra — nesse caso só
+              a entrada sai, e a saída continua contando. Nada foi apagado: eles
+              aparecem no painel, em &quot;fora da conta&quot;, e de lá dá para
+              trazer de volta.
             </p>
           </div>
         </Card>

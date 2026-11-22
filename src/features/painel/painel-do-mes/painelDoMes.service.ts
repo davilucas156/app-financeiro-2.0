@@ -22,13 +22,16 @@ import {
   type ForaDaConta,
 } from "@/features/painel/fora-da-conta/foraDaConta";
 import {
+  entradaNaoAbate,
   somarOMes,
   type CategoriaComPote,
 } from "@/features/painel/somar-o-mes/somarOMes";
 import { mesesEPadrao } from "@/features/painel/navegar-entre-meses/mesesEPadrao";
+import { nomeDoTitular } from "@/features/painel/somar-o-mes/nomeDoTitular.service";
 import { rendaDoMes } from "@/features/painel/renda-do-mes/rendaDoMes.service";
 import type { RendaDeclarada } from "@/features/painel/renda-do-mes/rendaDeclarada";
 import type { Direcao } from "@/features/upload/ler-arquivo/lancamentos";
+import { ehTransferenciaPropria } from "@/features/upload/ler-arquivo/transferenciaPropria";
 import type { LancamentoNoPainel, PoteNoPainel } from "./poteNoPainel";
 
 /**
@@ -118,100 +121,119 @@ export async function dadosDoPainel(
    */
   const mes = mesPedido && meses.includes(mesPedido) ? mesPedido : padrao;
 
-  const [linhas, potesDoBanco, categoriasDoBanco, renda, [pendencia]] =
-    await Promise.all([
-      db
-        .select({
-          id: transactions.id,
-          data: transactions.data,
-          descricao: transactions.descricaoOriginal,
-          valorCentavos: transactions.valorCentavos,
-          direcao: transactions.direcao,
-          status: transactions.status,
-          categoriaId: transactions.categoriaId,
-          classificadoPor: transactions.classificadoPor,
-          regraChave: transactions.regraChave,
-          fonteDaSugestao: transactions.fonteDaSugestao,
-          // Para a lista de "fora da conta": o motivo explica a ausência, e a
-          // impressão com o `parDe` é o que junta os dois lados do par.
-          motivo: transactions.motivo,
-          impressao: transactions.impressao,
-          parDe: transactions.parDe,
-        })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            eq(transactions.mesReferencia, mes),
-          ),
-        )
-        .orderBy(asc(transactions.data), asc(transactions.id)),
-
-      /*
-       * ⚠ **Os potes vêm da tabela de potes** (tarefa B5 da spec 05).
-       *
-       * Até aqui eles saíam do `innerJoin` com `categories`, e com o seed isso
-       * nunca apareceu: todo pote tinha categoria. A B4 da spec 05 tornou o
-       * defeito alcançável — apagar a última categoria de um pote faria o join
-       * não devolver linha nenhuma para ele, e o pote sumiria da tela.
-       *
-       * A A3 desta spec é explícita em sentido contrário: **pote ausente da tela
-       * não é o mesmo que pote vazio.**
-       *
-       * Duas consultas e não um `leftJoin` porque uma seleção plana de duas
-       * tabelas num `leftJoin` não carrega a nulidade no tipo — o TypeScript
-       * prometeria colunas que viriam nulas. Estas duas já cabem no
-       * `Promise.all` que existe.
-       */
-      db
-        .select({
-          id: buckets.id,
-          slug: buckets.slug,
-          nome: buckets.nome,
-          emoji: buckets.emoji,
-          cor: buckets.cor,
-          tipo: buckets.tipo,
-          ordem: buckets.ordem,
-          percentual: buckets.percentualMeta,
-          observacao: buckets.observacao,
-        })
-        .from(buckets)
-        .where(eq(buckets.userId, userId))
-        .orderBy(asc(buckets.ordem)),
-
-      db
-        .select({
-          id: categories.id,
-          slug: categories.slug,
-          nome: categories.nome,
-          emoji: categories.emoji,
-          ordem: categories.ordem,
-          poteId: buckets.id,
-          poteSlug: buckets.slug,
-          poteNome: buckets.nome,
-          poteEmoji: buckets.emoji,
-          poteCor: buckets.cor,
-          poteTipo: buckets.tipo,
-          poteOrdem: buckets.ordem,
-        })
-        .from(categories)
-        .innerJoin(buckets, eq(buckets.id, categories.bucketId))
-        .where(eq(categories.userId, userId))
-        .orderBy(asc(buckets.ordem), asc(categories.ordem)),
-
-      rendaDoMes(userId, mes),
-
-      db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            eq(transactions.mesReferencia, mes),
-            naFilaDeRevisao(),
-          ),
+  const [
+    linhasDoBanco,
+    potesDoBanco,
+    categoriasDoBanco,
+    renda,
+    [pendencia],
+    titular,
+  ] = await Promise.all([
+    db
+      .select({
+        id: transactions.id,
+        data: transactions.data,
+        descricao: transactions.descricaoOriginal,
+        valorCentavos: transactions.valorCentavos,
+        direcao: transactions.direcao,
+        status: transactions.status,
+        categoriaId: transactions.categoriaId,
+        classificadoPor: transactions.classificadoPor,
+        regraChave: transactions.regraChave,
+        fonteDaSugestao: transactions.fonteDaSugestao,
+        // Para a lista de "fora da conta": o motivo explica a ausência, e a
+        // impressão com o `parDe` é o que junta os dois lados do par.
+        motivo: transactions.motivo,
+        impressao: transactions.impressao,
+        parDe: transactions.parDe,
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          eq(transactions.mesReferencia, mes),
         ),
-    ]);
+      )
+      .orderBy(asc(transactions.data), asc(transactions.id)),
+
+    /*
+     * ⚠ **Os potes vêm da tabela de potes** (tarefa B5 da spec 05).
+     *
+     * Até aqui eles saíam do `innerJoin` com `categories`, e com o seed isso
+     * nunca apareceu: todo pote tinha categoria. A B4 da spec 05 tornou o
+     * defeito alcançável — apagar a última categoria de um pote faria o join
+     * não devolver linha nenhuma para ele, e o pote sumiria da tela.
+     *
+     * A A3 desta spec é explícita em sentido contrário: **pote ausente da tela
+     * não é o mesmo que pote vazio.**
+     *
+     * Duas consultas e não um `leftJoin` porque uma seleção plana de duas
+     * tabelas num `leftJoin` não carrega a nulidade no tipo — o TypeScript
+     * prometeria colunas que viriam nulas. Estas duas já cabem no
+     * `Promise.all` que existe.
+     */
+    db
+      .select({
+        id: buckets.id,
+        slug: buckets.slug,
+        nome: buckets.nome,
+        emoji: buckets.emoji,
+        cor: buckets.cor,
+        tipo: buckets.tipo,
+        ordem: buckets.ordem,
+        percentual: buckets.percentualMeta,
+        observacao: buckets.observacao,
+      })
+      .from(buckets)
+      .where(eq(buckets.userId, userId))
+      .orderBy(asc(buckets.ordem)),
+
+    db
+      .select({
+        id: categories.id,
+        slug: categories.slug,
+        nome: categories.nome,
+        emoji: categories.emoji,
+        ordem: categories.ordem,
+        poteId: buckets.id,
+        poteSlug: buckets.slug,
+        poteNome: buckets.nome,
+        poteEmoji: buckets.emoji,
+        poteCor: buckets.cor,
+        poteTipo: buckets.tipo,
+        poteOrdem: buckets.ordem,
+      })
+      .from(categories)
+      .innerJoin(buckets, eq(buckets.id, categories.bucketId))
+      .where(eq(categories.userId, userId))
+      .orderBy(asc(buckets.ordem), asc(categories.ordem)),
+
+    rendaDoMes(userId, mes),
+
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          eq(transactions.mesReferencia, mes),
+          naFilaDeRevisao(),
+        ),
+      ),
+
+    nomeDoTitular(userId),
+  ]);
+
+  /*
+   * ⚠ **Marcada aqui, uma vez, e lida por tudo o que vem depois** — a soma, a
+   * lista e o aviso da tela. Três lugares decidindo sozinhos o que é
+   * transferência sua seriam três chances de a soma não bater com a lista.
+   */
+  const linhas = linhasDoBanco.map((l) => ({
+    ...l,
+    transferenciaPropria:
+      l.direcao === "entrada" && ehTransferenciaPropria(l.descricao, titular),
+  }));
 
   const paraSomar: CategoriaComPote[] = categoriasDoBanco.map((c) => ({
     id: c.id,
@@ -296,6 +318,8 @@ type LinhaDoBanco = {
   classificadoPor: "regra" | "sugestao" | "manual" | null;
   regraChave: string | null;
   fonteDaSugestao: FonteDeSugestao | null;
+  /** Entrada que é uma transferência entre contas suas. */
+  transferenciaPropria: boolean;
 };
 
 /**
@@ -307,7 +331,10 @@ type LinhaDoBanco = {
  */
 function listaDoPote(
   linhas: LinhaDoBanco[],
-  categoriaPorId: Map<string, { nome: string; emoji: string; poteId: string }>,
+  categoriaPorId: Map<
+    string,
+    { nome: string; emoji: string; poteId: string; poteTipo: "gasto" | "renda" }
+  >,
   poteId: string,
 ): LancamentoNoPainel[] {
   const doPote = linhas.filter(
@@ -317,7 +344,14 @@ function listaDoPote(
       categoriaPorId.get(l.categoriaId)?.poteId === poteId,
   );
 
-  const conferir = paresDeValorIdentico(doPote);
+  /*
+   * ⚠ **A entrada que não abate não entra no "confira".** O aviso pergunta se a
+   * entrada é reembolso ou duplicata; uma transferência sua não é nenhuma das
+   * duas, e não mexe no pote — não há o que conferir. Deixá-la entrar marcava
+   * também a saída correspondente, e o aporte aparecia com um aviso de erro.
+   */
+  const abate = (l: LinhaDoBanco) => !naoAbate(l, categoriaPorId);
+  const conferir = paresDeValorIdentico(doPote.filter(abate));
 
   return doPote.map((l) => {
     const categoria = categoriaPorId.get(l.categoriaId);
@@ -334,8 +368,21 @@ function listaDoPote(
       procedencia: procedencia(l),
       veioDeRegra: l.classificadoPor === "regra",
       conferir: conferir.has(l.id),
+      deVoceMesmo: !abate(l),
     };
   });
+}
+
+/** A decisão é do `somarOMes`; aqui só se acha o tipo do pote da linha. */
+function naoAbate(
+  l: LinhaDoBanco,
+  categoriaPorId: Map<string, { poteTipo: "gasto" | "renda" }>,
+): boolean {
+  const tipo = l.categoriaId
+    ? categoriaPorId.get(l.categoriaId)?.poteTipo
+    : null;
+
+  return tipo ? entradaNaoAbate(l, tipo) : false;
 }
 
 /** A frase que responde "por que isso caiu aqui?" (C3). */

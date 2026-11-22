@@ -43,6 +43,12 @@ export type LancamentoNoPainel = {
   veioDeRegra: boolean;
   /** Par de valor idêntico dentro do pote (A4). */
   conferir: boolean;
+  /**
+   * Entrada que é você movendo dinheiro entre contas suas, num pote de gasto.
+   * Ela está na lista, mas **não abate** o pote — a tela precisa dizer isso,
+   * senão a soma parece não fechar com a lista.
+   */
+  deVoceMesmo: boolean;
 };
 
 export type PoteNoPainel = {

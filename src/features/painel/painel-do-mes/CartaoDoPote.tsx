@@ -267,6 +267,13 @@ function DentroDoPote({
               <TrocarCategoria lancamento={l} categorias={categorias} />
             </div>
 
+            {l.deVoceMesmo && (
+              <p className="mt-2 text-3xs leading-relaxed text-dim">
+                ⓘ transferência sua entre contas — o dinheiro só passou por
+                aqui, então não abate este pote
+              </p>
+            )}
+
             {l.conferir && (
               <p className="mt-2 text-3xs leading-relaxed text-gold">
                 ⚠ mesmo valor de uma saída deste pote — confira se é reembolso

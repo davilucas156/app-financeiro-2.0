@@ -5,6 +5,7 @@ import {
   type Origem,
 } from "@/features/upload/ler-arquivo/formatos";
 import type { Lancamento } from "@/features/upload/ler-arquivo/lancamentos";
+import { ehTransferenciaPropria } from "@/features/upload/ler-arquivo/transferenciaPropria";
 import { semAcento } from "@/lib/semAcento";
 
 /**
@@ -78,6 +79,12 @@ export type EntradaDeArquivo = {
  * outro jeito.
  */
 export type LancamentoSalvo = {
+  /**
+   * A descrição entra **só** para saber se este lado é uma transferência sua
+   * (`ehTransferenciaPropria`). O par continua se reconhecendo por valor e
+   * data — a descrição nunca decide *com quem* ele casa.
+   */
+  descricao: string;
   data: string;
   direcao: Lancamento["direcao"];
   valorCentavos: number;
@@ -144,6 +151,12 @@ export function prepararLancamentos(
    * envio. Ausente = só o que veio nos arquivos, que é o que ela sempre fez.
    */
   jaNoBanco: LancamentoSalvo[] = [],
+  /**
+   * O nome do titular da conta, para reconhecer transferência entre contas
+   * suas (`ehTransferenciaPropria`). Ausente = nada é reconhecido como tal, que
+   * é o comportamento de antes.
+   */
+  titular: string | null = null,
 ): LancamentoPreparado[] {
   const preparados: LancamentoPreparado[] = [];
 
@@ -176,8 +189,8 @@ export function prepararLancamentos(
     }
   }
 
-  marcarParesQueSeAnulam(preparados);
-  marcarParesComOBanco(preparados, jaNoBanco);
+  marcarParesQueSeAnulam(preparados, titular);
+  marcarParesComOBanco(preparados, jaNoBanco, titular);
 
   return preparados;
 }
@@ -195,6 +208,13 @@ function acharPassagem(l: Lancamento, formato?: Formato): string | null {
 
 /**
  * Mesmo valor, direções opostas, datas próximas.
+ *
+ * ## ⚠ Exceção: dinheiro seu entre contas suas
+ *
+ * Quando a **entrada** é uma transferência sua (`ehTransferenciaPropria`), só
+ * ela sai — a saída é o aporte ou o gasto, e continua. Quando só a **saída** é
+ * sua, não há par. Ver `relacaoDoPar`; o resto deste texto vale para o caso
+ * geral.
  *
  * ## ⚠ A marca virou `excluido`, e antes era `revisao`
  *
@@ -226,7 +246,10 @@ function acharPassagem(l: Lancamento, formato?: Formato): string | null {
  * Sem essas duas, isto seria dinheiro sumindo em silêncio — que é pior do que
  * o problema que veio consertar.
  */
-function marcarParesQueSeAnulam(lista: LancamentoPreparado[]): void {
+function marcarParesQueSeAnulam(
+  lista: LancamentoPreparado[],
+  titular: string | null,
+): void {
   const usados = new Set<number>();
 
   for (let i = 0; i < lista.length; i++) {
@@ -243,6 +266,10 @@ function marcarParesQueSeAnulam(lista: LancamentoPreparado[]): void {
       const distancia = distanciaEmDias(lista[i].data, lista[j].data);
       if (distancia > JANELA_DE_PAR_EM_DIAS) continue;
 
+      // Entre contas suas, sem lado a marcar: não é par, e nenhum dos dois
+      // pode ser consumido por ele.
+      if (relacaoDoPar(lista[i], lista[j], titular) === null) continue;
+
       // Empate na distância fica com o primeiro, que é o de linha menor.
       if (distancia < menorDistancia) {
         menorDistancia = distancia;
@@ -257,9 +284,59 @@ function marcarParesQueSeAnulam(lista: LancamentoPreparado[]): void {
     usados.add(i);
     usados.add(melhor);
 
+    const relacao = relacaoDoPar(lista[i], lista[melhor], titular);
+
+    if (relacao === "repasse-proprio") {
+      // Só a entrada sai. A saída é o aporte, o gasto, o que de fato aconteceu.
+      const [entrada, saida] =
+        lista[i].direcao === "entrada"
+          ? [lista[i], lista[melhor]]
+          : [lista[melhor], lista[i]];
+
+      marcarEntradaPropria(entrada, saida);
+      continue;
+    }
+
     marcarPar(lista[i], lista[melhor]);
     marcarPar(lista[melhor], lista[i]);
   }
+}
+
+/**
+ * O que um par de mesmo valor e sentidos opostos **é**.
+ *
+ * - `"anular"` — reembolso, devolução, o mesmo repasse aparecendo duas vezes:
+ *   os dois lados saem da conta.
+ * - `"repasse-proprio"` — a **entrada** é uma transferência sua. É o dinheiro
+ *   passando pela conta a caminho do destino; só ela sai, a saída continua.
+ * - `null` — a **saída** é para uma conta sua e a entrada veio de outra pessoa.
+ *   Não são o mesmo dinheiro voltando, e anular os dois apagaria o aporte.
+ *   Nenhum dos dois é marcado.
+ *
+ * ⚠ **Antes disto, o aporte sumia.** R$ 300 do salário que entravam no Inter e
+ * seguiam para a corretora eram lidos como "repasse que se anula", e o mês
+ * ficava como se não tivesse aportado nada — o comparativo anual mostrava um
+ * ano de aportes com buracos.
+ *
+ * ⚠ **O risco que fica:** aportar R$ 300 e resgatar os mesmos R$ 300 na mesma
+ * semana é, de fato, uma anulação, e aqui conta o aporte. É raro, e o erro é o
+ * de manter o dinheiro à vista em vez de escondê-lo.
+ */
+type Relacao = "anular" | "repasse-proprio" | null;
+
+function relacaoDoPar(
+  a: { direcao: Lancamento["direcao"]; descricao: string },
+  b: { direcao: Lancamento["direcao"]; descricao: string },
+  titular: string | null,
+): Relacao {
+  const [entrada, saida] = a.direcao === "entrada" ? [a, b] : [b, a];
+
+  if (ehTransferenciaPropria(entrada.descricao, titular)) {
+    return "repasse-proprio";
+  }
+  if (ehTransferenciaPropria(saida.descricao, titular)) return null;
+
+  return "anular";
 }
 
 /**
@@ -284,6 +361,7 @@ function marcarParesQueSeAnulam(lista: LancamentoPreparado[]): void {
 function marcarParesComOBanco(
   lista: LancamentoPreparado[],
   jaNoBanco: LancamentoSalvo[],
+  titular: string | null,
 ): void {
   if (jaNoBanco.length === 0) return;
 
@@ -305,6 +383,16 @@ function marcarParesComOBanco(
       const distancia = distanciaEmDias(novo.data, antigo.data);
       if (distancia > JANELA_DE_PAR_EM_DIAS) continue;
 
+      const relacao = relacaoDoPar(novo, antigo, titular);
+      if (relacao === null) continue;
+
+      /*
+       * ⚠ **Só o lado novo pode ser marcado** — o antigo já está gravado. Se a
+       * entrada própria é a antiga, ela não tem como sair daqui; e anular a
+       * saída nova sozinha apagaria justamente o aporte. Fica tudo como está.
+       */
+      if (relacao === "repasse-proprio" && novo.direcao === "saida") continue;
+
       if (distancia < menorDistancia) {
         menorDistancia = distancia;
         melhor = antigo;
@@ -314,6 +402,12 @@ function marcarParesComOBanco(
     if (!melhor) continue;
 
     usados.add(melhor.impressao);
+
+    if (relacaoDoPar(novo, melhor, titular) === "repasse-proprio") {
+      marcarEntradaPropria(novo, melhor);
+      continue;
+    }
+
     marcarPar(novo, melhor);
   }
 }
@@ -342,6 +436,24 @@ function marcarPar(
   l.marcacao = "excluido";
   l.motivo = `repasse anulado — o mesmo valor ${verbo} em ${outro.data}`;
   l.parDe = outro.impressao;
+}
+
+/**
+ * A entrada que é você movendo o próprio dinheiro: sai da conta, e a saída
+ * correspondente **fica**.
+ *
+ * O `parDe` aponta para a saída mesmo ela não estando excluída. Serve a duas
+ * coisas: a tela de "fora da conta" lista esta entrada como par de um lado só
+ * (já é o que ela faz quando o outro lado cai noutro mês), e o "trazer de
+ * volta" desfaz — sem tocar na saída, que nunca saiu.
+ */
+function marcarEntradaPropria(
+  entrada: LancamentoPreparado,
+  saida: { data: string; impressao: string },
+): void {
+  entrada.marcacao = "excluido";
+  entrada.motivo = `transferência sua entre contas — o dinheiro só passou por aqui; a saída do mesmo valor em ${saida.data} continua na conta`;
+  entrada.parDe = saida.impressao;
 }
 
 /** Dias inteiros entre duas datas `YYYY-MM-DD`. */

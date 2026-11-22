@@ -53,7 +53,12 @@ export async function enviarExtrato(
   }
 
   try {
-    const resultado = await importarExtrato(usuario.id, mes, arquivos);
+    const resultado = await importarExtrato(
+      usuario.id,
+      mes,
+      arquivos,
+      usuario.nome,
+    );
 
     if (resultado.ok) {
       // O histórico de envios, o painel e a fila de revisão mudaram.
